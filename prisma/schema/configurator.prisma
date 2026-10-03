@@ -1,0 +1,83 @@
+// Guided configurator ("Ayudame a elegir"): admin-editable questions and options. Each option points to tags
+// with a weight; products are scored by the tags they share with the chosen answers.
+
+enum ConfiguratorMode {
+  BASIC
+  PRO
+}
+
+model ConfiguratorQuestion {
+  id        Int               @id @default(autoincrement())
+  /// Stable key used in answers and URLs, e.g. "uso", "volumen".
+  key       String            @unique @db.VarChar(60)
+  text      String            @db.VarChar(255)
+  helpText  String?           @db.VarChar(500)
+  /// Null = shown in both modes.
+  mode      ConfiguratorMode?
+  sortOrder Int               @default(0)
+  isActive  Boolean           @default(true)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  deletedAt DateTime?
+
+  options ConfiguratorOption[]
+}
+
+model ConfiguratorOption {
+  id         Int       @id @default(autoincrement())
+  questionId Int
+  label      String    @db.VarChar(150)
+  /// Stable value used in answers and URLs, e.g. "hogar".
+  value      String    @db.VarChar(60)
+  helpText   String?   @db.VarChar(255)
+  sortOrder  Int       @default(0)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+
+  question ConfiguratorQuestion @relation(fields: [questionId], references: [id])
+
+  tags ConfiguratorOptionTag[]
+
+  @@unique([questionId, value])
+}
+
+/// Join table (hard delete, see database.md).
+model ConfiguratorOptionTag {
+  id        Int      @id @default(autoincrement())
+  optionId  Int
+  tagId     Int
+  /// How strongly this answer favors products with the tag. Negative values penalize.
+  weight    Int      @default(1)
+  createdAt DateTime @default(now())
+
+  option ConfiguratorOption @relation(fields: [optionId], references: [id])
+  tag    Tag                @relation(fields: [tagId], references: [id])
+
+  @@unique([optionId, tagId])
+  @@index([tagId])
+}
+
+/// A run of the configurator. Used for stats and to resume it.
+model ConfiguratorSession {
+  id              Int              @id @default(autoincrement())
+  userId          Int?
+  sessionId       String           @db.VarChar(64)
+  mode            ConfiguratorMode @default(BASIC)
+  /// Shape: { "uso": "hogar", "volumen": "bajo" }.
+  answers         Json
+  budgetAmount    Decimal?         @db.Decimal(12, 2)
+  budgetCurrency  Currency?
+  /// Ordered recommendation. Shape: [{ "productId": 12, "score": 8, "reason": "…" }].
+  recommendations Json?
+  completedAt     DateTime?
+  addedToCart     Boolean          @default(false)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  deletedAt       DateTime?
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([sessionId])
+}

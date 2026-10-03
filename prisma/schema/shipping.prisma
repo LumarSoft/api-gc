@@ -1,0 +1,83 @@
+// Shipping: configurable delivery methods, carrier quotes and shipments (including store pickup).
+
+enum ShipmentStatus {
+  PENDING
+  READY_FOR_PICKUP
+  PICKED_UP
+  IN_TRANSIT
+  DELIVERED
+  RETURNED
+  CANCELLED
+}
+
+/// Admin-editable configuration of each delivery method (rates and thresholds are data, not code).
+model ShippingMethod {
+  id                    Int            @id @default(autoincrement())
+  code                  DeliveryMethod @unique
+  name                  String         @db.VarChar(100)
+  description           String?        @db.VarChar(255)
+  /// Human description of the covered area, e.g. "Rosario y Gran Rosario".
+  coverage              String?        @db.VarChar(255)
+  /// Fixed price (LOCAL_DELIVERY). Null when quoted (CARRIER) or free (STORE_PICKUP).
+  flatRate              Decimal?       @db.Decimal(12, 2)
+  /// Order subtotal from which shipping is free. Null = never free.
+  freeShippingThreshold Decimal?       @db.Decimal(12, 2)
+  currency              Currency       @default(ARS)
+  minDeliveryDays       Int?
+  maxDeliveryDays       Int?
+  sortOrder             Int            @default(0)
+  isActive              Boolean        @default(true)
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  deletedAt             DateTime?
+}
+
+/// Quote returned by the carrier/aggregator for a cart. Short-lived; the chosen one is copied to the Shipment.
+/// Operational log: no deletedAt (see database.md).
+model ShippingQuote {
+  id              Int      @id @default(autoincrement())
+  cartId          Int?
+  postalCode      String   @db.VarChar(10)
+  carrier         String   @db.VarChar(60)
+  service         String   @db.VarChar(100)
+  amount          Decimal  @db.Decimal(12, 2)
+  currency        Currency
+  minDays         Int?
+  maxDays         Int?
+  externalQuoteId String?  @db.VarChar(100)
+  expiresAt       DateTime
+  createdAt       DateTime @default(now())
+
+  cart Cart? @relation(fields: [cartId], references: [id])
+
+  @@index([cartId])
+}
+
+/// How an order reaches the customer. Store pickup is a shipment with method STORE_PICKUP.
+model Shipment {
+  id             Int            @id @default(autoincrement())
+  orderId        Int
+  method         DeliveryMethod
+  status         ShipmentStatus @default(PENDING)
+  carrier        String?        @db.VarChar(60)
+  service        String?        @db.VarChar(100)
+  trackingNumber String?        @db.VarChar(100)
+  trackingUrl    String?        @db.VarChar(500)
+  /// Shipment id at the carrier/aggregator.
+  externalId     String?        @db.VarChar(100)
+  /// What the company pays the carrier (the customer's price is Order.shippingTotal).
+  cost           Decimal?       @db.Decimal(12, 2)
+  currency       Currency       @default(ARS)
+  readyAt        DateTime?
+  shippedAt      DateTime?
+  deliveredAt    DateTime?
+  pickedUpAt     DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  deletedAt      DateTime?
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@index([orderId])
+  @@index([status])
+}

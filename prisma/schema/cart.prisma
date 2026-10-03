@@ -1,0 +1,68 @@
+// Cart and favorites. The cart is server-side so it survives devices and feeds abandoned-cart stats.
+
+enum CartStatus {
+  ACTIVE
+  /// Turned into an order.
+  CONVERTED
+  /// Inactive for longer than the abandonment window (set by a scheduled job).
+  ABANDONED
+}
+
+model Cart {
+  id                  Int        @id @default(autoincrement())
+  /// Null for guests; set when the guest logs in.
+  userId              Int?
+  /// Opaque token stored in a cookie to identify guest carts.
+  guestToken          String?    @unique @db.VarChar(64)
+  status              CartStatus @default(ACTIVE)
+  couponId            Int?
+  /// Order created from this cart.
+  orderId             Int?       @unique
+  lastActivityAt      DateTime   @default(now())
+  abandonedNotifiedAt DateTime?
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+  deletedAt           DateTime?
+
+  user   User?   @relation(fields: [userId], references: [id])
+  coupon Coupon? @relation(fields: [couponId], references: [id])
+  order  Order?  @relation(fields: [orderId], references: [id])
+
+  items          CartItem[]
+  shippingQuotes ShippingQuote[]
+
+  @@index([userId])
+  @@index([couponId])
+  @@index([status, lastActivityAt])
+}
+
+/// Prices are not stored here: they are always computed by the API from the current price list.
+model CartItem {
+  id        Int       @id @default(autoincrement())
+  cartId    Int
+  variantId Int
+  quantity  Int
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  cart    Cart           @relation(fields: [cartId], references: [id])
+  variant ProductVariant @relation(fields: [variantId], references: [id])
+
+  @@unique([cartId, variantId])
+  @@index([variantId])
+}
+
+/// Join table (hard delete, see database.md).
+model Favorite {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId])
+  @@index([productId])
+}

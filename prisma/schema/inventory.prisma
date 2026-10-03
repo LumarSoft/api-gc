@@ -1,0 +1,91 @@
+// Inventory: current stock per variant (mirrors Tango), every stock change as a movement, and reservations
+// that hold stock while an order is being paid.
+
+enum StockBucket {
+  /// Physical stock.
+  ON_HAND
+  /// Stock held by active reservations.
+  RESERVED
+}
+
+enum StockMovementReason {
+  TANGO_SYNC
+  SALE
+  RESERVATION
+  RESERVATION_RELEASE
+  ADJUSTMENT
+  RETURN
+  CANCELLATION
+}
+
+enum ReservationStatus {
+  ACTIVE
+  /// The order was paid; the reserved stock became a sale.
+  CONSUMED
+  /// Released because the order was cancelled.
+  RELEASED
+  /// Released by the scheduled job when expiresAt passed.
+  EXPIRED
+}
+
+/// Current stock of a variant. Available to sell = onHand - reserved.
+/// Only changed in the same transaction as the StockMovement that explains it.
+model InventoryLevel {
+  id                Int       @id @default(autoincrement())
+  variantId         Int       @unique
+  onHand            Int       @default(0)
+  reserved          Int       @default(0)
+  /// Below this available quantity the admin gets an alert and the store may show "quedan pocas unidades".
+  lowStockThreshold Int?
+  lastSyncedAt      DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
+
+  variant ProductVariant @relation(fields: [variantId], references: [id])
+}
+
+/// Ledger of every stock change. Append-only (see database.md).
+model StockMovement {
+  id          Int                 @id @default(autoincrement())
+  variantId   Int
+  bucket      StockBucket
+  /// Signed: positive adds, negative subtracts.
+  quantity    Int
+  reason      StockMovementReason
+  orderId     Int?
+  note        String?             @db.VarChar(255)
+  createdById Int?
+  createdAt   DateTime            @default(now())
+
+  variant   ProductVariant @relation(fields: [variantId], references: [id])
+  order     Order?         @relation(fields: [orderId], references: [id])
+  createdBy User?          @relation(fields: [createdById], references: [id])
+
+  @@index([variantId, createdAt])
+  @@index([orderId])
+  @@index([createdById])
+}
+
+/// Stock held for an order. Created together with the order in one transaction.
+model StockReservation {
+  id         Int               @id @default(autoincrement())
+  variantId  Int
+  orderId    Int
+  quantity   Int
+  status     ReservationStatus @default(ACTIVE)
+  /// Mercado Pago payment window, or 24 h for pending bank transfers.
+  expiresAt  DateTime
+  resolvedAt DateTime?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  deletedAt  DateTime?
+
+  variant ProductVariant @relation(fields: [variantId], references: [id])
+  order   Order          @relation(fields: [orderId], references: [id])
+
+  @@index([variantId])
+  @@index([orderId])
+  // Used by the expiration job.
+  @@index([status, expiresAt])
+}
