@@ -1,0 +1,266 @@
+// Catalog: brands, categories, products and their sellable variants (SKUs), images, specs, tags,
+// bundles ("combos") and consumable ↔ machine compatibility.
+//
+// Product = what the customer sees (name, description, images).
+// ProductVariant = what is sold, priced and stocked (one SKU / one Tango article). Every product has at least one.
+
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+  HIDDEN
+}
+
+enum ProductType {
+  STANDARD
+  /// A combo made of other variants (see BundleItem).
+  BUNDLE
+}
+
+enum OutOfStockBehavior {
+  SHOW_UNAVAILABLE
+  HIDE
+  ALLOW_INQUIRY
+}
+
+enum SaleUnit {
+  UNIT
+  BOX
+  PACK
+  ROLL
+  METER
+  SQUARE_METER
+  LITER
+  KIT
+}
+
+model Brand {
+  id         Int       @id @default(autoincrement())
+  name       String    @db.VarChar(100)
+  slug       String    @unique @db.VarChar(120)
+  logoFileId Int?
+  sortOrder  Int       @default(0)
+  isActive   Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+
+  logoFile StoredFile? @relation(fields: [logoFileId], references: [id])
+
+  products         Product[]
+  promotionTargets PromotionTarget[]
+
+  @@index([logoFileId])
+}
+
+/// Two-level tree: top categories and subcategories (parentId).
+model Category {
+  id          Int       @id @default(autoincrement())
+  parentId    Int?
+  name        String    @db.VarChar(100)
+  slug        String    @unique @db.VarChar(120)
+  description String?   @db.Text
+  imageFileId Int?
+  sortOrder   Int       @default(0)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  parent    Category?   @relation("CategoryTree", fields: [parentId], references: [id])
+  children  Category[]  @relation("CategoryTree")
+  imageFile StoredFile? @relation(fields: [imageFileId], references: [id])
+
+  products         Product[]
+  promotionTargets PromotionTarget[]
+
+  @@index([parentId])
+  @@index([imageFileId])
+}
+
+model Product {
+  id                 Int                @id @default(autoincrement())
+  type               ProductType        @default(STANDARD)
+  status             ProductStatus      @default(DRAFT)
+  name               String             @db.VarChar(200)
+  slug               String             @unique @db.VarChar(220)
+  brandId            Int?
+  categoryId         Int
+  shortDescription   String?            @db.VarChar(500)
+  description        String?            @db.Text
+  isFeatured         Boolean            @default(false)
+  outOfStockBehavior OutOfStockBehavior @default(SHOW_UNAVAILABLE)
+  warrantyMonths     Int?
+  seoTitle           String?            @db.VarChar(70)
+  seoDescription     String?            @db.VarChar(160)
+  publishedAt        DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  deletedAt          DateTime?
+
+  brand    Brand?   @relation(fields: [brandId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
+
+  variants              ProductVariant[]
+  images                ProductImage[]
+  specifications        ProductSpecification[]
+  tags                  ProductTag[]
+  /// Machines this product (ink, paper, part) works with.
+  compatibleWith        ProductCompatibility[] @relation("CompatibleProduct")
+  /// Consumables and parts that work with this product (machine).
+  compatibleConsumables ProductCompatibility[] @relation("CompatibilityTarget")
+  favorites             Favorite[]
+  inquiries             ProductInquiry[]
+  knowledgeDocuments    KnowledgeDocument[]
+  promotionTargets      PromotionTarget[]
+  activityEvents        ActivityEvent[]
+
+  @@index([brandId])
+  @@index([categoryId])
+  @@index([status, isFeatured])
+}
+
+/// A sellable SKU. Prices, stock and the Tango article code live here.
+model ProductVariant {
+  id               Int        @id @default(autoincrement())
+  productId        Int
+  sku              String     @unique @db.VarChar(60)
+  /// Label shown when the product has several variants, e.g. "Cyan 70 ml".
+  name             String?    @db.VarChar(150)
+  /// Option values for selectors and filters. Shape: { "Color": "Cyan", "Capacidad": "70 ml" }.
+  optionValues     Json?
+  barcode          String?    @db.VarChar(50)
+  source           DataSource @default(MANUAL)
+  /// Article code in Tango. Null for products created only in the store.
+  tangoCode        String?    @unique @db.VarChar(50)
+  isDefault        Boolean    @default(false)
+  isActive         Boolean    @default(true)
+  saleUnit         SaleUnit   @default(UNIT)
+  /// How many units one sale unit contains (e.g. a box of 10).
+  unitsPerSaleUnit Int        @default(1)
+  /// Shipping data. Tango may not have it; completed from the admin panel.
+  weightGrams      Int?
+  lengthMm         Int?
+  widthMm          Int?
+  heightMm         Int?
+  /// Machines and oversized items: special shipping rules apply.
+  isBulky          Boolean    @default(false)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  deletedAt        DateTime?
+
+  product Product @relation(fields: [productId], references: [id])
+
+  prices            VariantPrice[]
+  inventory         InventoryLevel?
+  stockMovements    StockMovement[]
+  reservations      StockReservation[]
+  images            ProductImage[]
+  /// Components of this variant when its product is a BUNDLE.
+  bundleItems       BundleItem[]       @relation("BundleParent")
+  /// Bundles that include this variant.
+  includedInBundles BundleItem[]       @relation("BundleComponent")
+  cartItems         CartItem[]
+  orderItems        OrderItem[]
+
+  @@index([productId])
+}
+
+model ProductImage {
+  id        Int       @id @default(autoincrement())
+  productId Int
+  /// Set when the image belongs to a specific variant (e.g. ink color).
+  variantId Int?
+  fileId    Int
+  altText   String?   @db.VarChar(200)
+  sortOrder Int       @default(0)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  product Product         @relation(fields: [productId], references: [id])
+  variant ProductVariant? @relation(fields: [variantId], references: [id])
+  file    StoredFile      @relation(fields: [fileId], references: [id])
+
+  @@index([productId])
+  @@index([variantId])
+  @@index([fileId])
+}
+
+/// Technical sheet rows. Used by the product page, comparison and the AI assistant.
+model ProductSpecification {
+  id        Int       @id @default(autoincrement())
+  productId Int
+  /// Optional section, e.g. "Impresión", "Conectividad".
+  groupName String?   @db.VarChar(100)
+  name      String    @db.VarChar(100)
+  value     String    @db.VarChar(500)
+  sortOrder Int       @default(0)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([productId])
+}
+
+/// Free-form classification used by catalog filters and the configurator, e.g. group "uso" / name "Hogar".
+model Tag {
+  id        Int       @id @default(autoincrement())
+  name      String    @db.VarChar(100)
+  slug      String    @unique @db.VarChar(120)
+  group     String?   @db.VarChar(50)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  products            ProductTag[]
+  configuratorOptions ConfiguratorOptionTag[]
+
+  @@index([group])
+}
+
+/// Join table (hard delete, see database.md).
+model ProductTag {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  tagId     Int
+  createdAt DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id])
+  tag     Tag     @relation(fields: [tagId], references: [id])
+
+  @@unique([productId, tagId])
+  @@index([tagId])
+}
+
+/// Components of a combo. Join table (hard delete, see database.md).
+model BundleItem {
+  id                 Int      @id @default(autoincrement())
+  bundleVariantId    Int
+  componentVariantId Int
+  quantity           Int      @default(1)
+  createdAt          DateTime @default(now())
+
+  bundleVariant    ProductVariant @relation("BundleParent", fields: [bundleVariantId], references: [id])
+  componentVariant ProductVariant @relation("BundleComponent", fields: [componentVariantId], references: [id])
+
+  @@unique([bundleVariantId, componentVariantId])
+  @@index([componentVariantId])
+}
+
+/// "This ink/paper/part works with that machine". Powers the compatible-consumables finder and the assistant.
+/// Join table (hard delete, see database.md).
+model ProductCompatibility {
+  id              Int      @id @default(autoincrement())
+  productId       Int
+  targetProductId Int
+  note            String?  @db.VarChar(255)
+  createdAt       DateTime @default(now())
+
+  product       Product @relation("CompatibleProduct", fields: [productId], references: [id])
+  targetProduct Product @relation("CompatibilityTarget", fields: [targetProductId], references: [id])
+
+  @@unique([productId, targetProductId])
+  @@index([targetProductId])
+}

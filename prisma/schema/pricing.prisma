@@ -1,0 +1,163 @@
+// Pricing: price lists (retail, wholesale…), per-variant prices in ARS or USD, exchange rates,
+// promotions and coupons.
+
+/// A set of prices. One default list per audience; companies can be assigned a specific list.
+model PriceList {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(100)
+  /// Stable identifier used in code and Tango mapping, e.g. "RETAIL", "WHOLESALE".
+  code        String    @unique @db.VarChar(40)
+  audience    BuyerType
+  /// Default list for its audience. Exactly one per audience.
+  isDefault   Boolean   @default(false)
+  description String?   @db.VarChar(255)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  prices    VariantPrice[]
+  companies Company[]
+  orders    Order[]
+
+  @@index([audience, isDefault])
+}
+
+model VariantPrice {
+  id              Int        @id @default(autoincrement())
+  variantId       Int
+  priceListId     Int
+  amount          Decimal    @db.Decimal(12, 2)
+  /// USD prices are converted to ARS at checkout with the current ExchangeRate.
+  currency        Currency
+  /// Previous price, shown crossed out. Null when not on sale.
+  compareAtAmount Decimal?   @db.Decimal(12, 2)
+  /// TANGO = overwritten on every sync; MANUAL = set in the admin panel and never overwritten.
+  source          DataSource @default(MANUAL)
+  syncedAt        DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  deletedAt       DateTime?
+
+  variant   ProductVariant @relation(fields: [variantId], references: [id])
+  priceList PriceList      @relation(fields: [priceListId], references: [id])
+
+  @@unique([variantId, priceListId])
+  @@index([priceListId])
+}
+
+/// History of exchange rates. The current rate is the latest row whose effectiveFrom is in the past.
+/// Append-only (see database.md).
+model ExchangeRate {
+  id            Int        @id @default(autoincrement())
+  /// Foreign currency being quoted (USD).
+  currency      Currency
+  /// ARS per 1 unit of `currency`.
+  rate          Decimal    @db.Decimal(12, 4)
+  source        DataSource @default(MANUAL)
+  effectiveFrom DateTime   @default(now())
+  createdAt     DateTime   @default(now())
+
+  @@index([currency, effectiveFrom])
+}
+
+enum PromotionType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  FREE_SHIPPING
+}
+
+enum PromotionScope {
+  /// Applies to the whole order.
+  ORDER
+  /// Applies to the products matched by PromotionTarget rows.
+  TARGETED
+}
+
+model Promotion {
+  id             Int            @id @default(autoincrement())
+  name           String         @db.VarChar(150)
+  description    String?        @db.VarChar(500)
+  type           PromotionType
+  scope          PromotionScope @default(ORDER)
+  /// Percentage (0-100) for PERCENTAGE, amount for FIXED_AMOUNT, null for FREE_SHIPPING.
+  value          Decimal?       @db.Decimal(12, 2)
+  /// Currency of `value` and `minOrderAmount` when they are amounts.
+  currency       Currency       @default(ARS)
+  minOrderAmount Decimal?       @db.Decimal(12, 2)
+  /// Null = every buyer.
+  audience       BuyerType?
+  requiresCoupon Boolean        @default(false)
+  /// Higher wins when several promotions match the same line.
+  priority       Int            @default(0)
+  startsAt       DateTime
+  endsAt         DateTime?
+  isActive       Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  deletedAt      DateTime?
+
+  targets PromotionTarget[]
+  coupons Coupon[]
+
+  @@index([isActive, startsAt, endsAt])
+}
+
+/// What a TARGETED promotion applies to: exactly one of product, category or brand.
+/// Join table (hard delete, see database.md).
+model PromotionTarget {
+  id          Int      @id @default(autoincrement())
+  promotionId Int
+  productId   Int?
+  categoryId  Int?
+  brandId     Int?
+  createdAt   DateTime @default(now())
+
+  promotion Promotion @relation(fields: [promotionId], references: [id])
+  product   Product?  @relation(fields: [productId], references: [id])
+  category  Category? @relation(fields: [categoryId], references: [id])
+  brand     Brand?    @relation(fields: [brandId], references: [id])
+
+  @@index([promotionId])
+  @@index([productId])
+  @@index([categoryId])
+  @@index([brandId])
+}
+
+model Coupon {
+  id                Int       @id @default(autoincrement())
+  promotionId       Int
+  /// Stored uppercase.
+  code              String    @unique @db.VarChar(40)
+  /// Null = unlimited.
+  usageLimit        Int?
+  usageLimitPerUser Int?
+  timesUsed         Int       @default(0)
+  isActive          Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
+
+  promotion Promotion @relation(fields: [promotionId], references: [id])
+
+  redemptions CouponRedemption[]
+  carts       Cart[]
+  orders      Order[]
+
+  @@index([promotionId])
+}
+
+/// One row per order that used a coupon. Append-only (see database.md).
+model CouponRedemption {
+  id        Int      @id @default(autoincrement())
+  couponId  Int
+  orderId   Int      @unique
+  userId    Int?
+  createdAt DateTime @default(now())
+
+  coupon Coupon @relation(fields: [couponId], references: [id])
+  order  Order  @relation(fields: [orderId], references: [id])
+  user   User?  @relation(fields: [userId], references: [id])
+
+  @@index([couponId])
+  @@index([userId])
+}

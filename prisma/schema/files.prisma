@@ -1,0 +1,37 @@
+// Files: every upload (product images, company documents, transfer receipts, invoices, imports, manuals).
+
+enum FileVisibility {
+  /// Served publicly (product images, brand logos).
+  PUBLIC
+  /// Served only to the owner and admins (documents, receipts, invoices).
+  PRIVATE
+}
+
+model StoredFile {
+  id           Int            @id @default(autoincrement())
+  /// Path/key in the storage backend. Never a full public URL.
+  storageKey   String         @unique @db.VarChar(500)
+  originalName String         @db.VarChar(255)
+  mimeType     String         @db.VarChar(100)
+  sizeBytes    Int
+  /// SHA-256 hex, to detect duplicate uploads.
+  checksum     String?        @db.VarChar(64)
+  visibility   FileVisibility @default(PRIVATE)
+  uploadedById Int?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  deletedAt    DateTime?
+
+  uploadedBy User? @relation(fields: [uploadedById], references: [id])
+
+  brandLogos         Brand[]
+  categoryImages     Category[]
+  productImages      ProductImage[]
+  companyDocuments   CompanyDocument[]
+  transferReceipts   TransferReceipt[]
+  invoices           Invoice[]
+  accountImports     AccountImportBatch[]
+  knowledgeDocuments KnowledgeDocument[]
+
+  @@index([uploadedById])
+}

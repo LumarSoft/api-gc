@@ -1,0 +1,132 @@
+// AI assistant: the knowledge it answers from, conversations with token usage, and questions it could not answer.
+// Prices, stock and policies are never stored here — the assistant reads them live from catalog/pricing tables.
+
+enum KnowledgeType {
+  /// Public FAQ: title = question, content = answer.
+  FAQ
+  MANUAL
+  DATASHEET
+  POLICY
+  /// Internal know-how, never shown on the site.
+  INTERNAL
+}
+
+enum ConversationStatus {
+  OPEN
+  RESOLVED
+  /// Handed off to a person.
+  ESCALATED
+  CLOSED
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  /// A staff member answering after an escalation.
+  AGENT
+}
+
+enum QuestionStatus {
+  OPEN
+  ANSWERED
+  DISMISSED
+}
+
+model KnowledgeDocument {
+  id        Int           @id @default(autoincrement())
+  type      KnowledgeType
+  title     String        @db.VarChar(255)
+  /// Plain text the assistant reads. For uploaded manuals, the extracted text.
+  content   String?       @db.LongText
+  fileId    Int?
+  /// Set when the document is about one product (manual, datasheet).
+  productId Int?
+  /// FAQs and policies shown on the public site.
+  isPublic  Boolean       @default(false)
+  isActive  Boolean       @default(true)
+  sortOrder Int           @default(0)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  deletedAt DateTime?
+
+  file    StoredFile? @relation(fields: [fileId], references: [id])
+  product Product?    @relation(fields: [productId], references: [id])
+
+  answeredQuestions UnansweredQuestion[]
+
+  @@index([type, isActive])
+  @@index([fileId])
+  @@index([productId])
+}
+
+model AssistantConversation {
+  id               Int                @id @default(autoincrement())
+  /// Null for guests.
+  userId           Int?
+  /// Anonymous visitor id (cookie), links guest conversations and activity.
+  sessionId        String             @db.VarChar(64)
+  status           ConversationStatus @default(OPEN)
+  escalatedAt      DateTime?
+  escalationReason String?            @db.VarChar(255)
+  assignedToId     Int?
+  lastMessageAt    DateTime           @default(now())
+  /// Running totals, used to track the monthly conversation/token allowance.
+  inputTokens      Int                @default(0)
+  outputTokens     Int                @default(0)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  deletedAt        DateTime?
+
+  user       User? @relation("ConversationCustomer", fields: [userId], references: [id])
+  assignedTo User? @relation("ConversationAssignee", fields: [assignedToId], references: [id])
+
+  messages            AssistantMessage[]
+  unansweredQuestions UnansweredQuestion[]
+
+  @@index([userId])
+  @@index([assignedToId])
+  @@index([sessionId])
+  @@index([status, lastMessageAt])
+}
+
+/// Append-only (see database.md).
+model AssistantMessage {
+  id                  Int         @id @default(autoincrement())
+  conversationId      Int
+  role                MessageRole
+  content             String      @db.Text
+  model               String?     @db.VarChar(60)
+  inputTokens         Int?
+  outputTokens        Int?
+  /// Products suggested in this message. Shape: [12, 48].
+  recommendedProducts Json?
+  createdAt           DateTime    @default(now())
+
+  conversation AssistantConversation @relation(fields: [conversationId], references: [id])
+
+  @@index([conversationId, createdAt])
+}
+
+/// Questions the assistant could not answer, so admins can add the missing information.
+model UnansweredQuestion {
+  id                  Int            @id @default(autoincrement())
+  conversationId      Int?
+  question            String         @db.Text
+  status              QuestionStatus @default(OPEN)
+  /// Document created or updated to answer it.
+  knowledgeDocumentId Int?
+  resolvedById        Int?
+  resolvedAt          DateTime?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  deletedAt           DateTime?
+
+  conversation      AssistantConversation? @relation(fields: [conversationId], references: [id])
+  knowledgeDocument KnowledgeDocument?     @relation(fields: [knowledgeDocumentId], references: [id])
+  resolvedBy        User?                  @relation(fields: [resolvedById], references: [id])
+
+  @@index([conversationId])
+  @@index([knowledgeDocumentId])
+  @@index([resolvedById])
+  @@index([status])
+}
