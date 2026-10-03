@@ -71,7 +71,10 @@ see @docs/rules/integrations.md.
 
 Current state: the **full database schema** is defined (`prisma/schema/`, one file per domain — see
 @docs/database.md) and migrated. Implemented modules: `AuthModule` (cookie sessions, roles — protect routes with
-`@UseGuards(JwtAuthGuard)` / `@UseGuards(JwtAuthGuard, RolesGuard)` + `@Roles(UserRole.ADMIN)`) and `MailModule`. See
+`@UseGuards(JwtAuthGuard)` / `@UseGuards(JwtAuthGuard, RolesGuard)` + `@Roles(UserRole.ADMIN)`; use
+`OptionalJwtAuthGuard` + `@OptionalUser()` on public routes whose answer depends on the buyer), `MailModule`,
+`FilesModule`, `PricingModule` (always resolve prices through `PricingService`, never by hand) and the public
+catalog (`CategoriesModule`, `BrandsModule`, `ProductsModule`). `npm run db:seed` loads a starter catalog. See
 `STRUCTURE.md`.
 
 ## Rules
