@@ -52,6 +52,24 @@ npx prisma generate      # Regenerate Prisma client — REQUIRED after every mig
 npx prisma studio        # Prisma Studio GUI
 ```
 
+## Local setup
+
+When asked to set up or run the project locally, follow the **Installation** section of `README.md` step by step:
+
+1. `npm install` (generates the Prisma client and installs the Husky hook).
+2. If `.env` does not exist: `cp .env.example .env`. Never commit `.env`.
+3. Database:
+   - Check first whether something already listens on port 3306 (a local MySQL). If it does, use it instead of
+     `npm run db:up`.
+   - **Never guess database credentials.** If `DATABASE_URL` does not work (`P1000`), ask the user for the user and
+     password and let them edit `.env`.
+   - Docker is optional; if it is not installed, do not install it — ask the user which MySQL to use.
+4. `npx prisma migrate dev`, then `npx prisma generate`.
+5. `npm run dev` and verify `curl http://localhost:3001/health` returns `{"status":"ok","database":"up"}`.
+
+Never run `prisma migrate reset`, `prisma db push` or drop databases without the user's explicit confirmation. If a
+step fails, check the **Troubleshooting** table in `README.md` before trying anything else.
+
 ## Stack
 
 - NestJS 11 (Express platform), TypeScript (`strictNullChecks` + `noImplicitAny`).
