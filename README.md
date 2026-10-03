@@ -128,6 +128,11 @@ npm run test               # unit tests (no database needed)
 npm run test:e2e           # end-to-end tests (needs the database from step 3)
 ```
 
+## Staying up to date
+
+After every `git pull`, run `npm run doctor`: it tells you exactly what is missing (new env vars, migrations, seed…)
+and how to fix it. The history of manual steps is in [docs/upgrade-notes.md](docs/upgrade-notes.md).
+
 ## Daily workflow
 
 ```bash
@@ -135,6 +140,7 @@ git pull
 npm install                # if package.json changed
 npx prisma migrate dev     # if there are new migrations
 npx prisma generate        # always after migrate
+npm run doctor             # checks everything else
 npm run dev
 ```
 

@@ -7,6 +7,7 @@ api-gc/
 ├── docs/
 │   ├── database.md                # Schema overview: domains, relationships, key decisions
 │   ├── endpoints.md               # API endpoint reference (required for every endpoint)
+│   ├── upgrade-notes.md           # Manual steps after pulling (newest first)
 │   └── rules/                     # Architecture and coding rules
 │
 ├── prisma/
@@ -34,8 +35,10 @@ api-gc/
 │   ├── app.service.ts
 │   └── main.ts                    # Bootstrap — port, CORS, global ValidationPipe
 │
+├── scripts/doctor.mjs             # `npm run doctor` — checks the local setup and prints fixes
 ├── test/                          # End-to-end tests
 │
+├── .claude/settings.json          # Claude Code: runs the doctor on session start
 ├── .husky/pre-commit              # Runs lint-staged (Prettier)
 ├── AGENTS.md                      # Guidance for AI agents and humans
 ├── CLAUDE.md                      # Imports AGENTS.md
