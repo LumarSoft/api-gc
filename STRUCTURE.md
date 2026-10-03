@@ -5,12 +5,13 @@ Keep this file up to date when adding modules or top-level folders.
 ```
 api-gc/
 ├── docs/
+│   ├── database.md                # Schema overview: domains, relationships, key decisions
 │   ├── endpoints.md               # API endpoint reference (required for every endpoint)
 │   └── rules/                     # Architecture and coding rules
 │
 ├── prisma/
 │   ├── migrations/                # Applied migration history (committed)
-│   └── schema.prisma              # Single source of truth for the DB schema
+│   └── schema/                    # Single source of truth for the DB schema, one file per domain (docs/database.md)
 │
 ├── src/
 │   ├── generated/prisma/          # Generated Prisma client — git-ignored, never edit

@@ -18,7 +18,8 @@
 - Every route that requires authentication must declare its guard explicitly (`@UseGuards(JwtAuthGuard)`).
 - Never assume a route is protected — always declare the guard.
 - Public routes (catalog, login, register, webhooks) must remain unguarded intentionally.
-- Role checks are explicit: `RETAIL`, `WHOLESALE` (approved only), `ADMIN`. A user can only read and modify their own
+- Role checks are explicit: `ADMIN` by `User.role`; `WHOLESALE` (approved company only) by the derived buyer profile
+  (see `business-rules.md`); everything else is `RETAIL`. A user can only read and modify their own
   orders, addresses and account statement.
 
 ## Payments and money

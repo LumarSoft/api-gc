@@ -69,7 +69,9 @@ Each business feature is a NestJS module in `src/<feature>/` (`*.module.ts`, `*.
 access point. External providers (Tango, Mercado Pago, shipping, AI) live in their own modules behind an interface —
 see @docs/rules/integrations.md.
 
-Current state: **empty on purpose**. Only `GET /health` and the Prisma connection exist. See `STRUCTURE.md`.
+Current state: the **full database schema** is defined (`prisma/schema/`, one file per domain — see
+@docs/database.md) and migrated. No feature modules yet: only `GET /health` and the Prisma connection exist. See
+`STRUCTURE.md`.
 
 ## Rules
 

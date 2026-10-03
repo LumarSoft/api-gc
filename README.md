@@ -121,7 +121,7 @@ npx prisma generate        # always after migrate
 npm run dev
 ```
 
-Changed `prisma/schema.prisma`?
+Changed a file in `prisma/schema/`?
 
 ```bash
 npx prisma migrate dev --name <descriptive-name>
