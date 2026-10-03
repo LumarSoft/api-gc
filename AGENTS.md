@@ -3,6 +3,16 @@
 Guidance for AI coding agents (Claude Code, Cursor, Codex, Copilot…) and humans working in this repository.
 **Read this file and every file in `docs/rules/` before writing code.**
 
+## Start of every session (humans and AI agents)
+
+1. Run `npm run doctor`. It checks Node, dependencies, `.env`, the Prisma client, pending migrations and the seed,
+   and prints the exact command to fix each problem. (Claude Code runs it automatically on session start through
+   `.claude/settings.json`.)
+2. If it reports problems, fix them **before** any other work, using `docs/upgrade-notes.md` for context. Tell the
+   user what you fixed and ask before steps that need their input (passwords, secrets).
+3. When your change requires a manual step from the other developers (new env var, migration, seed, service…), add an
+   entry at the top of `docs/upgrade-notes.md` and a check in `scripts/doctor.mjs` in the same PR.
+
 ## Project
 
 E-commerce and sales automation platform for **Comunicaciones Gráficas SRL**, a print shop in Rosario (Argentina)
