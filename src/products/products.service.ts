@@ -225,12 +225,14 @@ export class ProductsService {
     if (query.tag?.length) filters.push({ tags: { some: { tag: { slug: { in: query.tag }, deletedAt: null } } } })
     if (query.featured) filters.push({ isFeatured: true })
     if (query.q) {
-      // The MySQL collation (utf8mb4_unicode_ci) already makes `contains` case- and accent-insensitive.
+      // `contains` becomes LIKE: escape % and _ so they are searched literally, not as wildcards.
+      // The MySQL collation (utf8mb4_unicode_ci) already makes it case- and accent-insensitive.
+      const term = query.q.replace(/[\\%_]/g, '\\$&')
       filters.push({
         OR: [
-          { name: { contains: query.q } },
-          { shortDescription: { contains: query.q } },
-          { variants: { some: { sku: { contains: query.q }, deletedAt: null } } },
+          { name: { contains: term } },
+          { shortDescription: { contains: term } },
+          { variants: { some: { sku: { contains: term }, deletedAt: null } } },
         ],
       })
     }
