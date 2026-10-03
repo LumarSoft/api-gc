@@ -2,6 +2,7 @@ import { Logger, ValidationPipe } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
 import type { NestExpressApplication } from '@nestjs/platform-express'
 import cookieParser from 'cookie-parser'
+import { join, resolve } from 'node:path'
 import { AppModule } from './app.module'
 
 async function bootstrap() {
@@ -20,6 +21,14 @@ async function bootstrap() {
     .filter(Boolean)
 
   app.use(cookieParser())
+
+  // Public files (product images, logos). Private files are never inside this folder.
+  app.useStaticAssets(join(resolve(process.env.STORAGE_DIR ?? 'storage'), 'public'), {
+    prefix: '/files/',
+    index: false,
+    dotfiles: 'deny',
+    maxAge: '7d',
+  })
   app.enableCors({ origin: corsOrigin, credentials: true })
 
   app.useGlobalPipes(
