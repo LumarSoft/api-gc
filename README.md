@@ -75,13 +75,19 @@ DATABASE_URL="mysql://root@localhost:3306/cg"
 Use a user that can create databases: `prisma migrate dev` creates a temporary "shadow" database to detect schema
 drift. The `cg` database itself is created automatically if it does not exist.
 
-| Variable                   | Default                 | Description                                  |
-| -------------------------- | ----------------------- | -------------------------------------------- |
-| `PORT`                     | `3001`                  | API port                                     |
-| `CORS_ORIGIN`              | `http://localhost:3000` | Allowed origins, comma-separated             |
-| `DATABASE_URL`             | —                       | MySQL connection string                      |
-| `DB_POOL_CONNECTION_LIMIT` | `10`                    | Max DB connections                           |
-| `DB_POOL_IDLE_TIMEOUT`     | `60`                    | Idle seconds (keep below MySQL wait_timeout) |
+| Variable                   | Default                 | Description                                     |
+| -------------------------- | ----------------------- | ----------------------------------------------- |
+| `PORT`                     | `3001`                  | API port                                        |
+| `CORS_ORIGIN`              | `http://localhost:3000` | Allowed origins, comma-separated                |
+| `DATABASE_URL`             | —                       | MySQL connection string                         |
+| `DB_POOL_CONNECTION_LIMIT` | `10`                    | Max DB connections                              |
+| `DB_POOL_IDLE_TIMEOUT`     | `60`                    | Idle seconds (keep below MySQL wait_timeout)    |
+| `JWT_SECRET`               | —                       | 32+ random chars (required; see `.env.example`) |
+| `JWT_ACCESS_TTL_MINUTES`   | `15`                    | Access token lifetime                           |
+| `REFRESH_TOKEN_TTL_DAYS`   | `30`                    | Session lifetime                                |
+| `FRONT_URL`                | `http://localhost:3000` | Base URL for links in emails                    |
+| `COOKIE_DOMAIN`            | empty                   | Shared parent domain in production              |
+| `COOKIE_SECURE`            | `false`                 | `true` in production (HTTPS)                    |
 
 ### 5. Apply migrations
 
@@ -133,18 +139,19 @@ that is already on `main`. More in [docs/rules/database.md](docs/rules/database.
 
 ## Scripts
 
-| Script               | What it does                        |
-| -------------------- | ----------------------------------- |
-| `npm run dev`        | Start in watch mode                 |
-| `npm run build`      | Compile to `dist/`                  |
-| `npm run start:prod` | Run the compiled build              |
-| `npm run lint`       | ESLint (with auto-fix)              |
-| `npm run format`     | Prettier on `src/` and `test/`      |
-| `npm run test`       | Unit tests                          |
-| `npm run test:e2e`   | End-to-end tests (needs MySQL)      |
-| `npm run db:up`      | Start MySQL in Docker               |
-| `npm run db:down`    | Stop MySQL in Docker                |
-| `npx prisma studio`  | Browse and edit data in the browser |
+| Script                 | What it does                                                       |
+| ---------------------- | ------------------------------------------------------------------ |
+| `npm run dev`          | Start in watch mode                                                |
+| `npm run build`        | Compile to `dist/`                                                 |
+| `npm run start:prod`   | Run the compiled build                                             |
+| `npm run lint`         | ESLint (with auto-fix)                                             |
+| `npm run format`       | Prettier on `src/` and `test/`                                     |
+| `npm run test`         | Unit tests                                                         |
+| `npm run test:e2e`     | End-to-end tests (needs MySQL)                                     |
+| `npm run db:up`        | Start MySQL in Docker                                              |
+| `npm run db:down`      | Stop MySQL in Docker                                               |
+| `npx prisma studio`    | Browse and edit data in the browser                                |
+| `npm run admin:create` | Create/promote an admin (`ADMIN_EMAIL`, `ADMIN_PASSWORD` env vars) |
 
 ## Production build
 

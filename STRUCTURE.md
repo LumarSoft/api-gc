@@ -14,6 +14,10 @@ api-gc/
 │   └── schema/                    # Single source of truth for the DB schema, one file per domain (docs/database.md)
 │
 ├── src/
+│   ├── auth/                      # Register, login, refresh, logout, password reset, email verification
+│   ├── common/                    # Shared guards (JwtAuthGuard, RolesGuard), decorators, auth types, helpers
+│   ├── mail/                      # Transactional email (logged in development until a provider is set)
+│   ├── scripts/create-admin.ts    # `npm run admin:create` — creates or promotes an admin user
 │   ├── generated/prisma/          # Generated Prisma client — git-ignored, never edit
 │   ├── prisma/                    # Global database module
 │   │   ├── prisma.module.ts
@@ -40,3 +44,5 @@ api-gc/
 | ------------ | ------------- | -------------------------------- |
 | AppModule    | `src/`        | Root module, health check        |
 | PrismaModule | `src/prisma/` | Global DB access (PrismaService) |
+| MailModule   | `src/mail/`   | Global transactional email       |
+| AuthModule   | `src/auth/`   | Sessions, passwords, email check |

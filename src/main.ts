@@ -1,5 +1,6 @@
 import { Logger, ValidationPipe } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
+import cookieParser from 'cookie-parser'
 import { AppModule } from './app.module'
 
 async function bootstrap() {
@@ -12,6 +13,7 @@ async function bootstrap() {
     .map(origin => origin.trim().replace(/\/+$/, ''))
     .filter(Boolean)
 
+  app.use(cookieParser())
   app.enableCors({ origin: corsOrigin, credentials: true })
 
   app.useGlobalPipes(

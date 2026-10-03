@@ -70,7 +70,8 @@ access point. External providers (Tango, Mercado Pago, shipping, AI) live in the
 see @docs/rules/integrations.md.
 
 Current state: the **full database schema** is defined (`prisma/schema/`, one file per domain — see
-@docs/database.md) and migrated. No feature modules yet: only `GET /health` and the Prisma connection exist. See
+@docs/database.md) and migrated. Implemented modules: `AuthModule` (cookie sessions, roles — protect routes with
+`@UseGuards(JwtAuthGuard)` / `@UseGuards(JwtAuthGuard, RolesGuard)` + `@Roles(UserRole.ADMIN)`) and `MailModule`. See
 `STRUCTURE.md`.
 
 ## Rules
