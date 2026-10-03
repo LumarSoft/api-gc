@@ -8,6 +8,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
 import type { AuthenticatedUser } from '../common/types/authenticated-user'
 import { clearAuthCookies, setAuthCookies } from './auth-cookies'
 import { AuthService } from './auth.service'
+import { RefreshRaceException } from './refresh-race.exception'
 import { AuthUserResponseDto } from './dto/auth-user-response.dto'
 import { ForgotPasswordDto } from './dto/forgot-password.dto'
 import { LoginDto } from './dto/login.dto'
@@ -53,7 +54,8 @@ export class AuthController {
       setAuthCookies(response, tokens, this.config)
       return user
     } catch (error) {
-      clearAuthCookies(response, this.config)
+      // Keep the cookies when another tab just rotated the token: they already hold the new, valid session.
+      if (!(error instanceof RefreshRaceException)) clearAuthCookies(response, this.config)
       throw error
     }
   }

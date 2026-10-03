@@ -5,6 +5,7 @@ import { compare, hash } from 'bcryptjs'
 import type { AccessTokenPayload } from '../common/guards/jwt-auth.guard'
 import { resolveBuyerType } from '../common/utils/buyer-type'
 import { generateSecureToken, hashToken } from '../common/utils/secure-token'
+import { Prisma } from '../generated/prisma/client'
 import { AuthTokenType } from '../generated/prisma/enums'
 import { MailService } from '../mail/mail.service'
 import { PrismaService } from '../prisma/prisma.service'
@@ -13,10 +14,16 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto'
 import { LoginDto } from './dto/login.dto'
 import { RegisterDto } from './dto/register.dto'
 import { ResetPasswordDto } from './dto/reset-password.dto'
+import { RefreshRaceException } from './refresh-race.exception'
 
 const BCRYPT_ROUNDS = 12
 const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000
 const EMAIL_VERIFICATION_TTL_MS = 48 * 60 * 60 * 1000
+/**
+ * A refresh token reused within this window is treated as a race (two tabs refreshing at once), not as theft:
+ * the request is rejected but the other sessions stay alive.
+ */
+const REFRESH_REUSE_GRACE_MS = 30_000
 /** Compared against when the email does not exist, so both paths take the same time (no user enumeration). */
 const TIMING_EQUALIZER_HASH = '$2b$12$.1ZDhJHaAKzaHwrvpNOiWea/Ccno0vzuriLfT62F7KCkAcfVpRp22'
 
@@ -57,17 +64,26 @@ export class AuthService {
     const existing = await this.prisma.user.findUnique({ where: { email: dto.email }, select: { id: true } })
     if (existing) throw new ConflictException('An account with this email already exists')
 
-    const user = await this.prisma.user.create({
-      data: {
-        email: dto.email,
-        passwordHash: await hash(dto.password, BCRYPT_ROUNDS),
-        firstName: dto.firstName,
-        lastName: dto.lastName,
-        phone: dto.phone || null,
-        marketingOptIn: dto.marketingOptIn ?? false,
-      },
-      select: { id: true, email: true, firstName: true },
-    })
+    const passwordHash = await hash(dto.password, BCRYPT_ROUNDS)
+    const user = await this.prisma.user
+      .create({
+        data: {
+          email: dto.email,
+          passwordHash,
+          firstName: dto.firstName,
+          lastName: dto.lastName,
+          phone: dto.phone || null,
+          marketingOptIn: dto.marketingOptIn ?? false,
+        },
+        select: { id: true, email: true, firstName: true },
+      })
+      .catch((error: unknown) => {
+        // Two simultaneous sign-ups with the same email: the unique index decides, the loser gets a 409.
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+          throw new ConflictException('An account with this email already exists')
+        }
+        throw error
+      })
 
     await this.sendVerificationEmail(user)
 
@@ -101,6 +117,9 @@ export class AuthService {
     })
     if (!stored || stored.type !== AuthTokenType.REFRESH || stored.deletedAt) throw new UnauthorizedException()
 
+    if (stored.usedAt && Date.now() - stored.usedAt.getTime() < REFRESH_REUSE_GRACE_MS) {
+      throw new RefreshRaceException()
+    }
     if (stored.usedAt) {
       this.logger.warn(`Refresh token reuse detected for user ${stored.userId}; revoking all sessions`)
       await this.revokeRefreshTokens(stored.userId)
@@ -114,7 +133,8 @@ export class AuthService {
     })
     if (!user) throw new UnauthorizedException()
 
-    await this.prisma.authToken.update({ where: { id: stored.id }, data: { usedAt: new Date() } })
+    const marked = await this.markTokenUsed(stored.id)
+    if (!marked) throw new RefreshRaceException()
 
     return { user: await this.getProfile(user.id), tokens: await this.issueTokens(user.id) }
   }
@@ -248,8 +268,20 @@ export class AuthService {
       stored && stored.type === type && !stored.usedAt && !stored.deletedAt && stored.expiresAt > new Date()
     if (!isValid) throw new UnauthorizedException('Invalid or expired link')
 
-    await this.prisma.authToken.update({ where: { id: stored.id }, data: { usedAt: new Date() } })
+    if (!(await this.markTokenUsed(stored.id))) throw new UnauthorizedException('Invalid or expired link')
     return { userId: stored.userId }
+  }
+
+  /**
+   * Marks a token as used only if nobody else did it first, so a double click or two parallel requests
+   * cannot use the same token twice. Returns false when another request won.
+   */
+  private async markTokenUsed(tokenId: number): Promise<boolean> {
+    const { count } = await this.prisma.authToken.updateMany({
+      where: { id: tokenId, usedAt: null, deletedAt: null },
+      data: { usedAt: new Date() },
+    })
+    return count === 1
   }
 
   private async sendVerificationEmail(user: { id: number; email: string; firstName: string }): Promise<void> {

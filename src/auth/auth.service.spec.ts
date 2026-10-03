@@ -8,6 +8,7 @@ import { AuthTokenType, BuyerType, UserRole, WholesaleStatus } from '../generate
 import { MailService } from '../mail/mail.service'
 import { PrismaService } from '../prisma/prisma.service'
 import { AuthService } from './auth.service'
+import { RefreshRaceException } from './refresh-race.exception'
 
 const profileRow = {
   id: 1,
@@ -112,7 +113,7 @@ describe('AuthService', () => {
         id: 5,
         userId: 1,
         type: AuthTokenType.REFRESH,
-        usedAt: new Date(),
+        usedAt: new Date(Date.now() - 5 * 60_000),
         expiresAt: new Date(Date.now() + 60_000),
         deletedAt: null,
       })
@@ -120,6 +121,20 @@ describe('AuthService', () => {
       await expect(service.refresh('stolen-token')).rejects.toBeInstanceOf(UnauthorizedException)
       const [revokeArgs] = prisma.authToken.updateMany.mock.calls[0] as [{ where: { userId: number; type: string } }]
       expect(revokeArgs.where).toMatchObject({ userId: 1, type: AuthTokenType.REFRESH })
+    })
+
+    it('treats a reuse within seconds as a two-tab race and keeps the other sessions', async () => {
+      prisma.authToken.findUnique.mockResolvedValue({
+        id: 5,
+        userId: 1,
+        type: AuthTokenType.REFRESH,
+        usedAt: new Date(Date.now() - 2_000),
+        expiresAt: new Date(Date.now() + 60_000),
+        deletedAt: null,
+      })
+
+      await expect(service.refresh('just-rotated')).rejects.toBeInstanceOf(RefreshRaceException)
+      expect(prisma.authToken.updateMany).not.toHaveBeenCalled()
     })
 
     it('looks the token up by its hash', async () => {
@@ -136,6 +151,23 @@ describe('AuthService', () => {
       prisma.user.findFirst.mockResolvedValue(null)
       await expect(service.forgotPassword({ email: 'nadie@example.com' })).resolves.toBeUndefined()
       expect(mail.send).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('verifyEmail', () => {
+    it('rejects a link that another request used a moment earlier', async () => {
+      prisma.authToken.findUnique.mockResolvedValue({
+        id: 8,
+        userId: 1,
+        type: AuthTokenType.EMAIL_VERIFICATION,
+        usedAt: null,
+        expiresAt: new Date(Date.now() + 60_000),
+        deletedAt: null,
+      })
+      prisma.authToken.updateMany.mockResolvedValue({ count: 0 })
+
+      await expect(service.verifyEmail('double-click')).rejects.toBeInstanceOf(UnauthorizedException)
+      expect(prisma.user.update).not.toHaveBeenCalled()
     })
   })
 

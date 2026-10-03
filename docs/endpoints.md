@@ -121,7 +121,9 @@ Starts a session (sets the cookies).
 ### POST /auth/refresh
 
 Exchanges the `cg_rt` cookie for a new pair of cookies (rotation). Reusing an already-used refresh token revokes every
-session of that user.
+session of that user, except within 30 seconds of its rotation: that is treated as two tabs refreshing at once, so the
+request gets `401` but the cookies are kept (the other tab already stored the new ones). The client should simply retry
+its original request.
 
 **Auth required:** No (needs the `cg_rt` cookie)
 
