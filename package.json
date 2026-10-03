@@ -22,7 +22,8 @@
     "db:down": "docker compose down",
     "admin:create": "nest build && node dist/scripts/create-admin.js",
     "postinstall": "prisma generate",
-    "prepare": "husky"
+    "prepare": "husky",
+    "db:seed": "nest build && node dist/scripts/seed-catalog.js"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
