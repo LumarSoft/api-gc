@@ -49,7 +49,7 @@ export class JwtAuthGuard implements CanActivate {
     return true
   }
 
-  private extractToken(request: Request): string | undefined {
+  protected extractToken(request: Request): string | undefined {
     const cookies = request.cookies as Record<string, string | undefined> | undefined
     const fromCookie = cookies?.[ACCESS_TOKEN_COOKIE]
     if (fromCookie) return fromCookie

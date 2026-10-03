@@ -232,6 +232,8 @@ Sends a new verification email. Does nothing if the email is already verified.
 Public endpoints. `GET /products*` read the session when present (same cookies as Auth) because **prices depend on
 the buyer**: anonymous and retail users get the default retail list; approved wholesale customers get their
 company's list (or the default wholesale one), falling back to retail for products without a wholesale price.
+An **expired or invalid** session cookie gets `401` (not anonymous prices): the client refreshes the session and
+retries, exactly like on protected endpoints.
 
 `Money`: `{ "amount": "419999.00", "currency": "ARS" }`. Prices loaded in USD are returned in ARS converted at the
 latest exchange rate; if no rate exists yet they are returned in `USD`.
