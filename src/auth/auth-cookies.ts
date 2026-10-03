@@ -1,7 +1,7 @@
 import type { ConfigService } from '@nestjs/config'
 import type { CookieOptions, Response } from 'express'
 import { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE_PATH } from '../common/constants/auth-cookies'
-import type { IssuedTokens } from './auth.service'
+import type { IssuedTokens } from './auth-token.store'
 
 /**
  * Tokens travel only in httpOnly cookies, so page scripts can never read them.
