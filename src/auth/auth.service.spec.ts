@@ -7,6 +7,7 @@ import { hashToken } from '../common/utils/secure-token'
 import { AuthTokenType, BuyerType, UserRole, WholesaleStatus } from '../generated/prisma/enums'
 import { MailService } from '../mail/mail.service'
 import { PrismaService } from '../prisma/prisma.service'
+import { AuthTokenStore } from './auth-token.store'
 import { AuthService } from './auth.service'
 import { RefreshRaceException } from './refresh-race.exception'
 
@@ -41,6 +42,7 @@ describe('AuthService', () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         AuthService,
+        AuthTokenStore,
         { provide: PrismaService, useValue: prisma },
         { provide: MailService, useValue: mail },
         { provide: JwtService, useValue: { signAsync: jest.fn().mockResolvedValue('access-token') } },
