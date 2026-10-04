@@ -15,6 +15,10 @@ Always use NestJS built-in exceptions. Never throw generic `Error` objects from 
 | External provider down             | `ServiceUnavailableException`  |
 | Unexpected server error            | `InternalServerErrorException` |
 
+Database errors a client can trigger are mapped globally by `PrismaExceptionFilter` (`src/common/filters/`):
+unique constraint `P2002` → `409`, record not found `P2025` → `404`. Still check uniqueness in the service first to give a
+clear message; the filter covers races between two requests.
+
 ## Async error handling
 
 - Every `async` method must handle errors explicitly.

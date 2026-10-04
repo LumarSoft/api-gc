@@ -1,0 +1,47 @@
+// Database schema — split by domain. Every *.prisma file in this folder is part of the same schema.
+//
+// Modeling rules: docs/rules/database.md · Domain overview: docs/database.md
+// After changing any file: npx prisma migrate dev --name <descriptive-name> && npx prisma generate
+//
+//   identity.prisma      users, companies, wholesale applications, addresses, auth tokens
+//   files.prisma         uploaded files (images, documents, receipts, invoices)
+//   catalog.prisma       brands, categories, products, variants, specs, tags, bundles, compatibility
+//   pricing.prisma       price lists, variant prices, exchange rates, promotions, coupons
+//   inventory.prisma     stock levels, stock movements, stock reservations
+//   cart.prisma          carts, cart items, favorites
+//   orders.prisma        orders, items, address snapshots, status history
+//   payments.prisma      payments, Mercado Pago notifications, transfer receipts, invoices
+//   shipping.prisma      shipping methods, quotes, shipments
+//   accounts.prisma      wholesale current accounts, movements, allocations, Excel imports
+//   assistant.prisma     AI assistant knowledge, conversations, unanswered questions
+//   configurator.prisma  guided product configurator
+//   crm.prisma           inquiries, customer notes, activity events, withdrawal requests
+//   system.prisma        settings, external syncs (Tango), emails, audit log
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+/// Every money amount is stored next to a Currency.
+enum Currency {
+  ARS
+  USD
+}
+
+/// Where a record's data comes from: synced from Tango or managed in the admin panel.
+enum DataSource {
+  TANGO
+  MANUAL
+}
+
+/// Buyer profile. WHOLESALE applies only to users of an APPROVED company (see Company.wholesaleStatus).
+enum BuyerType {
+  RETAIL
+  WHOLESALE
+}

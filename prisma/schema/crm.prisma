@@ -1,0 +1,118 @@
+// CRM: product inquiries (out-of-stock "consultar"), notes about customers, behavioral events for stats,
+// and "botón de arrepentimiento" requests.
+
+enum InquiryStatus {
+  NEW
+  CONTACTED
+  CLOSED
+}
+
+enum ActivityType {
+  PRODUCT_VIEW
+  SEARCH
+  ADD_TO_CART
+  CHECKOUT_STARTED
+  ORDER_PLACED
+  CONFIGURATOR_COMPLETED
+  ASSISTANT_STARTED
+  INQUIRY_SENT
+}
+
+enum WithdrawalStatus {
+  RECEIVED
+  IN_PROGRESS
+  COMPLETED
+  REJECTED
+}
+
+model ProductInquiry {
+  id           Int           @id @default(autoincrement())
+  productId    Int?
+  userId       Int?
+  name         String        @db.VarChar(150)
+  email        String        @db.VarChar(191)
+  phone        String?       @db.VarChar(30)
+  message      String        @db.Text
+  status       InquiryStatus @default(NEW)
+  assignedToId Int?
+  respondedAt  DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  deletedAt    DateTime?
+
+  product    Product? @relation(fields: [productId], references: [id])
+  user       User?    @relation("InquiryCustomer", fields: [userId], references: [id])
+  assignedTo User?    @relation("InquiryAssignee", fields: [assignedToId], references: [id])
+
+  @@index([productId])
+  @@index([userId])
+  @@index([assignedToId])
+  @@index([status])
+}
+
+/// Internal note about a customer or company (follow-ups, commercial opportunities).
+model CustomerNote {
+  id        Int       @id @default(autoincrement())
+  userId    Int?
+  companyId Int?
+  authorId  Int
+  body      String    @db.Text
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  user    User?    @relation("NoteAboutUser", fields: [userId], references: [id])
+  company Company? @relation(fields: [companyId], references: [id])
+  author  User     @relation("NoteAuthor", fields: [authorId], references: [id])
+
+  @@index([userId])
+  @@index([companyId])
+  @@index([authorId])
+}
+
+/// Behavioral events for stats (most viewed products, searches, funnel). Append-only (see database.md).
+model ActivityEvent {
+  id          Int          @id @default(autoincrement())
+  type        ActivityType
+  userId      Int?
+  sessionId   String?      @db.VarChar(64)
+  productId   Int?
+  searchQuery String?      @db.VarChar(200)
+  /// Extra event data. Shape depends on `type`, e.g. { "orderId": 5 } for ORDER_PLACED.
+  metadata    Json?
+  createdAt   DateTime     @default(now())
+
+  user    User?    @relation(fields: [userId], references: [id])
+  product Product? @relation(fields: [productId], references: [id])
+
+  @@index([type, createdAt])
+  @@index([userId])
+  @@index([productId])
+}
+
+/// "Botón de arrepentimiento" request. The customer receives `code` to follow it up.
+model WithdrawalRequest {
+  id             Int              @id @default(autoincrement())
+  code           String           @unique @db.VarChar(20)
+  orderId        Int?
+  /// As typed by the customer; matched to `orderId` when it exists.
+  orderNumber    String           @db.VarChar(20)
+  fullName       String           @db.VarChar(150)
+  email          String           @db.VarChar(191)
+  phone          String?          @db.VarChar(30)
+  reason         String?          @db.Text
+  status         WithdrawalStatus @default(RECEIVED)
+  resolvedById   Int?
+  resolvedAt     DateTime?
+  resolutionNote String?          @db.Text
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  deletedAt      DateTime?
+
+  order      Order? @relation(fields: [orderId], references: [id])
+  resolvedBy User?  @relation(fields: [resolvedById], references: [id])
+
+  @@index([orderId])
+  @@index([resolvedById])
+  @@index([status])
+}

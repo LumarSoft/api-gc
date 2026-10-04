@@ -3,6 +3,16 @@
 Guidance for AI coding agents (Claude Code, Cursor, Codex, Copilot…) and humans working in this repository.
 **Read this file and every file in `docs/rules/` before writing code.**
 
+## Start of every session (humans and AI agents)
+
+1. Run `npm run doctor`. It checks Node, dependencies, `.env`, the Prisma client, pending migrations and the seed,
+   and prints the exact command to fix each problem. (Claude Code runs it automatically on session start through
+   `.claude/settings.json`.)
+2. If it reports problems, fix them **before** any other work, using `docs/upgrade-notes.md` for context. Tell the
+   user what you fixed and ask before steps that need their input (passwords, secrets).
+3. When your change requires a manual step from the other developers (new env var, migration, seed, service…), add an
+   entry at the top of `docs/upgrade-notes.md` and a check in `scripts/doctor.mjs` in the same PR.
+
 ## Project
 
 E-commerce and sales automation platform for **Comunicaciones Gráficas SRL**, a print shop in Rosario (Argentina)
@@ -87,7 +97,15 @@ Each business feature is a NestJS module in `src/<feature>/` (`*.module.ts`, `*.
 access point. External providers (Tango, Mercado Pago, shipping, AI) live in their own modules behind an interface —
 see @docs/rules/integrations.md.
 
-Current state: **empty on purpose**. Only `GET /health` and the Prisma connection exist. See `STRUCTURE.md`.
+Current state: the **full database schema** is defined (`prisma/schema/`, one file per domain — see
+@docs/database.md) and migrated. Implemented modules: `AuthModule` (cookie sessions, roles — protect routes with
+`@UseGuards(JwtAuthGuard)` / `@UseGuards(JwtAuthGuard, RolesGuard)` + `@Roles(UserRole.ADMIN)`; use
+`OptionalJwtAuthGuard` + `@OptionalUser()` on public routes whose answer depends on the buyer), `MailModule`,
+`FilesModule` (storage + admin image upload), `AuditLogsModule` (record every admin change — see "Admin routes" in
+@docs/rules/architecture.md), `PricingModule` (always resolve prices through `PricingService`, never by hand) and the public
+catalog (`CategoriesModule`, `BrandsModule`, `TagsModule`, `ProductsModule`; categories, brands and tags also
+have `/admin/*` routes). `npm run db:seed` loads a starter catalog. See
+`STRUCTURE.md`.
 
 ## Rules
 

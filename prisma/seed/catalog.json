@@ -1,0 +1,4699 @@
+{
+  "_comment": "Seed catalog. Product names, descriptions, specs and photos come from the official epson.com.ar pages (sourceUrl). Everything under samplePrice / sampleStock is SAMPLE data for development: real prices and stock will come from Tango or the admin panel.",
+  "categories": [
+    {
+      "slug": "impresoras",
+      "name": "Impresoras",
+      "children": [
+        {
+          "slug": "impresoras-hogar",
+          "name": "Para el hogar"
+        },
+        {
+          "slug": "impresoras-oficina",
+          "name": "Para la oficina"
+        },
+        {
+          "slug": "impresoras-fotograficas",
+          "name": "Fotográficas"
+        }
+      ]
+    },
+    {
+      "slug": "tintas",
+      "name": "Tintas y consumibles"
+    },
+    {
+      "slug": "papeles",
+      "name": "Papeles y sustratos"
+    },
+    {
+      "slug": "escaneres",
+      "name": "Escáneres"
+    },
+    {
+      "slug": "proyectores",
+      "name": "Proyectores"
+    },
+    {
+      "slug": "gran-formato",
+      "name": "Gran formato"
+    },
+    {
+      "slug": "sublimacion",
+      "name": "Sublimación y textil"
+    },
+    {
+      "slug": "puntos-de-venta",
+      "name": "Puntos de venta"
+    }
+  ],
+  "brands": [
+    {
+      "slug": "epson",
+      "name": "Epson"
+    }
+  ],
+  "tags": [
+    {
+      "slug": "uso-hogar",
+      "name": "Hogar",
+      "group": "uso"
+    },
+    {
+      "slug": "uso-oficina",
+      "name": "Oficina",
+      "group": "uso"
+    },
+    {
+      "slug": "uso-foto",
+      "name": "Fotografía",
+      "group": "uso"
+    },
+    {
+      "slug": "uso-textil",
+      "name": "Textil y sublimación",
+      "group": "uso"
+    },
+    {
+      "slug": "uso-gran-formato",
+      "name": "Gran formato",
+      "group": "uso"
+    },
+    {
+      "slug": "uso-comercio",
+      "name": "Comercio",
+      "group": "uso"
+    }
+  ],
+  "sampleExchangeRate": {
+    "currency": "USD",
+    "rate": "1450.0000"
+  },
+  "products": [
+    {
+      "name": "Impresora Inalámbrica EcoTank L1250",
+      "slug": "impresora-inalambrica-ecotank-l1250",
+      "category": "impresoras-hogar",
+      "brand": "epson",
+      "shortDescription": "Impresora inalámbrica económica para familias y estudiantes.",
+      "description": "Impresora inalámbrica económica para familias y estudiantes. Ofrece costos de impresión ultrabajos gracias al sistema EcoTank de Epson que imprime 4.500 páginas a blanco y negro ó 7.500 páginas a color por cada juego de botellas de repuesto. Diseñada para integrarse en su estilo de vida, está totalmente conectada con Wi-Fi, Wi-Fi Direct, y ofrece funciones de impresión móvil y copia/escaneo con cámara a través de la nueva aplicación Epson Smart Panel, además de ser compatible con la operación por voz a través de Alexa. La confiabilidad viene de serie gracias a la tecnología sin calor Heat-Free de Epson, además de una experiencia de relleno de tinta fácil, sin derrames y sin errores con la tecnología EcoFit. Con un diseño super compacto y tanques frontales, puede revisar los niveles de tinta con facilidad e instalar la impresora en el más pequeño de los lugares. Con una garantía limitada extendida de 2 años, Epson le brinda su apoyo para que pueda imprimir sin cartuchos y sin preocupaciones!",
+      "specifications": [
+        {
+          "group": "Documentos",
+          "name": "Ficha técnica (PDF)",
+          "value": "https://mediaserver.goepson.com/ImConvServlet/imconv/baf76685290c622578d77f546bb1c54f621a4a81/original?assetDescr=Especificaciones-EcoTank-L1250-v2.pdf"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-hogar"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-hogar/Impresoras/Inyecci%C3%B3n-de-tinta/Impresora-Inal%C3%A1mbrica-EcoTank-L1250/p/C11CJ71303",
+      "variants": [
+        {
+          "sku": "C11CJ71303",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "c11cj71303-1.jpg",
+            "c11cj71303-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "329999.00",
+            "currency": "ARS",
+            "compareAtAmount": null
+          },
+          "sampleStock": 14
+        }
+      ]
+    },
+    {
+      "name": "Impresora Multifuncional EcoTank L3210",
+      "slug": "impresora-multifuncional-ecotank-l3210",
+      "category": "impresoras-hogar",
+      "brand": "epson",
+      "shortDescription": "La Impresora multifuncional 3 en 1 Epson EcoTank L3210 ofrece a las familias, estudiantes y profesionales un costo de impresión ultra bajo, que te permite imprimir hasta 4.500 páginas en negro o 7.500 páginas a color con cada juego de botellas de repuesto.",
+      "description": "La Impresora multifuncional 3 en 1 Epson EcoTank L3210 ofrece a las familias, estudiantes y profesionales un costo de impresión ultra bajo, que te permite imprimir hasta 4.500 páginas en negro o 7.500 páginas a color con cada juego de botellas de repuesto. La L3210 ofrece total confiabilidad gracias a la tecnología Heat-Free de Epson, además de una experiencia de recarga fácil, limpia y sin errores con la tecnología EcoFitTM, y un diseño de tanque frontal súper compacto que ocupa poco espacio y permite verificar fácilmente los niveles de tinta. Con una garantía limitada y extendida hasta de 2 años, Epson lo respalda totalmente para que pueda imprimir sin cartuchos y sin preocupaciones.",
+      "specifications": [
+        {
+          "group": "Imprimir",
+          "name": "Tecnología de Impresión",
+          "value": "Inyección de tinta Heat-FreeTM Micro Piezo de 4 colores (CMYK)"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Resolución Máxima de Impresión",
+          "value": "Hasta 5760 dpi x 1440 dpi"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Velocidad de Impresión ISO",
+          "value": "Negro 10 ppm y color 5 ppm (A4/carta)"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Velocidad de Impresión",
+          "value": "Negro 33 ppm y color 15 ppm (borrador, A4/carta)"
+        },
+        {
+          "group": "General",
+          "name": "Sistemas de Operación",
+          "value": "Windows Vista® / 7 / 8 / 8.1 / 10 o más reciente (32bit, 64bit) / Windows Server® 2003 (SP2) or later / Mac OS X 10.5.8 o más reciente, macOS 11 o más reciente"
+        },
+        {
+          "group": "General",
+          "name": "Dimensiones",
+          "value": "Abierto: 37.5 cm x 57.8 cm x 25.3 cm / Cerrado: 37.5 cm x 34.7 cm x 18.7 cm"
+        },
+        {
+          "group": "General",
+          "name": "País de Origen",
+          "value": "Filipinas"
+        },
+        {
+          "group": "General",
+          "name": "Garantía",
+          "value": "2 años con registro del producto"
+        },
+        {
+          "group": "Copiar",
+          "name": "Velocidad de Copiado ISO",
+          "value": "Negro 7 cpm y color 1,7 cpm (A4/carta)"
+        },
+        {
+          "group": "Copiar",
+          "name": "Máximo Tamaño de Copia",
+          "value": "A4/carta - 600 dpi x 1.200 dpi"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Tipo de Escáner",
+          "value": "Cama plana con sensor de líneas CIS de color"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Resolución Óptica",
+          "value": "600 dpi x 1.200 dpi"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Profundidad del Bit de Color",
+          "value": "48 bits de entrada, 24 bits de salida"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Profundidad del Bit Monocromático",
+          "value": "16 bits de entrada, 1 bit de salida"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Profundidad de la Escala de Grises del Bit",
+          "value": "16 bits de entrada, 8 bits de salida"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Tamaño de la cama plana del escáner",
+          "value": "216 mm x 297 mm"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Conectividad Estándar",
+          "value": "USB de alta velocidad (compatible con USB 2.0)"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Tamaños de Papel Soportados",
+          "value": "Estándar: A4, Carta, Oficio (21,59 cm x 35,56 cm), México-Oficio (21,59 cm x 34,04 cm), Oficio 9 (21,49 cm x 31,5 cm), Folio (2159 mm x 3302 mm), Ejecutivo, Media Carta, A6 / Foto: 10 cm x 15 cm (4” x 6”), 16:9 wide (10,2 cm x 18,1 cm), 13 cm x 18 cm (5” x 7”) / Sobres: #10 - Definido por el usuario: 54 mm x 86 mm - 215.9 mm x 1.200 mm"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Soporte de Papel",
+          "value": "Papel normal, Papel especial Epson (Photo Glossy/Semi-gloss, Presentation Paper Matte, High Quality Ink Jet Paper y Sobres)"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Capacidad de Papel",
+          "value": "Alimentación trasera: hasta 100 hojas (A4/Carta)"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Software Incluido",
+          "value": "CD: Printer Driver, Epson Photo+, Epson ScanSmart"
+        },
+        {
+          "group": "Energía",
+          "name": "Voltaje Nominal",
+          "value": "AC 100 - 240 V"
+        },
+        {
+          "group": "Energía",
+          "name": "Frecuencia Nominal",
+          "value": "50 - 60 Hz"
+        },
+        {
+          "group": "Energía",
+          "name": "Consumo de Energía",
+          "value": "14 W (en modo operación)"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-hogar"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-hogar/Impresoras/Inyecci%C3%B3n-de-tinta/Impresora-Multifuncional-EcoTank-L3210/p/C11CJ68303",
+      "variants": [
+        {
+          "sku": "C11CJ68303",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "c11cj68303-1.jpg",
+            "c11cj68303-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "379999.00",
+            "currency": "ARS",
+            "compareAtAmount": null
+          },
+          "sampleStock": 9
+        }
+      ]
+    },
+    {
+      "name": "Impresora Multifuncional Inalámbrica EcoTank L3250",
+      "slug": "impresora-multifuncional-inalambrica-ecotank-l3250",
+      "category": "impresoras-hogar",
+      "brand": "epson",
+      "shortDescription": "La Impresora multifuncional 3 en 1 Epson EcoTank L3250 ofrece a las familias, estudiantes y profesionales un costo de impresión ultra bajo, que te permite imprimir hasta 4.500 páginas en negro o 7.500 páginas a color con cada juego de botellas de repuesto.",
+      "description": "La Impresora multifuncional 3 en 1 Epson EcoTank L3250 ofrece a las familias, estudiantes y profesionales un costo de impresión ultra bajo, que te permite imprimir hasta 4.500 páginas en negro o 7.500 páginas a color con cada juego de botellas de repuesto. La EcoTank L3250 ofrece total confiabilidad gracias a la tecnología Heat-Free de Epson, además de una experiencia de recarga fácil, limpia y sin errores con la tecnología EcoFitTM. Diseñado para integrarse en su estilo de vida, está completamente conectado con WiFi, WiFi Direct® y capacidades de impresión móvil a través de la nueva e intuitiva aplicación Epson Smart Panel y cuenta con un diseño de tanque frontal súper compacto que ocupa poco espacio y permite verificar fácilmente los niveles de tinta. Con una garantía limitada y extendida hasta de 2 años, Epson te respalda totalmente para que pueda imprimir sin cartuchos y sin preocupaciones.",
+      "specifications": [
+        {
+          "group": "Imprimir",
+          "name": "Tecnología de Impresión",
+          "value": "Inyección de tinta Heat-FreeTM Micro Piezo de 4 colores (CMYK)"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Resolución Máxima de Impresión",
+          "value": "Hasta 5.760 dpi x 1.440 dpi"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Velocidad de Impresión ISO",
+          "value": "Negro 10 ppm y color 5 ppm (A4/carta)"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Velocidad de Impresión",
+          "value": "Negro 33 ppm y color 15 ppm (borrador, A4/carta)"
+        },
+        {
+          "group": "General",
+          "name": "Sistemas de Operación",
+          "value": "Windows Vista® / 7 / 8 / 8.1 / 10 o más reciente (32bit, 64bit) / Windows Server® 2003 (SP2) or later / Mac OS X 10.5.8 o más reciente, Mac OS 11 o más reciente"
+        },
+        {
+          "group": "General",
+          "name": "Dimensiones",
+          "value": "Abierto: 37.5 cm x 57.8 cm x 25.3 cm / Cerrado: 37.5 cm x 34.7 cm x 17.9 cm"
+        },
+        {
+          "group": "General",
+          "name": "Peso",
+          "value": "3,9 kg"
+        },
+        {
+          "group": "General",
+          "name": "País de Origen",
+          "value": "Filipinas"
+        },
+        {
+          "group": "General",
+          "name": "Garantía",
+          "value": "2 años con registro del producto"
+        },
+        {
+          "group": "Copiar",
+          "name": "Velocidad de Copiado ISO",
+          "value": "Negro 7,7 cpm y color 3,8 cpm (A4/carta)"
+        },
+        {
+          "group": "Copiar",
+          "name": "Máximo Tamaño de Copia",
+          "value": "A4/carta - 1.200 dpi x 2.400 dpi"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Tipo de Escáner",
+          "value": "Cama plana con sensor de líneas CIS de color"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Resolución Óptica",
+          "value": "1.200 dpi x 2.400 dpi"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Profundidad del Bit de Color",
+          "value": "48 bits de entrada, 24 bits de salida"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Profundidad del Bit Monocromático",
+          "value": "16 bits de entrada, 1 bit de salida"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Profundidad de la Escala de Grises del Bit",
+          "value": "16 bits de entrada, 8 bits de salida"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Máxima Superficie de Digitalización",
+          "value": "216 mm x 297 mm"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Conectividad Estándar",
+          "value": "USB de alta velocidad (compatible con USB 2.0), Wi-Fi, Wi-Fi Direct"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Protocolos de Impresión en Red",
+          "value": "TCP/IPv4, TCP/IPv6"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Protocolos de Manejo de Red",
+          "value": "SNMP, HTTP, DHCP, APIPA, PING, DDNS, mDNS, SLP, WSD, LLTD WEP (64bit/128bit),WPA-PSK (TKIP), WPA2-PSK (AES),WPA3-SAE (AES)"
+        },
+        {
+          "group": "Impresión desde Dispositivos Móviles",
+          "name": "Epson Connect",
+          "value": "Epson Smart PanelTM App (iOSTM, AndroidTM), Epson Email Print®, Remote Print Driver"
+        },
+        {
+          "group": "Impresión desde Dispositivos Móviles",
+          "name": "Otros",
+          "value": "Chromebook Native Print"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Tamaños de Papel Soportados",
+          "value": "Estándar: A4, Carta, Oficio (21,59 cm x 35,56 cm), México-Oficio (21,59 cm x 34,04 cm), Oficio 9 (21,49 cm x 31,5 cm), Folio (21,59 cm x 33,02 cm), Ejecutivo, Media Carta, A6 / Foto: 10 cm x 15 cm (4” x 6”), 16:9 wide (10,2 cm x 18,1 cm), 13 cm x 18 cm (5” x 7”) / Sobres: #10 Definido por el usuario: 54 mm x 86 mm - 215.9 mm x 1.200 mm"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Tamaño de Papel Máximo",
+          "value": "215.9 mm x 1.200 mm"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Tipos de Papel",
+          "value": "Papel normal, Papel especial Epson (Photo Glossy/Semi-gloss, Presentation Paper / Matte, High Quality Ink Jet Paper y Sobres)"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Capacidad de Papel",
+          "value": "Alimentación trasera: hasta 100 hojas (A4/Carta)"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Software Incluido",
+          "value": "CD: Printer Driver , Epson Photo+, Epson ScanSmart"
+        },
+        {
+          "group": "Energía",
+          "name": "Voltaje Nominal",
+          "value": "AC 100 - 240 V"
+        },
+        {
+          "group": "Energía",
+          "name": "Frecuencia Nominal",
+          "value": "50 - 60 Hz"
+        },
+        {
+          "group": "Energía",
+          "name": "Consumo de Energía",
+          "value": "12 W (en modo operación)"
+        }
+      ],
+      "isFeatured": true,
+      "tags": [
+        "uso-hogar"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-hogar/Impresoras/Inyecci%C3%B3n-de-tinta/Impresora-Multifuncional-Inl%C3%A1mbrica-EcoTank-L3250/p/C11CJ67304",
+      "variants": [
+        {
+          "sku": "C11CJ67304",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "c11cj67304-1.jpg",
+            "c11cj67304-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "419999.00",
+            "currency": "ARS",
+            "compareAtAmount": "459999.00"
+          },
+          "sampleStock": 22
+        }
+      ]
+    },
+    {
+      "name": "Impresora Multifuncional EcoTank L3560",
+      "slug": "impresora-multifuncional-ecotank-l3560",
+      "category": "impresoras-hogar",
+      "brand": "epson",
+      "shortDescription": "La EcoTank L3560 es la opción perfecta para familias, estudiantes, y emprendedores o trabajadores en casa para imprimir más y más rápido, acceder y compartir desde cualquier lugar y dispositivo, y disfrutar de toda la tranquilidad y conveniencia que EcoTank puede brindar.",
+      "description": "La EcoTank L3560 es la opción perfecta para familias, estudiantes, y emprendedores o trabajadores en casa para imprimir más y más rápido, acceder y compartir desde cualquier lugar y dispositivo, y disfrutar de toda la tranquilidad y conveniencia que EcoTank puede brindar. Va más allá de la fiabilidad y eficiencia de serie de EcoTank ofreciendo velocidades de impresión un 50% más rápidas sin comprometer calidad de impresión con la tecnología PrecisionCore Heat Free, se integra al estilo de vida móvil con Smart Panel y control por voz con Alexa, tiene un diseño fabricado conscientemente con el medio ambiente con una pantalla LCD a color intuitiva, y es 100% sin cartuchos (incluyendo el cabezal) para que pueda imprimir todo lo que necesita con toda la tranquilidad y conveniencia que Epson ofrece.",
+      "specifications": [
+        {
+          "group": "Documentos",
+          "name": "Ficha técnica (PDF)",
+          "value": "https://mediaserver.goepson.com/ImConvServlet/imconv/13d8f9b76353aa24aa4feb44f382b6f8eb804387/original?assetDescr=Especificaciones-EcoTank-L3560-v2.pdf"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-hogar"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-hogar/Impresoras/Inyecci%C3%B3n-de-tinta/Impresora-Multifuncional-EcoTank-L3560/p/C11CK58302",
+      "variants": [
+        {
+          "sku": "C11CK58302",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "c11ck58302-1.jpg",
+            "c11ck58302-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "489999.00",
+            "currency": "ARS",
+            "compareAtAmount": null
+          },
+          "sampleStock": 6
+        }
+      ]
+    },
+    {
+      "name": "Epson EcoTank L4360 Impresora Multifuncional a Color Wi-Fi y Dúplex",
+      "slug": "epson-ecotank-l4360-impresora-multifuncional-a-color-wi-fi-y-duplex",
+      "category": "impresoras-hogar",
+      "brand": "epson",
+      "shortDescription": "Nuestra impresora inalámbrica sin cartuchos con tanques de tinta recargables, pantalla a color de 1.44”, impresión automática a doble cara y escáner.",
+      "description": "Nuestra impresora inalámbrica sin cartuchos con tanques de tinta recargables, pantalla a color de 1.44”, impresión automática a doble cara y escáner. Económica, práctica y confiable.",
+      "specifications": [
+        {
+          "group": "Documentos",
+          "name": "Ficha técnica (PDF)",
+          "value": "https://mediaserver.goepson.com/ImConvServlet/imconv/e16ae5834bd430b225f11846a131ae492ed18f82/original?assetDescr=Catsheet_EcoTank_L4360_ESP_digital_v2.pdf"
+        }
+      ],
+      "isFeatured": true,
+      "tags": [
+        "uso-hogar"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-hogar/Impresoras/Inyecci%C3%B3n-de-tinta/Epson-EcoTank-L4360-Impresora-Multifuncional-a-Color-Wi-Fi-y-D%C3%BAplex/p/C11CL41303",
+      "variants": [
+        {
+          "sku": "C11CL41303",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "c11cl41303-1.jpg",
+            "c11cl41303-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "599999.00",
+            "currency": "ARS",
+            "compareAtAmount": null
+          },
+          "sampleStock": 4
+        }
+      ]
+    },
+    {
+      "name": "Epson Impresora EcoTank L1350 a Color con Wi-Fi",
+      "slug": "epson-impresora-ecotank-l1350-a-color-con-wi-fi",
+      "category": "impresoras-hogar",
+      "brand": "epson",
+      "shortDescription": "Descubre Epson EcoTank L1350 con calidad superior, fácil uso, diseño compacto y alta confiabilidad.",
+      "description": "Descubre Epson EcoTank L1350 con calidad superior, fácil uso, diseño compacto y alta confiabilidad. Ideal para imprimir más, crear y disfrutar en casa.",
+      "specifications": [
+        {
+          "group": "Documentos",
+          "name": "Ficha técnica (PDF)",
+          "value": "https://mediaserver.goepson.com/ImConvServlet/imconv/fcc10ea973ba9133673c215a5ce5738893eb8035/original?assetDescr=Catsheet_EcoTank_L1350_C11CL65301_ESP_2026-05-07.pdf"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-hogar"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-hogar/Impresoras/Inyecci%C3%B3n-de-tinta/Epson-Impresora-EcoTank-L1350-a-Color-con-Wi-Fi/p/C11CL65303",
+      "variants": [
+        {
+          "sku": "C11CL65303",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "c11cl65303-1.jpg",
+            "c11cl65303-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "349999.00",
+            "currency": "ARS",
+            "compareAtAmount": null
+          },
+          "sampleStock": 8
+        }
+      ]
+    },
+    {
+      "name": "Epson Impresora Multifuncional EcoTank L3350 a Color con Wi-Fi",
+      "slug": "epson-impresora-multifuncional-ecotank-l3350-a-color-con-wi-fi",
+      "category": "impresoras-hogar",
+      "brand": "epson",
+      "shortDescription": "Descubre Epson EcoTank L3350 con calidad superior, conectividad Smart Panel, fácil uso, diseño compacto y alta confiabilidad.",
+      "description": "Descubre Epson EcoTank L3350 con calidad superior, conectividad Smart Panel, fácil uso, diseño compacto y alta confiabilidad. Ideal para imprimir más, crear y disfrutar en casa.",
+      "specifications": [
+        {
+          "group": "Documentos",
+          "name": "Ficha técnica (PDF)",
+          "value": "https://mediaserver.goepson.com/ImConvServlet/imconv/3b3a05555b4aeeeede1a0b39d3e71a1cac4041c1/original?assetDescr=Catsheet_EcoTank_L3350_C11CL62301_2026-05-08.pdf"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-hogar"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-hogar/Impresoras/Inyecci%C3%B3n-de-tinta/Epson-Impresora-Multifuncional-EcoTank-L3350-a-Color-con-Wi-Fi/p/C11CL62306",
+      "variants": [
+        {
+          "sku": "C11CL62306",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "c11cl62306-1.jpg",
+            "c11cl62306-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "449999.00",
+            "currency": "ARS",
+            "compareAtAmount": null
+          },
+          "sampleStock": 0
+        }
+      ]
+    },
+    {
+      "name": "Impresora Fotográfica Inalámbrica EcoTank L8050",
+      "slug": "impresora-fotografica-inalambrica-ecotank-l8050",
+      "category": "impresoras-fotograficas",
+      "brand": "epson",
+      "shortDescription": "La EcoTank L8050 es una impresora fotográfica accesible y confiable.",
+      "description": "La EcoTank L8050 es una impresora fotográfica accesible y confiable. ideal para productores gráficos, entusiastas y vendedores de fotografías que buscan colores vibrantes y de alta calidad con la comodidad de la conectividad Wi-Fi, para imprimir desde dispositivos móviles con la aplicación Epson SmartPanel.",
+      "specifications": [
+        {
+          "group": "Documentos",
+          "name": "Ficha técnica (PDF)",
+          "value": "https://mediaserver.goepson.com/ImConvServlet/imconv/b39f395c94f417bb7735a8d7f41079c70c9a6017/original?assetDescr=Especificaciones-EcoTank-L8050-v4.pdf"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-foto",
+        "uso-hogar"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Fotos/Impresora-Fotogr%C3%A1fica-Inal%C3%A1mbrica-EcoTank-L8050/p/C11CK37301",
+      "variants": [
+        {
+          "sku": "C11CK37301",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "c11ck37301-1.jpg",
+            "c11ck37301-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "899999.00",
+            "currency": "ARS",
+            "compareAtAmount": null
+          },
+          "sampleStock": 3
+        }
+      ]
+    },
+    {
+      "name": "Impresora Multifuncional Epson EcoTank L8180",
+      "slug": "impresora-multifuncional-epson-ecotank-l8180",
+      "category": "impresoras-fotograficas",
+      "brand": "epson",
+      "shortDescription": "La EcoTank L8180 es una impresora de fotos 3 en 1 que ofrece una excelente calidad de impresión fotográfica de hasta A3+, con su configuración única de tinta Claria ET 6, que incluye gris y negro pigmentado, con la conveniencia del reemplazo de alto rendimiento y ultra bajo costo de EcoTank, con botellas de tinta que rinden hasta 2.300 fotografías 4X69 ¿Quiere que lo contactemos?",
+      "description": "La EcoTank L8180 es una impresora de fotos 3 en 1 que ofrece una excelente calidad de impresión fotográfica de hasta A3+, con su configuración única de tinta Claria ET 6, que incluye gris y negro pigmentado, con la conveniencia del reemplazo de alto rendimiento y ultra bajo costo de EcoTank, con botellas de tinta que rinden hasta 2.300 fotografías 4X69 ¿Quiere que lo contactemos?",
+      "specifications": [
+        {
+          "group": "Imprimir",
+          "name": "Tecnología de Impresión",
+          "value": "Tecnología de inyección de tinta MicroPiezo® Heat Free de 6 colores optimizada para impresión de fotografías"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Resolución Máxima de Impresión",
+          "value": "Hasta 5.760 dpi x 1.440 dpi de resolución optimizada en varios tipos de papel"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Velocidad de Impresión ISO",
+          "value": "Símplex: negro 16 ppm y color 12 ppm (A4/carta)"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Área Máxima de Impresión",
+          "value": "329 mm x 2.000 mm (ancho x largo)"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Velocidad de Impresión",
+          "value": "Símplex: negro 32 ppm y color 32 ppm (borrador, A4/carta). Fotos a color 4\" x 6\" (10 cm x 15 cm): 15 segundos (borrador)"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Tamaño Mínimo de la Gota de Tinta",
+          "value": "1,5 picolitros"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Tiempo de salida de la primera página",
+          "value": "Aprox. 9 segundos negro/15 segundos color (A4/carta)"
+        },
+        {
+          "group": "General",
+          "name": "Sistemas de Operación",
+          "value": "Windows Vista®/7/8/8.1/10 (32bit, 64bit), Windows Server® 2003 (SP2) o más reciente, Mac OS X® 10.7.5 o más reciente"
+        },
+        {
+          "group": "General",
+          "name": "Dimensiones",
+          "value": "523 mm x 379 mm x 169 mm"
+        },
+        {
+          "group": "General",
+          "name": "Peso",
+          "value": "11,1 kg"
+        },
+        {
+          "group": "General",
+          "name": "País de Origen",
+          "value": "Indonesia"
+        },
+        {
+          "group": "General",
+          "name": "Garantía",
+          "value": "2 años con registro del producto"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Conectividad Estándar",
+          "value": "USB de alta velocidad (compatible con USB 2.0), Ethernet 10/100 , Wi-Fi 4 (IEEE 802.11 b/g/n), Wi-Fi Direct®4 PictBridge"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Tarjetas de Memoria Soportadas",
+          "value": "Tarjeta SD"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Protocolos de Impresión en Red",
+          "value": "TCPP/IPv4, TCP/IPv6 y LDP, IPP, PORT9100, WSD"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Protocolos de Manejo de Red",
+          "value": "SNMP, HTTP, DHCP, BOOTP, APIPA, PING, DDNS, mDNS, SLP, WSD, LLTD"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Seguridad WLAN",
+          "value": "WEP (64-bit/128-bit), WPA-PSK (TKIP), WPA2-PSK (AES), WPA3-SAE(AES)"
+        },
+        {
+          "group": "Impresión desde Dispositivos Móviles",
+          "name": "Epson Connect",
+          "value": "Epson Smart Panel™ App (iOSTM, Android™), Epson Email Print®, Remote Print Driver"
+        },
+        {
+          "group": "Impresión desde Dispositivos Móviles",
+          "name": "Otros",
+          "value": "Apple AirPrint®, Chromebook Native Print, Mopria Print Service™"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Soporte de Papel",
+          "value": "A3+, A3, 11\" x 17\" (279 mm x 431,8 mm), 11\" x 14\" (279 mm x 355,6 mm), A4, carta, oficio (215,9 mm x 355,6 mm), oficio México (215,9 mm x 340,4 mm), oficio (214,9 mm x 315 mm), 4\" x 6\" (10 cm x 15 cm), 5\" x 7\" (13 cm x 18 cm), 8\" x 10\" (10 cm x 25,4 cm), media carta, 8,5\" x 13\" (215,9 mm x 330,2 mm), A6, ejecutivo (184,2 mm x 266,7 mm), definido por usuario (54\" x 86\" hasta 329 mm x 2.000 mm)"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Tipos de Papel",
+          "value": "Papel normal, Bright White Paper, Presentation Paper Matte, Premium Presentation Paper Matte, Premium Presentation Paper Matte Double-Sided, Velvet Fine Art Paper, Premium Photo Paper Glossy, Premium Photo Paper Semi-gloss, Photo Paper Glossy, Ultra Premium Photo Paper Glossy, Value Glossy Photo Paper, Ultra Premium Photo Paper Luster, High Quality Ink Jet Paper, Iron-On Cool Peel Transfer, sobres"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Tamaños sin Márgenes",
+          "value": "A3+, A3, A4, carta, oficio (215,9 mm x 355,6 mm), 11\" x 17\", 11\" x 14\", 8\" x 10\", 5\" x 7\", 4\" x 6\", definido por el usuario (54\" x 86\" - 329 mm x 2.000 mm)"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Ancho Máximo de Papel",
+          "value": "Bandeja frontal 1: 215,9 mm x 297 mm / Bandeja frontal 2: 5\" x 7\" (13 cm x 18 cm) / Alimentación trasera: 329 mm x 2.000 mm / Alimentación de paso directo: 329 x 2.000 mm"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Tipos de Sobres",
+          "value": "Nº 10 (10,5 cm x 24,1 cm)"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Peso del Papel",
+          "value": "Papel normal: 64 g/m ~ 90 g/m papel fotográfico: 102 g/m ~ 300 g/m. Alimentación de paso directo: 70 g/m ~ 500 g/m2 o 1,3 mm"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Capacidad de Entrada de Papel",
+          "value": "Bandeja frontal 1: hasta 100 hojas (A4/LTR/LGL); bandeja frontal 2: hasta 20 fotos (hasta 5\" x 7\"); alimentación trasera: hasta 50 hojas (hasta A3+) papel normal y bond o 5 hojas en papel fotográfico. Alimentación de paso directo: hasta 1 hoja, tamaño definido por el usuario (54\" x 86\" hasta 329 mm x 2.000 mm), bandeja para impresión de CD & DVD"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Pantalla",
+          "value": "4,3\" táctil a color"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Software Incluido",
+          "value": "CD: Printer Driver, Epson Scan 2, Epson ScanSmart. Descarga Web: Epson Photo+ Epson Print Layout, Printer Driver Mac OS"
+        },
+        {
+          "group": "Energía",
+          "name": "Voltaje Nominal",
+          "value": "AC 100V - 120 V"
+        },
+        {
+          "group": "Energía",
+          "name": "Frecuencia Nominal",
+          "value": "50 Hz - 60 Hz"
+        },
+        {
+          "group": "Energía",
+          "name": "Consumo de Energía",
+          "value": "17 W (en modo operación)"
+        }
+      ],
+      "isFeatured": true,
+      "tags": [
+        "uso-foto",
+        "uso-hogar"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Fotos/Impresora-Multifuncional-Epson-EcoTank-L8180/p/C11CJ21303",
+      "variants": [
+        {
+          "sku": "C11CJ21303",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "c11cj21303-1.jpg",
+            "c11cj21303-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "1399999.00",
+            "currency": "ARS",
+            "compareAtAmount": "1499999.00"
+          },
+          "sampleStock": 5
+        }
+      ]
+    },
+    {
+      "name": "Impresora Multifuncional Epson EcoTank L8160",
+      "slug": "impresora-multifuncional-epson-ecotank-l8160",
+      "category": "impresoras-fotograficas",
+      "brand": "epson",
+      "shortDescription": "La EcoTank L8160 es una impresora de fotos 3 en 1 que ofrece una excelente calidad de impresión fotográfica de hasta A4, con su configuración única de tinta Claria ET 6, que incluye gris y negro pigmentado, con la conveniencia del reemplazo de alto rendimiento y ultra bajo costo de EcoTank, con botellas de tinta que rinden hasta 2.300 fotografías 4X69",
+      "description": "La EcoTank L8160 es una impresora de fotos 3 en 1 que ofrece una excelente calidad de impresión fotográfica de hasta A4, con su configuración única de tinta Claria ET 6, que incluye gris y negro pigmentado, con la conveniencia del reemplazo de alto rendimiento y ultra bajo costo de EcoTank, con botellas de tinta que rinden hasta 2.300 fotografías 4X69",
+      "specifications": [
+        {
+          "group": "Imprimir",
+          "name": "Tecnología de Impresión",
+          "value": "Tecnología de inyección de tinta MicroPiezo® Heat Free de 6 colores optimizada para impresión de fotografías"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Resolución Máxima de Impresión",
+          "value": "Hasta 5.760 dpi x 1.440 dpi de resolución optimizada en varios tipos de papel"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Velocidad de Impresión ISO",
+          "value": "Símplex: negro 16 ppm y color 12 ppm (A4/carta)"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Área Máxima de Impresión",
+          "value": "215,9 mm x 2.000 mm (ancho x largo)"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Velocidad de Impresión",
+          "value": "Símplex: negro 32 ppm y color 32 ppm (borrador, A4/carta). Fotos a color 4\" x 6\" (10 cm x 15 cm): 15 segundos (borrador)"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Tamaño Mínimo de la Gota de Tinta",
+          "value": "1,5 picolitros"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Tiempo de salida de la primera página",
+          "value": "Aprox. 9 segundos negro/15 segundos color (A4/carta)"
+        },
+        {
+          "group": "General",
+          "name": "Sistemas de Operación",
+          "value": "Windows Vista®/7/8/8.1/10 (32bit, 64bit), Windows Server® 2003 (SP2) o más reciente, Mac OS X® 10.7.5 o más reciente"
+        },
+        {
+          "group": "General",
+          "name": "Dimensiones",
+          "value": "403 mm x 369 mm x 162 mm"
+        },
+        {
+          "group": "General",
+          "name": "Peso",
+          "value": "8,4 kg"
+        },
+        {
+          "group": "General",
+          "name": "País de Origen",
+          "value": "Indonesia"
+        },
+        {
+          "group": "General",
+          "name": "Garantía",
+          "value": "2 años con registro del producto"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Conectividad Estándar",
+          "value": "USB de alta velocidad (compatible con USB 2.0), Ethernet 10/100 , Wi-Fi 4 (IEEE 802.11 b/g/n), Wi-Fi Direct®4 PictBridge"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Tarjetas de Memoria Soportadas",
+          "value": "Tarjeta SD"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Protocolos de Impresión en Red",
+          "value": "TCPP/IPv4, TCP/IPv6 y LDP, IPP, PORT9100, WSD"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Protocolos de Manejo de Red",
+          "value": "SNMP, HTTP, DHCP, BOOTP, APIPA, PING, DDNS, mDNS, SLP, WSD, LLTD"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Seguridad WLAN",
+          "value": "WEP (64-bit/128-bit), WPA-PSK (TKIP), WPA2-PSK (AES), WPA3-SAE(AES)"
+        },
+        {
+          "group": "Impresión desde Dispositivos Móviles",
+          "name": "Epson Connect",
+          "value": "Epson Smart Panel™ App (iOSTM, Android™), Epson Email Print®, Remote Print Driver"
+        },
+        {
+          "group": "Impresión desde Dispositivos Móviles",
+          "name": "Otros",
+          "value": "Apple AirPrint®, Chromebook Native Print, Mopria Print Service™"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Tamaños de Papel Soportados",
+          "value": "A4, carta, oficio (215,9 mm x 355,6mm), oficio México (215,9 mm x 340,4 mm), oficio (214,9 mm x 315 mm), 4\" x 6\" (10 cm x 15 cm), 5\" x 7\" (13 cm x 18 cm), 8\" x 10\" (10 cm x 25,4 cm), media carta, 8,5\" x 13\" (215,9 mm x 330,2 mm), A6, ejecutivo (184,2 mm x 266,7 mm), definido por usuario (54\" x 86\" hasta 215,9 mm x 2.000 mm)"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Soporte de Papel",
+          "value": "Papel normal, Bright White Paper, Presentation Paper Matte, Premium Presentation Paper Matte, Premium Presentation Paper Matte Double-Sided, Velvet Fine Art Paper, Premium Photo Paper Glossy, Premium Photo Paper Semi-gloss, Photo Paper Glossy, Ultra Premium Photo Paper Glossy, Value Glossy Photo Paper, Ultra Premium Photo Paper Luster, High Quality Ink Jet Paper, Iron-On Cool Peel Transfer, sobres"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Tamaño de Papel Máximo",
+          "value": "Bandeja frontal 1: 215,9 mm x 297 mm / Bandeja frontal 2: 5\" x 7\" (13 cm x 18 cm) / Alimentación trasera: 215,9 mm x 2.000 mm / Alimentación de paso directo: 215,9 mm x 2.000 mm"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Tamaños sin Márgenes",
+          "value": "A4, carta, oficio (215,9 mm x 355,6 mm), 8\" x 10\", 5\" x 7\", 4\" x 6\", definido por el usuario 54\" x 86\" (215,9 mm x 2.000 mm)"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Tipos de Sobres",
+          "value": "Nº 10 (10,5 cm x 24,1 cm)"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Peso del Papel",
+          "value": "Papel normal: 64 g/m ~ 90 g/m ; papel fotográfico: 102 g/m ~ 300 g/m. Alimentación de paso directo: 70 g/m ~ 500 g/m o 1,3 mm"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Capacidad de Entrada de Papel",
+          "value": "Bandeja frontal 1: hasta 100 hojas (A4/LTR/LGL); bandeja frontal 2: hasta 20 fotos (hasta 5\" x 7\"); alimentación trasera: hasta 50 hojas (hasta A4) papel normal y bond o 5 hojas en papel fotográfico. Alimentación de paso directo: hasta 1 hoja, tamaño definido por el usuario (54\" x 86\" hasta 329 mm x 2.000 mm), bandeja para impresión de CD & DVD"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Pantalla",
+          "value": "4,3\" táctil a color"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Software Incluido",
+          "value": "CD: Printer Driver, Epson Scan 2, Epson ScanSmart. Descarga Web: Epson Photo+ Epson Print Layout, Printer Driver Mac OS"
+        },
+        {
+          "group": "Energía",
+          "name": "Voltaje Nominal",
+          "value": "AC 100V - 120V"
+        },
+        {
+          "group": "Energía",
+          "name": "Frecuencia Nominal",
+          "value": "50 Hz - 60 Hz"
+        },
+        {
+          "group": "Energía",
+          "name": "Consumo de Energía",
+          "value": "17 W (en modo operación)"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-foto",
+        "uso-hogar"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Fotos/Impresora-Multifuncional-Epson-EcoTank-L8160/p/C11CJ20303",
+      "variants": [
+        {
+          "sku": "C11CJ20303",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "c11cj20303-1.jpg",
+            "c11cj20303-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "1199999.00",
+            "currency": "ARS",
+            "compareAtAmount": null
+          },
+          "sampleStock": 2
+        }
+      ]
+    },
+    {
+      "name": "Impresora Fotográfica de 17\" SureColor P900",
+      "slug": "impresora-fotografica-de-17-surecolor-p900",
+      "category": "impresoras-fotograficas",
+      "brand": "epson",
+      "shortDescription": "La impresión fotográfica define el verdadero arte de la fotografía.",
+      "description": "La impresión fotográfica define el verdadero arte de la fotografía. Como el lienzo es para un pintor, la impresión le permite retratar claramente cada detalle de su visión creativa, y que todos experimenten lo que sintió en el momento de la captura. Presentamos la SureColor P900: un gran avance en la tecnología de impresión profesional. Basándose en más de 20 años de experiencia, la SureColor P900 incorpora la misma tecnología de impresión de gran formato utilizada por los fotógrafos líderes en el mundo en un diseño elegante y compacto, lo que permite la creación de impresiones con calidad de exhibición desde la comodidad de un escritorio.",
+      "specifications": [
+        {
+          "group": "Imprimir",
+          "name": "Tecnología de Impresión",
+          "value": "Cabezal de impresión avanzado MicroPiezo® AMC de 10 canales, gota a demanda con tecnología de recubrimiento repelente de tinta"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Resolución Máxima de Impresión",
+          "value": "5.760 dpi x 1.440 dpi"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Área Máxima de Impresión",
+          "value": "Ancho de papel máximo 17\". Tamaño máximo de hoja cortada 17\" x 22\""
+        },
+        {
+          "group": "Imprimir",
+          "name": "Velocidad de Impresión",
+          "value": "Impresión de 8,5\" x 11\": 1 min 29 seg / Impresión de 13\" x 19\": 2 min 23 seg"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Tamaño Mínimo de la Gota de Tinta",
+          "value": "1,5 picolitros. La tecnología de gotas variables puede producir hasta tres tamaños de punto diferentes por línea"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Configuración del Cabezal",
+          "value": "Color and monochrome heads; 180 nozzles x 10"
+        },
+        {
+          "group": "Tinta",
+          "name": "Tipo de Tinta",
+          "value": "Tinta de pigmento UltraChrome® PRO10; 10 colores de tinta: cian, cian claro, magenta vivo, magenta claro vivo, amarillo, gris, gris claro, violeta, negro fotográfico y negro mate"
+        },
+        {
+          "group": "Tinta",
+          "name": "Configuración de la Tinta",
+          "value": "Cabezas de color y monocromáticas, 180 boquillas x 10"
+        },
+        {
+          "group": "Tinta",
+          "name": "Resistencia al Desgaste / Longevidad de la Impresión",
+          "value": "Color: hasta 200 años, blanco y negro: hasta 400 años"
+        },
+        {
+          "group": "General",
+          "name": "Sistemas de Operación",
+          "value": "Mac OS X® 10.6.8 o posterior / Windows® 10, 8.1, 8 y 7 (32 bits, 64 bits)"
+        },
+        {
+          "group": "General",
+          "name": "Temperatura",
+          "value": "En operación: 50 ºF a 95 ºF (10 ºC a 35 ºC) / Almacenada: -4 ºF a 104 ºF (-20 ºC a 40 ºC) / Apagada: menos de 0,3 W"
+        },
+        {
+          "group": "General",
+          "name": "Humedad",
+          "value": "Operando: 20% a 80% (sin condensación) / Almacenada: 5% a 85% (sin condensación)"
+        },
+        {
+          "group": "General",
+          "name": "Nivel de Sonido",
+          "value": "Aprox. 41 dB (A) de acuerdo a ISO 7779"
+        },
+        {
+          "group": "General",
+          "name": "Dimensiones",
+          "value": "24,2\" x 35,6\" x 20,5\" - Cerrada: 24,2\" x 14,5\" x 7,8\""
+        },
+        {
+          "group": "General",
+          "name": "Peso",
+          "value": "16 kg (35,3 lb)"
+        },
+        {
+          "group": "General",
+          "name": "Funciones ECO",
+          "value": "ENERGY STAR qualified, RoHS compliant, Recyclable Product, Epson America, Inc. is a SmartWay Transport Partner"
+        },
+        {
+          "group": "General",
+          "name": "Normas de Seguridad",
+          "value": "UL (MET), FCC (clase A), CSA, CE, EMC"
+        },
+        {
+          "group": "General",
+          "name": "País de Origen",
+          "value": "Indonesia"
+        },
+        {
+          "group": "General",
+          "name": "Garantía",
+          "value": "Estándar de 1 año y soporte telefónico gratuito de lunes a viernes"
+        },
+        {
+          "group": "Cartuchos Epson de Tinta Inteligente",
+          "name": "Cartuchos de tinta",
+          "value": "Volumen de llenado del cartucho: 50 ml cada color x 10 colores en total."
+        },
+        {
+          "group": "Cartuchos Epson de Tinta Inteligente",
+          "name": "Vida útil de la tinta",
+          "value": "2 años a partir de la fecha de producción impresa o 6 meses después de la apertura. La impresora está diseñada para usarse solo con cartuchos Epson, no con cartuchos o tinta de terceros*"
+        },
+        {
+          "group": "Precisión y área imprimible",
+          "name": "Ancho Máximo del Papel",
+          "value": "17\", Max. cut-sheet size 17\" x 22\""
+        },
+        {
+          "group": "Precisión y área imprimible",
+          "name": "Tamaño Mínimo de las Hojas Sueltas",
+          "value": "3.5\" x 5\""
+        },
+        {
+          "group": "Manejo de Papel en Hoja",
+          "name": "Alimentación de Hojas",
+          "value": "Carga principal superior de hasta 17\" x 22\", hasta 120 hojas de papel normal, 30 hojas de papel fotográfico y carga de una sola hoja de papel de arte fino más grueso"
+        },
+        {
+          "group": "Manejo de Papel en Hoja",
+          "name": "Ancho de Impresión sin Bordes",
+          "value": "3.5\" x 5\", 4\" x 6\", 5\" x 7\", 8\" x 10\", A4 (8.3\" x 11.7\"), letter (8.5\" x 11\"), 11\" x 14\", B (11\" x 17\"), A3 (11.7\" x 16.5\"), Super B (13\" x 19\"), 16\" x 20\" and C (17\"x 22\")"
+        },
+        {
+          "group": "Manejo de Papel en Rollo",
+          "name": "Rollo Sencillo / Hojas Sueltas de Carga Superior",
+          "value": "Rollo de 17\", núcleo de 2\" o 3\". Impresión BorderFree® 3,5\" x 5\", 4\" x 6\", 5\" x 7\", 8\" x 10\", A4 (8,3\" x 11,7\"), carta (8,5\" x 11\"), 11\" x 14\", B (11\" x 17\"), A3 (11,7\" x 16,5\"), super B (13\" x 19\"), 16\" x 20\" y C (17\" x 22\")"
+        },
+        {
+          "group": "Manejo de Papel en Rollo",
+          "name": "Núcleo de Rollo",
+          "value": "2\" or 3\" core"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Lenguaje de la Impresora",
+          "value": "Epson ESC/P® Raster, controladores fotográficos estándar"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Software Incluido",
+          "value": "Utilitários para a impressora Epson"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Interfaces",
+          "value": "USB 3.0 de alta velocidad (1 puerto), Ethernet 100Base-T (1 puerto), 2,4 GHz (802,11n) y 5 GHz inalámbrico (IEEE 802,11 b/g/n/ac)6, Wi-Fi Direct®6, AirPrint®, Google Cloud Print™, Epson Print Layout para iOS"
+        },
+        {
+          "group": "Energía",
+          "name": "Voltaje Nominal",
+          "value": "CA 110V - 240V"
+        },
+        {
+          "group": "Energía",
+          "name": "Frecuencia Nominal",
+          "value": "50 - 60 Hz"
+        },
+        {
+          "group": "Energía",
+          "name": "Corriente Nominal",
+          "value": "menos de 1 A/110V - 120V"
+        },
+        {
+          "group": "Energía",
+          "name": "Consumo de Energía",
+          "value": "Imprimiendo: aprox. 24 W / Modo reposo aprox.: 1,1 W / Apagada: aprox. 0,14 W"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-foto",
+        "uso-hogar"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Gran-Formato/Impresora-Fotogr%C3%A1fica-de-17%22-SureColor-P900/p/C11CH37301",
+      "variants": [
+        {
+          "sku": "C11CH37301",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "c11ch37301-1.jpg",
+            "c11ch37301-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "1490.00",
+            "currency": "USD",
+            "compareAtAmount": null
+          },
+          "sampleStock": 1
+        }
+      ]
+    },
+    {
+      "name": "Impresora Multifuncional Inalámbrica EcoTank L6490",
+      "slug": "impresora-multifuncional-inalambrica-ecotank-l6490",
+      "category": "impresoras-oficina",
+      "brand": "epson",
+      "shortDescription": "La impresora multifuncional EcoTank L6490 tiene un diseño compacto para impresiones rápidas y a bajo costo con menos intervenciones y tiempo de inactividad.",
+      "description": "La impresora multifuncional EcoTank L6490 tiene un diseño compacto para impresiones rápidas y a bajo costo con menos intervenciones y tiempo de inactividad. Cuenta con capacidad de hasta 250 hojas en las dos bandejas frontales con botellas de reemplazo de tinta que permiten imprimir hasta 7.500 páginas ISO (negro) y hasta 6.000 páginas ISO (color). La L6490 tiene un ciclo de trabajo mensual de hasta 1.500 páginas al mes y un ciclo de trabajo máximo de hasta 20.000 páginas al mes. ¿Quiere que lo contactemos?",
+      "specifications": [
+        {
+          "group": "Documentos",
+          "name": "Ficha técnica (PDF)",
+          "value": "https://mediaserver.goepson.com/ImConvServlet/imconv/6f76803e3d48d33260ec8c8622aa548759a9c373/original?assetDescr=Especificaciones_L6490_v2.pdf"
+        }
+      ],
+      "isFeatured": true,
+      "tags": [
+        "uso-oficina"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Inyecci%C3%B3n-de-Tinta/Impresora-Multifuncional-Inal%C3%A1mbrica-EcoTank-L6490/p/C11CJ88303",
+      "variants": [
+        {
+          "sku": "C11CJ88303",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "c11cj88303-1.jpg",
+            "c11cj88303-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "1099999.00",
+            "currency": "ARS",
+            "compareAtAmount": null
+          },
+          "sampleStock": 7
+        }
+      ]
+    },
+    {
+      "name": "Impresora Multifuncional Inalámbrica EcoTank L5290",
+      "slug": "impresora-multifuncional-inalambrica-ecotank-l5290",
+      "category": "impresoras-oficina",
+      "brand": "epson",
+      "shortDescription": "La impresora multifuncional 4 en 1 L5290 para pequeñas oficinas ofrece funciones de productividad a un precio accesible, cuenta con conectividad avanzada Wi-Fi y ethernet para ser compartida con grupos de trabajo y además cuenta con capacidad de envió de fax.",
+      "description": "La impresora multifuncional 4 en 1 L5290 para pequeñas oficinas ofrece funciones de productividad a un precio accesible, cuenta con conectividad avanzada Wi-Fi y ethernet para ser compartida con grupos de trabajo y además cuenta con capacidad de envió de fax. Compatible con la nueva aplicación con Epson Smart Panel, para aprovechar toda la productividad de su impresora a través de sus dispositivos inteligentes. La L5290 cuenta con la tecnología sin calor Epson Heat Free, que brinda un desempeño eficiente, ayudándolo a aumentar la productividad de su negocio y le ofrece la posibilidad de imprimir a color, por menos de lo que cuesta imprimir en blanco y negro en una impresora láser monocromática. Ideal para equipos que buscan minimizar sus costos operativos de impresión y el consumo de papel con la conveniencia y confiabilidad que ofrece EcoTank, líder en impresión con tanques de tinta. Con una garantía limitada y extendida hasta de 2 años, Epson lo respalda totalmente para que pueda imprimir sin cartuchos y sin preocupaciones ¿Quiere que lo contactemos?",
+      "specifications": [
+        {
+          "group": "Imprimir",
+          "name": "Tecnología de Impresión",
+          "value": "Inyección de tinta Heat-Free Micro Piezo® de 4 colores (CMYK)"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Resolución Máxima de Impresión",
+          "value": "Hasta 5.760 dpi x 1.440 dpi de resolución optimizada en varios tipos de papel"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Velocidad de Impresión ISO",
+          "value": "Simplex: Negro 10 ppm y color 5 ppm (A4/carta)"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Velocidad de Impresión",
+          "value": "Simplex: Negro 33 ppm y color 15 ppm (borrador, A4/carta)"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Tiempo de salida de la primera página",
+          "value": "10 segundos blanco y negro / 16 segundos color"
+        },
+        {
+          "group": "General",
+          "name": "Sistemas de Operación",
+          "value": "Windows Vista® / 7 / 8 / 8.1 / 10 o más reciente (32bit, 64bit) / Windows Server® 2003SP2) or later / Mac OS X 10.7.5 o más reciente"
+        },
+        {
+          "group": "General",
+          "name": "Dimensiones",
+          "value": "Abierto: 37.5 cm x 57.8 cm x 25.3 cm / Cerrado: 37.5 cm x 34.7 cm x 23.7 cm"
+        },
+        {
+          "group": "General",
+          "name": "Peso",
+          "value": "5 Kg"
+        },
+        {
+          "group": "General",
+          "name": "País de Origen",
+          "value": "Filipinas"
+        },
+        {
+          "group": "General",
+          "name": "Garantía",
+          "value": "2 años con registro del producto"
+        },
+        {
+          "group": "Copiar",
+          "name": "Velocidad de Copiado ISO",
+          "value": "Negro 7,7 cpm y color 3,8 cpm (A4/carta)"
+        },
+        {
+          "group": "Copiar",
+          "name": "Calidad de Copia",
+          "value": "300 dpi x 600 dpi"
+        },
+        {
+          "group": "Copiar",
+          "name": "Máximo Tamaño de Copia",
+          "value": "Oficio (ADF)"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Tipo de Escáner",
+          "value": "Cama plana con sensor de líneas CIS de color"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Resolución Óptica",
+          "value": "1.200 dpi x 2.400 dpi"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Profundidad del Bit de Color",
+          "value": "48 bits de entrada, 24 bits de salida"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Profundidad del Bit Monocromático",
+          "value": "16 bits de entrada, 1 bit de salida"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Profundidad de la Escala de Grises del Bit",
+          "value": "16 bits de entrada, 8 bits de salida"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Máxima Superficie de Digitalización",
+          "value": "216 mm x 297 mm"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Velocidad de Escaneo",
+          "value": "12 segundos blanco y negro/ 29 segundos color"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Conectividad Estándar",
+          "value": "USB de alta velocidad (compatible con USB 2.0) ,Wi-Fi 4 (IEEE 802.11 b/g/n), Wi-Fi Direct®, Ethernet 10/100"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Protocolos de Impresión en Red",
+          "value": "LPD, IPP, PORT9100, WSD"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Protocolos de Manejo de Red",
+          "value": "SNMP, HTTP, DHCP, BOOTP, APIPA, PING, DDNS, MDNS, SLP, WSD, LLTD"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Seguridad WLAN",
+          "value": "WEP (64-bit/128-bit), WPA-PSK (TKIP), WPA2-PSK (AES), WPA3-SAE(AES)"
+        },
+        {
+          "group": "Impresión desde Dispositivos Móviles",
+          "name": "Epson Connect",
+          "value": "Epson Smart Panel™ App (iOS™, Android™), Epson Email Print®, Remote Print Driver"
+        },
+        {
+          "group": "Impresión desde Dispositivos Móviles",
+          "name": "Otros",
+          "value": "Apple AirPrint®, Chromebook Native Print, Mopria Print Service™"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Tamaños de Papel Soportados",
+          "value": "A4, Carta, Oficio (215.9 x 355.6mm), México-Oficio (215.9 x 340.4mm), Oficio 9 (214.9 x 315mm), Folio (215.9x330.2mm), Ejecutivo, Media carta, A6 / Foto: 4 x 6\" (10 x 15cm), 5 x 7\" (13 x 18cm), 8 x 10\" / Sobres: #10 - Definido por el usuario: 54 mm x 86 mm - 215.9 mm x 1.200 mm"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Tipos de Papel",
+          "value": "Papel normal, Papel especial Epson (Photo Glossy/Semi-gloss, Presentation Paper Matte, High Quality Ink Jet Paper y Sobres)"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Capacidad de Papel",
+          "value": "Alimentación trasera: hasta 100 hojas (A4/LTR/Oficio)"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Pantalla",
+          "value": "1,44\" a color"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Software Incluido",
+          "value": "CD y descarga Web: Printer Driver, Epson Scan 2, Epson ScanSmart, Epson Fax Utility / Descarga Web: Epson Photo+"
+        },
+        {
+          "group": "Energía",
+          "name": "Voltaje Nominal",
+          "value": "AC 100 - 240 V"
+        },
+        {
+          "group": "Energía",
+          "name": "Frecuencia Nominal",
+          "value": "50 Hz - 60 Hz"
+        },
+        {
+          "group": "Energía",
+          "name": "Consumo de Energía",
+          "value": "12 W (en modo operación)"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-oficina"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Inyecci%C3%B3n-de-Tinta/Impresora-Multifuncional-Inal%C3%A1mbrica-EcoTank-L5290/p/C11CJ65303",
+      "variants": [
+        {
+          "sku": "C11CJ65303",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "c11cj65303-1.jpg",
+            "c11cj65303-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "699999.00",
+            "currency": "ARS",
+            "compareAtAmount": null
+          },
+          "sampleStock": 5
+        }
+      ]
+    },
+    {
+      "name": "Impresora Multifuncional Epson EcoTank L6270",
+      "slug": "impresora-multifuncional-epson-ecotank-l6270",
+      "category": "impresoras-oficina",
+      "brand": "epson",
+      "shortDescription": "La impresora EcoTank L6270 es un multifuncional 3 en 1 de alta productividad que ofrece varias funciones dedicadas a optimizar su productividad como lo son el ADF, impresión a doble cara automática, Wi-Fi, Wi-Fi Direct, Ethernet y es compatible con la nueva aplicación Epson Smart Panel para aprovechar toda la productividad de su impresora a través de sus dispositivos inteligentes.",
+      "description": "La impresora EcoTank L6270 es un multifuncional 3 en 1 de alta productividad que ofrece varias funciones dedicadas a optimizar su productividad como lo son el ADF, impresión a doble cara automática, Wi-Fi, Wi-Fi Direct, Ethernet y es compatible con la nueva aplicación Epson Smart Panel para aprovechar toda la productividad de su impresora a través de sus dispositivos inteligentes. La L6270 cuenta con el cabezal de impresión sin calor Precission Core Heat Free, el más avanzado tecnológicamente del portafolio de impresoras Epson EcoTank, con tecnología Epson Heat Free que le brinda un desempeño eficiente, ayudándolo a aumentar la productividad de su negocio y le ofrece la posibilidad de imprimir a color, por menos de lo que cuesta imprimir en blanco y negro en una impresora láser monocromática. La L6270 usa tinta negra pigmentada, la cual tiene una alta resistencia al agua, a la decoloración y a las manchas para mejor preservación de documentos de texto. Ideal para grupos de trabajo que buscan eliminar los cuellos de botella con la conveniencia de EcoTank, los bajos costos operativos y la confiabilidad que ofrece EcoTank, líder en impresión con tanques de tinta. Compatible con Epson Smart Panel para desbloquear la productividad de su impresora a través de su dispositivo inteligente. Con una garantía limitada y extendida hasta de 2 años, Epson te respalda totalmente para que pueda imprimir sin cartuchos y sin preocupaciones.",
+      "specifications": [
+        {
+          "group": "Imprimir",
+          "name": "Tecnología de Impresión",
+          "value": "Inyección de tinta Heat-Free PrecisionCore® de 4 colores (CMYK)"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Resolución Máxima de Impresión",
+          "value": "Hasta 4.800 dpi x 1.200 dpi de resolución optimizada en varios tipos de papel"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Velocidad de Impresión ISO",
+          "value": "Simplex: Negro 15,5 ppm y color 8,5 ppm (A4/carta)"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Área Máxima de Impresión",
+          "value": "Simplex: Negro 33 ppm y color 20 ppm (borrador, A4/carta)"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Tiempo de salida de la primera página",
+          "value": "9 segundos blanco y negro / 15 segundos color"
+        },
+        {
+          "group": "General",
+          "name": "Sistemas de Operación",
+          "value": "Windows Vista® / 7 / 8 / 8.1 / 10 o más reciente (32bit, 64bit) / Windows Server® 2003 (SP2) or later / Mac OS X 10.7.5 o más reciente, Mac OS 11 o más reciente"
+        },
+        {
+          "group": "General",
+          "name": "Dimensiones",
+          "value": "Abierto: 41.7 cm x 50.3 cm x 25.5 cm / Cerrado: 37.5 cm x 34.7 cm x 23.1 cm"
+        },
+        {
+          "group": "General",
+          "name": "Peso",
+          "value": "6,7 kg"
+        },
+        {
+          "group": "General",
+          "name": "País de Origen",
+          "value": "Filipinas"
+        },
+        {
+          "group": "General",
+          "name": "Garantía",
+          "value": "2 años con registro del producto"
+        },
+        {
+          "group": "Copiar",
+          "name": "Velocidad de Copiado ISO",
+          "value": "Negro 11 cpm y color 5,5 cpm (A4/carta)"
+        },
+        {
+          "group": "Copiar",
+          "name": "Calidad de Copia",
+          "value": "600 dpi x 600 dpi"
+        },
+        {
+          "group": "Copiar",
+          "name": "Máximo Tamaño de Copia",
+          "value": "Oficio (ADF)"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Tipo de Escáner",
+          "value": "Cama plana con sensor de líneas CIS de color"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Resolución Óptica",
+          "value": "1.200 dpi x 2.400 dpi"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Profundidad del Bit de Color",
+          "value": "48 bits de entrada, 24 bits de salida"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Profundidad del Bit Monocromático",
+          "value": "16 bits de entrada, 1 bit de salida"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Profundidad de la Escala de Grises del Bit",
+          "value": "16 bits de entrada, 8 bits de salida"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Máxima Superficie de Digitalización",
+          "value": "216 mm x 297 mm"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Conectividad Estándar",
+          "value": "USB de alta velocidad (compatible con USB 2.0) Wi-Fi 4 (IEEE 802.11 b/g/n), Wi-Fi Direct®, Ethernet 10/100"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Protocolos de Impresión en Red",
+          "value": "LPD, IPP, PORT9100, WSD"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Protocolos de Manejo de Red",
+          "value": "SNMP, HTTP, DHCP, BOOTP, APIPA, PING, DDNS, MDNS, SLP, WSD, LLTD"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Seguridad WLAN",
+          "value": "WEP (64-bit/128-bit), WPA-PSK (TKIP), WPA2-PSK (AES), WPA3- SAE (AES)"
+        },
+        {
+          "group": "Impresión desde Dispositivos Móviles",
+          "name": "Epson Connect",
+          "value": "Epson Smart Panel™ App (iOS™, Android™), Epson Email Print®, Remote Print Driver"
+        },
+        {
+          "group": "Impresión desde Dispositivos Móviles",
+          "name": "Otros",
+          "value": "Apple AirPrint®, Chromebook Native Print, Mopria Print Service™"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Tamaños de Papel Soportados",
+          "value": "Estándar: A4, Carta, Oficio (21,59 cm x 35,56 cm), México-Oficio (21,59 cm x 34,04 cm), Ofocio 9 (21,49 cm x 31,5 cm), Folio (21,59 cm x 33,02 cm), Ejecutivo, Media carta, A6 / Foto: 4\"x 6\" (10 cm x 15 cm), 5\" x 7\" (13 cm x 18 cm), 8\" x 10\" / Sobres: #10 - Definido por el usuario: 54 mm x 86 mm - 215.9 mm x 1.200 mm"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Tamaño de Papel Máximo",
+          "value": "215.9 mm x 1.200 mm"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Tipos de Papel",
+          "value": "Papel normal, Papel especial Epson (Photo Glossy/Semi-gloss, Presentation Paper Matte, High Quality Ink Jet Paper y Sobres)"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Capacidad de Entrada de Papel",
+          "value": "Alimentación frontal: hasta 250 hojas (A4/LTR/Oficio)"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Pantalla",
+          "value": "2,4\" a color"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Software Incluido",
+          "value": "CD y descarga Web: Printer Driver, Epson Scan 2, Epson ScanSmart / Descarga Web: Epson Photo+"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Características Especiales",
+          "value": "Impresión automática a doble cara (A4 / Carta)"
+        },
+        {
+          "group": "Energía",
+          "name": "Voltaje de Fuente de Poder",
+          "value": "EcoTank L6270 (110V) C11CJ61301: AC 100 - 240 V/50 Hz - 60 Hz / EcoTank L6270 (220V) C11CJ61303: AC 100 - 240 V/50 Hz - 60 Hz"
+        },
+        {
+          "group": "Energía",
+          "name": "Consumo de Energía",
+          "value": "12 W (en modo operación)"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-oficina"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Inyecci%C3%B3n-de-Tinta/Impresora-Multifuncional-Epson-EcoTank-L6270/p/C11CJ61303",
+      "variants": [
+        {
+          "sku": "C11CJ61303",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "c11cj61303-1.jpg",
+            "c11cj61303-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "829999.00",
+            "currency": "ARS",
+            "compareAtAmount": null
+          },
+          "sampleStock": 3
+        }
+      ]
+    },
+    {
+      "name": "Impresora Multifuncional Epson EcoTank L14150",
+      "slug": "impresora-multifuncional-epson-ecotank-l14150",
+      "category": "impresoras-oficina",
+      "brand": "epson",
+      "shortDescription": "La nueva multifuncional inalámbrica EcoTank 4 en 1 L14150 te ofrece impresión 100% sin cartuchos con soporte para formatos anchos hasta A3+, con botellas de tinta diseñadas para evitar derrames y codificadas para llenado fácil de cada color.",
+      "description": "La nueva multifuncional inalámbrica EcoTank 4 en 1 L14150 te ofrece impresión 100% sin cartuchos con soporte para formatos anchos hasta A3+, con botellas de tinta diseñadas para evitar derrames y codificadas para llenado fácil de cada color. La EcoTank L14150 te permite imprimir hasta 7.500 páginas en negro o 6.000 páginas a color. Imprime cientos de proyectos sin interrupciones, con los juegos de botellas de tinta original Epson que equivalen a unos 35 juegos de cartuchos de tinta, ahorrando hasta 90% en tinta con las botellas de reemplazo de bajo costo. Imprime sin la necesidad de una PC, gracias a su pantalla de 2,4 ¿Quiere que lo contactemos?",
+      "specifications": [
+        {
+          "group": "Imprimir",
+          "name": "Tecnología de Impresión",
+          "value": "Inyección de tinta Heat-Free PrecisionCore de 4 colores (CMYK)"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Tamaño Mínimo de la Gota de Tinta",
+          "value": "3,3 picolitros con tecnología de gotas de tinta de tamaño variable"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Configuración del Cabezal",
+          "value": "Total 784 (400 inyectores negros + 128 inyectores por color CMY)"
+        },
+        {
+          "group": "General",
+          "name": "Sistemas de Operación",
+          "value": "Windows Vista®/Windows® 7/Windows® 8/8.1/Windows® 10 (32bit/64bit), Windows Server® 2003 SP2 o más reciente, Mac OS X 10.7.5 o más reciente"
+        },
+        {
+          "group": "General",
+          "name": "Dimensiones",
+          "value": "Abierto: 498 mm x 752 mm x 363 mm / Cerrado: 498 mm x 358 mm x 245 mm"
+        },
+        {
+          "group": "General",
+          "name": "Peso",
+          "value": "9,7 kg"
+        },
+        {
+          "group": "General",
+          "name": "País de Origen",
+          "value": "Filipinas"
+        },
+        {
+          "group": "General",
+          "name": "Garantía",
+          "value": "2 años con registro del producto"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Resolución de Impresión",
+          "value": "Hasta 4800 dpi x 1200 dpi de resolución optimizada en varios tipos de papel†††"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Velocidad de Impresión",
+          "value": "Negro 38 ppm y color 24 ppm (borrador, A4/carta)†"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Velocidad de Publicación",
+          "value": "Aprox. 9 segundos negro/15 segundos color (A4/carta)"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Modos de Publicación",
+          "value": "Impresión automática a doble cara (A4 / Carta / denido por usuario 182 x 257mm - 216 x 297mm), intercalar, modo silencioso de impresión"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Dirección de Impresión",
+          "value": "Bidireccional"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Velocidad de Impresión ISO",
+          "value": "Negro 17 ppm y color 9 ppm (A4/carta)††"
+        },
+        {
+          "group": "Copiar",
+          "name": "Velocidad de Copiado ISO",
+          "value": "Negro 11,5 cpm y color 5,5 cpm (A4/carta)††"
+        },
+        {
+          "group": "Copiar",
+          "name": "Calidad de Copia",
+          "value": "Normal/mejor calidad. 600 dpi x 1.200 dpi"
+        },
+        {
+          "group": "Copiar",
+          "name": "Cantidad de Copias",
+          "value": "1-99 copias (sin PC)"
+        },
+        {
+          "group": "Copiar",
+          "name": "Máximo Tamaño de Copia",
+          "value": "Oficio / Legal (ADF y cama de escáner)"
+        },
+        {
+          "group": "Copiar",
+          "name": "Características de la Copia",
+          "value": "Reduce y aumenta (25% - 400%)"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Tipo de Escáner",
+          "value": "Cama plana con sensor de líneas CIS de color"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Resolución Óptica",
+          "value": "1.200 dpi/1.200 dpi x 2.400 dpi"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Profundidad del Bit de Color",
+          "value": "48 bits de entrada, 24 bits de salida"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Modo de escaneo en color y escala de grises (profundidad de bits)",
+          "value": "16 bits de entrada, 1 bits de salida"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Profundidad de la Escala de Grises del Bit",
+          "value": "16 bits de entrada, 8 bits de salida"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Máxima Superficie de Digitalización",
+          "value": "216 x 356mm (8.5\" x 14\")"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Velocidad de Escaneo",
+          "value": "13 segundos blanco y negro/28 segundos color en PDF y tamaño A4 a 200 dpi††††"
+        },
+        {
+          "group": "Alimentador Automático de Documentos",
+          "name": "Capacidad",
+          "value": "35 hojas (carta/A4), 10 hojas (oficio/legal)"
+        },
+        {
+          "group": "Alimentador Automático de Documentos",
+          "name": "Peso del Papel",
+          "value": "64 g/m2 - 95 g/m2"
+        },
+        {
+          "group": "Fax",
+          "name": "Velocidad del Fax",
+          "value": "33,6 kbps"
+        },
+        {
+          "group": "Fax",
+          "name": "Memoria, Fax",
+          "value": "1,1 MB, hasta 100 páginas"
+        },
+        {
+          "group": "Fax",
+          "name": "Discados Rápidos",
+          "value": "100 (números máximo), 99 grupos"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Conectividad Estándar",
+          "value": "USB de alta velocidad (compatible con USB 2.0), Ethernet 10/100 , Wi-Fi 4 (IEEE 802.11 b/g/n), Wi-Fi Direct®"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Protocolos de Impresión en Red",
+          "value": "TCPP/IPv4, TCP/IPv6 y LDP, IPP, PORT9100, WSD"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Protocolos de Manejo de Red",
+          "value": "SNMP, HTTP, DHCP, BOOTP, APIPA, PING, DDNS, mDNS, SLP, WSD, LLTD"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Seguridad WLAN",
+          "value": "WEP (64-bit/128-bit), WPA-PSK (TKIP), WPA2-PSK (AES), WPA3-SAE(AES)"
+        },
+        {
+          "group": "Impresión desde Dispositivos Móviles",
+          "name": "Epson Connect",
+          "value": "Epson iPrint App (iOS, Android), Epson Email Print®, Remote Print Driver"
+        },
+        {
+          "group": "Impresión desde Dispositivos Móviles",
+          "name": "Otros",
+          "value": "Apple AirPrint®, Chromebook Native Print, Mopria Print Service"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Soporte de Papel",
+          "value": "A3 (297 mm × 420 mm), Tabloide/A3+ (329 mm × 483 mm), A4 (210 mm × 297 mm), Carta (216 mm × 279 mm), México-Ocio (216 mm × 340 mm), Ocio 9 (215 mm × 315 mm), Legal (216 mm × 356 mm), Media carta (140 mm × 216 mm), Ejecutivo (184 mm × 267 mm), A5, A6, B4, B5, B6, 8.5×13\", 8×10\", 5×7\", 5×8\", 4×6\", 3.5×5\", denido por el usuario (54 mm x 86 mm ~ 329 mm x 1200 mm)."
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Tamaño de Papel Máximo",
+          "value": "Alimentación trasera: A3+ (329 x 483 mm) o denido por el usuario hasta 329 x 1200 mm Bandeja Frontal: Legal (216 x 356 mm) o denido por el usuario hasta 216 x 1200 mm"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Tipos de Papel",
+          "value": "Papel Normal, Bright White Pro Paper, Presentation Paper Matte, Photo Paper Glossy, Premium Photo Paper Glossy, Ultra Premium, Photo Paper Glossy, Premium Photo Paper Semi-gloss, Premium Presentation Paper Matte, Premium Presentation Paper Matte Double-sided"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Tamaños sin Márgenes",
+          "value": "Carta, A4, A3 (297 mm× 420 mm), 4 × 6\", 5 × 7\", 8 × 10\", 11 × 14\", 11 × 17\", denido por el usuario (89 mm × 127 mm a 297 mm × 1200 mm)"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Tipos de Sobres",
+          "value": "Nº 10 (105 mm x 241 mm)"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Peso del Papel",
+          "value": "Papel Normal: 64 ~ 90 g/m2 ; papel fotográco: 102 ~ 300 g/m2"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Capacidad de Papel",
+          "value": "Alimentación trasera: 20 hojas de papel normal, 1 hoja del resto de tipo de papeles Bandeja Frontal: 250 hojas de papel normal, 20 hojas de Premium Glossy Photo Paper, 10 sobres"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Capacidad de Salida de la Bandeja de Papel",
+          "value": "30 hojas de papel normal, 20 hojas de papel Premium Glossy Photo Paper"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Pantalla",
+          "value": "2,7\" táctil a color"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Lenguaje de la Impresora",
+          "value": "ESC/P® Raster y ESC/P®-R"
+        },
+        {
+          "group": "Energía",
+          "name": "Voltaje Nominal",
+          "value": "AC 100 - 240 V"
+        },
+        {
+          "group": "Energía",
+          "name": "Frecuencia Nominal",
+          "value": "50 Hz - 60 Hz"
+        },
+        {
+          "group": "Energía",
+          "name": "Consumo de Energía",
+          "value": "12 W (en modo operación)"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-oficina"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Inyecci%C3%B3n-de-Tinta/Impresora-Multifuncional-Epson-EcoTank-L14150/p/C11CH96303",
+      "variants": [
+        {
+          "sku": "C11CH96303",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "c11ch96303-1.jpg",
+            "c11ch96303-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "1299999.00",
+            "currency": "ARS",
+            "compareAtAmount": null
+          },
+          "sampleStock": 2
+        }
+      ]
+    },
+    {
+      "name": "Impresora Multifuncional Blanco y Negro EcoTank M2120",
+      "slug": "impresora-multifuncional-blanco-y-negro-ecotank-m2120",
+      "category": "impresoras-oficina",
+      "brand": "epson",
+      "shortDescription": "La multifuncional inalámbrica monocromática EcoTank® M2120 es la elección ideal para emprendedores que necesitan alto rendimiento y eficiencia en la impresión en blanco y negro a un costo ultrabajo sin sacrificar calidad.",
+      "description": "La multifuncional inalámbrica monocromática EcoTank® M2120 es la elección ideal para emprendedores que necesitan alto rendimiento y eficiencia en la impresión en blanco y negro a un costo ultrabajo sin sacrificar calidad. Con los tanques de tinta rellenables de superalta capacidad, podrá imprimir hasta 11.0005 páginas en negro con dos botellas incluidas y hasta 6.0005 páginas en negro con botellas de reemplazo. Esta multifuncional compacta es perfecta para oficinas que imprimen miles de documentos en negro y buscan reducir costos sin sacrificar productividad. La M2120 alcanza velocidades de impresión hasta 32 páginas por minuto† y es inalámbrica para impresión por medio de dispositivos móviles.",
+      "specifications": [
+        {
+          "group": "Imprimir",
+          "name": "Tecnología de Impresión",
+          "value": "Inyección de tinta monocromática optimizada con MicroPiezo Heat-Free Technology"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Resolución Máxima de Impresión",
+          "value": "1440 dpi x 720 dpi"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Velocidad de Impresión ISO",
+          "value": "15 ppm negro (A4/carta)"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Velocidad de Impresión",
+          "value": "Hasta 32 ppm negro (borrador/A4/carta)"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Tamaño Mínimo de la Gota de Tinta",
+          "value": "3 picolitros con tecnología de gotas de tinta de tamaño variable"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Configuración del Cabezal",
+          "value": "360 inyectores negros (2 filas de 180 inyectores)"
+        },
+        {
+          "group": "Tinta",
+          "name": "Tinta de Reemplazo",
+          "value": "T534 1 botella con tinta negra rinde hasta 6.000 páginas / Especial para impresiones de documentos con textos claros, nítidos y duraderos con resistencia al agua y a la decoloración. Esta Ecotank® M2120 fue diseñada para usar botellas de tinta original marca Epson. Epson fuertemente recomienda el uso de tinta original para asegurar resultados fiables de calidad de impresión. No comprometa su garantía usando tintas no originales que podrían causar daños no cubiertos."
+        },
+        {
+          "group": "Tinta",
+          "name": "Información del Rendimiento de Tinta",
+          "value": "2 botellas con tinta negra combinadas rinden hasta 11.000 páginas"
+        },
+        {
+          "group": "General",
+          "name": "Sistemas de Operación",
+          "value": "Windows Vista® / Windows®7/Windows®8 /8.1/Windows®10 (32 bit, 64 bit), Windows Server® 2003 (SP2) - Windows Server® 20198, Mac OS®X 10.6.8 / Mac OS® 10.15.x9"
+        },
+        {
+          "group": "General",
+          "name": "Temperatura",
+          "value": "Funcionamiento: 10° a 35° C. / Almacenamiento: -20° a 40° C"
+        },
+        {
+          "group": "General",
+          "name": "Humedad",
+          "value": "Funcionamiento: 20% a 80%. / Almacenamiento: 5 a 85% (sin condensación)"
+        },
+        {
+          "group": "General",
+          "name": "Nivel de Sonido",
+          "value": "Potencia acústica: 6.5 B (A). Presión acústica: 53 dB (A)."
+        },
+        {
+          "group": "General",
+          "name": "Dimensiones",
+          "value": "Cerrado: 375 mm x 318 mm x 200 mm"
+        },
+        {
+          "group": "General",
+          "name": "Peso",
+          "value": "5 kg (excluye tintas y cables de alimentación)"
+        },
+        {
+          "group": "General",
+          "name": "País de Origen",
+          "value": "Filipinas"
+        },
+        {
+          "group": "General",
+          "name": "Garantía",
+          "value": "Garantía estándar de 1 año y extendida a 2 años al registrar el producto"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Dirección de Impresión",
+          "value": "Bidireccional"
+        },
+        {
+          "group": "Copiar",
+          "name": "Velocidad de Copia",
+          "value": "Hasta 31 cpm negro (borrador/A4/carta)"
+        },
+        {
+          "group": "Copiar",
+          "name": "Velocidad de Copiado ISO",
+          "value": "13 cpm negro (A4/carta)"
+        },
+        {
+          "group": "Copiar",
+          "name": "Calidad de Copia",
+          "value": "Texto e imagen con 600 x 600 dpi en papel normal"
+        },
+        {
+          "group": "Copiar",
+          "name": "Cantidad de Copias",
+          "value": "1-99 (sin PC)"
+        },
+        {
+          "group": "Copiar",
+          "name": "Máximo Tamaño de Copia",
+          "value": "A4/carta"
+        },
+        {
+          "group": "Copiar",
+          "name": "Características de la Copia",
+          "value": "Escala de grises: 256 gradaciones. / Reduce y aumenta (25-400%)"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Tipo de Escáner",
+          "value": "Cama plana con sensor de líneas CIS de color"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Resolución Máxima",
+          "value": "Óptica / hardware: 1200 dpi / 1200 dpi x 2400 dpi; Interpolada: 9600 dpi x 9600 dpi"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Profundidad del Bit de Color",
+          "value": "Color entrada: 48 bits, salida: 24 bits; escala de grises entrada: 16 bits, salida: 8 bits."
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Máxima Superficie de Digitalización",
+          "value": "21,6 x 29,7 cm"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Velocidad de Escaneo",
+          "value": "12 segundos blanco y negro / 28 segundos color en PDF y tamaño A4 a 200 dpi"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Conectividad Estándar",
+          "value": "USB 2.0 Hi-Speed, Wi-Fi (802.11 b/g/n), Wi-Fi-Direct®"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Protocolos de Red",
+          "value": "TCP/IPv4/IPv6 y SNMP, HTTP, DHCP, BOOTP, APIPA, PNG, DDNS, mDNS, SLP, WSD, LLTD"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Seguridad WLAN",
+          "value": "WEP (64-bit-128 bit), WPA-PSK (TKIP), WPA2-PSK (AES), WPA3-SAE (AES)"
+        },
+        {
+          "group": "Impresión desde Dispositivos Móviles",
+          "name": "Epson Connect",
+          "value": "Epson Connect Solutions: Epson iPrint App (IOS, Android), Epson Email Print, Remote Print Driver, Google Cloud Print, Mopria Print Service, Apple® AirPrint"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Tamaños de Papel",
+          "value": "Papel normal: A6 (105 mm x 148 mm), media carta (140 mm x 216 mm), ejecutivo (184 mm x 267 mm), A4 (210 mm x 297 mm),oficio 9 (215 mm x 315 mm), carta (216 mm x 279 mm), México-oficio (216 mm x 340 mm) y legal (216 mm x 356 mm), definido por el usuario (89 mm x 127 mm ~ 215.9 mm x 1200 mm) sobres #10 (105 mm x 241 mm)"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Tamaño de Papel Máximo",
+          "value": "Legal (216 mm x 356 mm)"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Tipos de Papel",
+          "value": "Papel normal, Premium Presentation Paper Matte, Premium Presentation Paper Matte Double-Sided, Presentation Paper Matte"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Tamaños sin Márgenes",
+          "value": "Superior / Inferior / Izquierda / Derecha: 3 mm"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Peso del Papel",
+          "value": "Papel normal: 64 ~ 90 g/m2"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Capacidad de Salida de la Bandeja de Papel",
+          "value": "30 hojas de papel normal (A4 / carta), 20 tarjetas postales. Boca arriba"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Capacidad de la Bandeja de Papel Secundria",
+          "value": "150 hojas estándar, 10 sobres y 30 tarjetas postales"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Pantalla",
+          "value": "LCD 1,44\" a color"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Lenguaje de la Impresora",
+          "value": "ESC/P Raster y ESC/P-R (sin PC)"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Ciclo de Trabajo Mensual",
+          "value": "Recomendado: 250 - 1.500 páginas / Máximo: Hasta 15,000 páginas"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Características Especiales",
+          "value": "Intercalar, modo silencioso de impresión"
+        },
+        {
+          "group": "Energía",
+          "name": "Voltaje Nominal",
+          "value": "CA 100 - 240 V"
+        },
+        {
+          "group": "Energía",
+          "name": "Frecuencia Nominal",
+          "value": "50 - 60 Hz"
+        },
+        {
+          "group": "Energía",
+          "name": "Corriente Nominal",
+          "value": "0,4- 0,2 A"
+        },
+        {
+          "group": "Energía",
+          "name": "Consumo de Energía",
+          "value": "Impresión modo operación: 15 W Modo preparado: 4,3 W Modo en espera: 0,7 W"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-oficina"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Inyecci%C3%B3n-de-Tinta/Impresora-Multifuncional-Blanco-y-Negro-EcoTank-M2120/p/C11CJ18301",
+      "variants": [
+        {
+          "sku": "C11CJ18301",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "c11cj18301-1.jpg",
+            "c11cj18301-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "649999.00",
+            "currency": "ARS",
+            "compareAtAmount": null
+          },
+          "sampleStock": 4
+        }
+      ]
+    },
+    {
+      "name": "Impresora WorkForce Pro WF-C5890",
+      "slug": "impresora-workforce-pro-wf-c5890",
+      "category": "impresoras-oficina",
+      "brand": "epson",
+      "shortDescription": "Con la tecnología PrecisionCore Heat-Free®, la impresora multifunción a color WorkForce® Pro WF-C5890 presenta la próxima generación de tecnología de impresión de inyección de tinta.",
+      "description": "Con la tecnología PrecisionCore Heat-Free®, la impresora multifunción a color WorkForce® Pro WF-C5890 presenta la próxima generación de tecnología de impresión de inyección de tinta. Con el consumo de energía más bajo de su clase, la WF-C5890 ofrece una gran productividad, velocidades de impresión de 25 ISO ppm (negro/color)† y una rápida salida de la primera página prácticamente sin tiempo de espera. Esta impresora multifunción incluye un innovador sistema de paquetes de tinta reemplazables para ayudar a minimizar sus intervenciones: puede imprimir hasta 5.000 páginas ISO en color y 10.000 páginas ISO en negro con paquetes de tinta reemplazables. ¿Quiere que lo contactemos?",
+      "specifications": [
+        {
+          "group": "Documentos",
+          "name": "Ficha técnica (PDF)",
+          "value": "https://mediaserver.goepson.com/ImConvServlet/imconv/13f6204ca6383584ead11cb6cf6b10d38ce2f720/original?assetDescr=WF-C5890-specs-spanish.pdf"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-oficina"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Inyecci%C3%B3n-de-Tinta/Impresora-WorkForce-Pro-WF-C5890/p/C11CK23301",
+      "variants": [
+        {
+          "sku": "C11CK23301",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "c11ck23301-1.jpg",
+            "c11ck23301-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "990.00",
+            "currency": "USD",
+            "compareAtAmount": null
+          },
+          "sampleStock": 2
+        }
+      ]
+    },
+    {
+      "name": "Impresora multifuncional Epson EcoTank L4260",
+      "slug": "impresora-multifuncional-epson-ecotank-l4260",
+      "category": "impresoras-oficina",
+      "brand": "epson",
+      "shortDescription": "La impresora multifuncional 3 en 1 L4260 para emprendedores y pequeñas oficinas ofrece funciones de productividad a un precio asequible, como la tecnología de impresión a doble cara automática , conectividad Wi-Fi y compatible con nueva aplicación Epson Smart Panel, para aprovechar toda la productividad de su impresora a través de sus dispositivo inteligentes.",
+      "description": "La impresora multifuncional 3 en 1 L4260 para emprendedores y pequeñas oficinas ofrece funciones de productividad a un precio asequible, como la tecnología de impresión a doble cara automática , conectividad Wi-Fi y compatible con nueva aplicación Epson Smart Panel, para aprovechar toda la productividad de su impresora a través de sus dispositivo inteligentes. Cuenta con la tecnología sin calor Epson Heat Free, que brinda un desempeño eficiente, ayudándolo a aumentar la productividad de su negocio y le ofrece la posibilidad de imprimir a color, por menos de lo que cuesta imprimir en blanco y negro en una impresora láser monocromática. La L4260 utiliza tinta negra pigmentada, la cual tiene una alta resistencia al agua, a la decoloración y a las manchas para mejor preservación de documentos de texto. Ideal para aquellos que buscan minimizar sus costos operativos de impresión y el consumo de papel con la conveniencia y confiabilidad que ofrece EcoTank, líder en impresión con tanques de tinta. Con una garantía limitada y extendida hasta de 2 años, Epson lo respalda totalmente para que pueda imprimir sin cartuchos y sin preocupaciones.",
+      "specifications": [
+        {
+          "group": "Imprimir",
+          "name": "Tecnología de Impresión",
+          "value": "Inyección de tinta Heat-Free™ Micro Piezo de 4 colores (CMYK)"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Resolución Máxima de Impresión",
+          "value": "Hasta 5.760 dpi x 1.440 dpi de resolución optimizada en varios tipos de papel"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Velocidad de Impresión ISO",
+          "value": "Simplex: Negro 10,5 ppm y color 5 ppm (simplex, A4/carta)"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Velocidad de Impresión",
+          "value": "Simplex: Negro 33 ppm y color 15 ppm (borrador, A4/carta)"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Tiempo de salida de la primera página",
+          "value": "10 segundos blanco y negro / 16 segundos color"
+        },
+        {
+          "group": "General",
+          "name": "Sistemas de Operación",
+          "value": "Windows Vista® / 7 / 8 / 8.1 / 10 o más reciente (32bit, 64bit) / Windows Server® 2003 (SP2) or later / Mac OS X 10.7.5 o más reciente, Mac OS 11 o más reciente"
+        },
+        {
+          "group": "General",
+          "name": "Dimensiones",
+          "value": "Abierto: 37.5 cm x 56.7 cm x 25.9 cm - Cerrado: 37.5 cm x 34.7 cm x 18.7 cm"
+        },
+        {
+          "group": "General",
+          "name": "Peso",
+          "value": "5,5 kg"
+        },
+        {
+          "group": "General",
+          "name": "País de Origen",
+          "value": "Filipinas"
+        },
+        {
+          "group": "General",
+          "name": "Garantía",
+          "value": "2 años con registro del producto"
+        },
+        {
+          "group": "Copiar",
+          "name": "Velocidad de Copiado ISO",
+          "value": "Negro 7,7 cpm y color 3,8 cpm (A4/carta)"
+        },
+        {
+          "group": "Copiar",
+          "name": "Calidad de Copia",
+          "value": "300 dpi x 600 dpi"
+        },
+        {
+          "group": "Copiar",
+          "name": "Máximo Tamaño de Copia",
+          "value": "A4/carta"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Tipo de Escáner",
+          "value": "Cama plana con sensor de líneas CIS de color"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Resolución Óptica",
+          "value": "1.200 dpi x 2.400 dpi"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Profundidad del Bit de Color",
+          "value": "48 bits de entrada, 24 bits de salida"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Profundidad del Bit Monocromático",
+          "value": "16 bits de entrada, 1 bit de salida"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Profundidad de la Escala de Grises del Bit",
+          "value": "16 bits de entrada, 8 bits de salida"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Máxima Superficie de Digitalización",
+          "value": "216 mm x 297 mm"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Conectividad Estándar",
+          "value": "USB de alta velocidad (compatible con USB 2.0), Wi-Fi 4 (IEEE 802.11 b/g/n), Wi-Fi Direct®"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Protocolos de Impresión en Red",
+          "value": "LPD, PORT9100, WSD"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Protocolos de Manejo de Red",
+          "value": "SNMP, HTTP, DHCP, APIPA, PING, DDNS, MDNS, SLP, WSD, LLTD"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Seguridad WLAN",
+          "value": "WEP (64-bit/128-bit), WPA-PSK (TKIP), WPA2-PSK (AES), WPA3-SAE (AES)"
+        },
+        {
+          "group": "Impresión desde Dispositivos Móviles",
+          "name": "Epson Connect",
+          "value": "Epson Smart Panel™ App (iOS™, Android™), Epson Email Print®, Remote Print Driver"
+        },
+        {
+          "group": "Impresión desde Dispositivos Móviles",
+          "name": "Otros",
+          "value": "Apple AirPrint®, Chromebook Native Print, Mopria Print Service™"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Tamaños de Papel Soportados",
+          "value": "Estándar: A4, Carta, Oficio (21,59 cm x 35,56 cm), México-Oficio (21,59 cm x 34,04 cm), Oficio 9 (21,49 cm x 31,5 cm), Folio (21,59 cm x 33,02 cm), Ejecutivo, Media carta, A6 / Foto: 4\"x 6\" (10 cm x 15 cm), 5\" x 7\" (13 cm x 18 cm), 8\" x 10\" Sobres: #10 / Definido por el usuario: 54 mm x 86 mm - 215.9 mm x 1.200 mm"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Tamaño de Papel Máximo",
+          "value": "215.9 mm x 1.200 mm"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Tipos de Papel",
+          "value": "Papel normal, Papel especial Epson (Photo Glossy/Semi-gloss, Presentation Paper Matte, High Quality Ink Jet Paper y Sobres)"
+        },
+        {
+          "group": "Manejo de Papel",
+          "name": "Capacidad de Entrada de Papel",
+          "value": "Alimentación trasera: hasta 100 hojas (A4/LTR/Ocio)"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Pantalla",
+          "value": "1,44\" a color"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Software Incluido",
+          "value": "CD y descarga Web: Printer Driver, Epson Scan 2, Epson ScanSmart Descarga Web: Epson Photo+"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Características Especiales",
+          "value": "Impresión automática a doble cara (A4/Carta)"
+        },
+        {
+          "group": "Energía",
+          "name": "Voltaje de Fuente de Poder",
+          "value": "EcoTank® L4260 (110V) C11CJ63301: AC 100 - 240 V / 50 Hz - 60 Hz / EcoTank® L4260 (220V) C11CJ63303: AC 220 - 240 V / 50 Hz - 60 Hz"
+        },
+        {
+          "group": "Energía",
+          "name": "Consumo de Energía",
+          "value": "12 W (en modo operación)"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-oficina"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Inyecci%C3%B3n-de-Tinta/Impresora-multifuncional-Epson-EcoTank-L4260/p/C11CJ63303",
+      "variants": [
+        {
+          "sku": "C11CJ63303",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "c11cj63303-1.jpg",
+            "c11cj63303-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "539999.00",
+            "currency": "ARS",
+            "compareAtAmount": null
+          },
+          "sampleStock": 6
+        }
+      ]
+    },
+    {
+      "name": "Impresora Inalámbrica SureColor T5170M 36\" con Escáner Integrado",
+      "slug": "impresora-inalambrica-surecolor-t5170m-36-con-escaner-integrado",
+      "category": "gran-formato",
+      "brand": "epson",
+      "shortDescription": "Easily print, scan and share precise, high-quality technical drawings, blueprints and more with this ultra-fast, 36 printer with integrated scanner.",
+      "description": "Easily print, scan and share precise, high-quality technical drawings, blueprints and more with this ultra-fast, 36 printer with integrated scanner.",
+      "specifications": [
+        {
+          "group": "Documentos",
+          "name": "Ficha técnica (PDF)",
+          "value": "https://mediaserver.goepson.com/ImConvServlet/imconv/9d04174600613dd0f906cb404c81f5b2d5114325/original?assetDescr=SureColor_T5170M_Printer_Specification_Sheet_CPD-59815R3.pdf"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Tecnología de Impresión",
+          "value": "Cabezal de impresión PrecisionCore® MicroTFP® de 4 canales, gota a demanda"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Resolución Máxima de Impresión",
+          "value": "2.400 ppp x 1.200 ppp"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Velocidad de Impresión",
+          "value": "Impresión de tamaño A1/D: 31 segundos"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Tamaño Mínimo de la Gota de Tinta",
+          "value": "4 picolitros. La tecnología de gota variable puede producir hasta tres tamaños diferentes por línea"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Tamaño Total de Memoria RAM",
+          "value": "1 GB (impresora) + 8 GB (escáner)"
+        },
+        {
+          "group": "Tinta",
+          "name": "Tipo de Tinta",
+          "value": "Tinta pigmentada UltraChrome® XD2; 4 colores (C, M, Y, K)"
+        },
+        {
+          "group": "Tinta",
+          "name": "Configuración de la Tinta",
+          "value": "Negro: 800 boquillas (800 boquillas x 1 canal) / Color: 2.400 boquillas (800 boquillas x 3 canales)"
+        },
+        {
+          "group": "General",
+          "name": "Sistemas de Operación",
+          "value": "Mac OS X® (10.6.8 o posterior) / Windows® 10, 8.1, 7 (32 bits, 64 bits)"
+        },
+        {
+          "group": "General",
+          "name": "Temperatura",
+          "value": "En funcionamiento: 50 °F a 95 °F (10 °C a 35 °C) / En funcionamiento (recomendado): 59 °F a 77 °F (15 °C a 25 C) / Almacenamiento: -4 °F a 104 °F (-20 °C a 40 °C)"
+        },
+        {
+          "group": "General",
+          "name": "Humedad",
+          "value": "En funcionamiento: 20% a 80% (sin condensación) / En funcionamiento (recomendado): 45% - 60% (sin condensación) / Almacenamiento: 5% - 85% (sin condensación)"
+        },
+        {
+          "group": "General",
+          "name": "Nivel de Sonido",
+          "value": "En funcionamiento: aproximadamente 49 dB (A) / Modo Sleep: aproximadamente 32 dB (A)"
+        },
+        {
+          "group": "General",
+          "name": "Dimensiones",
+          "value": "50\" x 24\" x 39\""
+        },
+        {
+          "group": "General",
+          "name": "Peso",
+          "value": "122 libras (56 kg)"
+        },
+        {
+          "group": "General",
+          "name": "País de Origen",
+          "value": "Indonesia"
+        },
+        {
+          "group": "Precisión y área imprimible",
+          "name": "Ancho Máximo del Papel",
+          "value": "36\""
+        },
+        {
+          "group": "Precisión y área imprimible",
+          "name": "Precisión de Líneas",
+          "value": "± 0,1% o ± 0,26 mm"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Sensor",
+          "value": "Sensor CIS (alimentación de hojas)"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Resolución Máxima",
+          "value": "Hasta 600 ppp, reimpresión 2.400 x 2.100 ppp"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Características del escáner",
+          "value": "Escaneo a carpeta de red, servidor FTP, servidor FTP seguro, servidor de correo, servidor de correo seguro, lápiz de memoria USB"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Hoja de Soporte",
+          "value": "Papel normal, papel reciclado, papel revestido, papel de calco, película, plano, papel de impresión offset, hoja portadora. Número máximo de copias: hasta 99"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Velocidad de Escaneo",
+          "value": "Hasta 1,5 ips (color) / Hasta 4,5 ips (monocromo)"
+        },
+        {
+          "group": "Manejo de Papel en Rollo",
+          "name": "Rollo Sencillo / Hojas Sueltas de Carga Superior",
+          "value": "Individual de 36\" de ancho"
+        },
+        {
+          "group": "Manejo de Papel en Rollo",
+          "name": "Diámetro Máximo del Rollo",
+          "value": "Automático o manual de hasta 4,3\""
+        },
+        {
+          "group": "Manejo de Papel en Rollo",
+          "name": "Grosor del Sustrato",
+          "value": "0,05 mm hasta 0,21 mm"
+        },
+        {
+          "group": "Manejo de Papel en Rollo",
+          "name": "Rollo de Corte",
+          "value": "Cortador giratorio interno de alta velocidad"
+        },
+        {
+          "group": "Manejo de Papel en Rollo",
+          "name": "Rollo de Papel Remanente",
+          "value": "La cantidad de papel restante se puede controlar desde el panel de control"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Pantalla",
+          "value": "Pantalla táctil de 4,3\""
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Lenguaje de la Impresora",
+          "value": "Raster ESC/P® HP-GL/2, HP RTL * 1"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Interfaces",
+          "value": "SuperSpeed USB* 1, Ethernet con cable 100BASE-TX/1000BASE-T, LAN inalámbrica IEEE802.11 b/g/n, lápiz de memoria USB, Wi-Fi Direct®"
+        },
+        {
+          "group": "Energía",
+          "name": "Voltaje Nominal",
+          "value": "CA 110V - 240V"
+        },
+        {
+          "group": "Energía",
+          "name": "Frecuencia Nominal",
+          "value": "50 Hz – 60 Hz"
+        },
+        {
+          "group": "Energía",
+          "name": "Corriente Nominal",
+          "value": "1,4 A"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-gran-formato"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Gran-Formato/Impresora-Inal%C3%A1mbrica-SureColor-T5170M-36%22-con-Esc%C3%A1ner-Integrado/p/SCT5170M",
+      "variants": [
+        {
+          "sku": "SCT5170M",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "sct5170m-1.jpg",
+            "sct5170m-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "3990.00",
+            "currency": "USD",
+            "compareAtAmount": null
+          },
+          "sampleStock": 1
+        }
+      ]
+    },
+    {
+      "name": "Impresora de Escritorio SureColor T3170x 24\"",
+      "slug": "impresora-de-escritorio-surecolor-t3170x-24",
+      "category": "gran-formato",
+      "brand": "epson",
+      "shortDescription": "Los mejores costos de impresión del mercado en su segmento: con las botellas de tinta de 140 ml se puede obtener mayor cantidad de impresiones al menor costo del mercado en equipos de 24 pulgadas.",
+      "description": "Los mejores costos de impresión del mercado en su segmento: con las botellas de tinta de 140 ml se puede obtener mayor cantidad de impresiones al menor costo del mercado en equipos de 24 pulgadas. Impresión sin cartuchos: botellas de tinta de alta capacidad con sistema EcoFit™ que evita derrames y errores de carga de tinta a través de su sistema único de llenado por color. ¿Quiere que lo contactemos?",
+      "specifications": [
+        {
+          "group": "Documentos",
+          "name": "Ficha técnica (PDF)",
+          "value": "https://cdn.bfldr.com/MWSKON77/at/bxcqtx8jrbtfh3fsxwtttw/SureColor_T3170x_Printer_Specification_Sheet_CPD-58385R4_Final.pdf"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Tecnología de Impresión",
+          "value": "Cabezal PrecisionCore® MicroTFP® de 4-canales, impresión por gota bajo demanda"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Resolución Máxima de Impresión",
+          "value": "2400 ppp x 1200 ppp"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Velocidad de Impresión",
+          "value": "Impresión en formato A1/D en 34 segundos"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Tamaño Mínimo de la Gota de Tinta",
+          "value": "Menor tamaño de gota: 4 picolitros (tecnología de gota de tamaño variable)"
+        },
+        {
+          "group": "Tinta",
+          "name": "Tipo de Tinta",
+          "value": "Botellas de tinta Epson T49H"
+        },
+        {
+          "group": "Tinta",
+          "name": "Paleta de Tintas",
+          "value": "4-colores (C, M, Y, K)"
+        },
+        {
+          "group": "Tinta",
+          "name": "Configuración de la Tinta",
+          "value": "800 boquillas x 4 canales x 1 cabezal; 800 boquillas x 4 canales"
+        },
+        {
+          "group": "General",
+          "name": "Sistemas de Operación",
+          "value": "Mac OS® 10.15.x, 10.14.x, 10.13.x, Mac® OS X® 10.12.x, 10.11.x, 10.10.x, 10.9.x, 10.8.x y 10.7.x / Windows® 10, 8.1, 7 (32-bit, 64-bit), Windows Vista® y Windows XP®"
+        },
+        {
+          "group": "General",
+          "name": "Temperatura",
+          "value": "En operación: 50 ºF a 95 ºF (10 ºC a 35 ºC) / En operación (recomendada): 65 ºF a 75 ºF (18 ºC a 24 ºC) / En almacenamiento: -4 ºF a 104 ºF (-20 ºC a 40 ºC)"
+        },
+        {
+          "group": "General",
+          "name": "Humedad",
+          "value": "En operación: 20 - 80% (sin condensación) / En operación (recomendada): 45 - 60% (sin condensación) / En almacenamiento: 5 - 85% (sin condensación)"
+        },
+        {
+          "group": "General",
+          "name": "Temperatura de uso",
+          "value": "recomendada: de 18º C a 24º C"
+        },
+        {
+          "group": "General",
+          "name": "Nivel de Sonido",
+          "value": "En operación: aprox. 50dB(A) / Modo suspendido: aprox. 32dB(A)"
+        },
+        {
+          "group": "General",
+          "name": "Dimensiones",
+          "value": "Sin base: 38\" x 32\" x 10\" (970 mm x 811 mm x 245 mm) / Con base: 38\" x 32\" x 37\" (970 mm x 811 mm x 928 mm)"
+        },
+        {
+          "group": "General",
+          "name": "Peso",
+          "value": "Sin base: 64 lb (29 kg) / Con base: 84 lb (38 kg)"
+        },
+        {
+          "group": "General",
+          "name": "Normas de Seguridad",
+          "value": "UL (MET), FCC (clase A), CSA, CE, EMC"
+        },
+        {
+          "group": "General",
+          "name": "País de Origen",
+          "value": "Indonesia"
+        },
+        {
+          "group": "Sistema de Alimentación de Tinta",
+          "name": "Volumen de llenado de suministro de tinta",
+          "value": "C, M, Y, K: 140 ml"
+        },
+        {
+          "group": "Sistema de Alimentación de Tinta",
+          "name": "Volumen de Llenado de Tinta en la Caja",
+          "value": "C, M, Y, K: 140 ml x 1 botella por color"
+        },
+        {
+          "group": "Sistema de Alimentación de Tinta",
+          "name": "Duración de la Tinta",
+          "value": "2 años a partir de la fecha de producción o 6 meses después de abierta La impresora esta diseñada para ser usada solo con botellas de tinta EPSON"
+        },
+        {
+          "group": "Precisión y área imprimible",
+          "name": "Largo Máximo de Impresión",
+          "value": "Limitado por la aplicación, sistema operativo y controlador/RIP usados"
+        },
+        {
+          "group": "Manejo de Papel en Hoja",
+          "name": "Hojas Sueltas, Alimentación Superior",
+          "value": "Hasta 24\" (60,9 cm) de ancho"
+        },
+        {
+          "group": "Manejo de Papel en Rollo",
+          "name": "Rollo Sencillo / Hojas Sueltas de Carga Superior",
+          "value": "De 24” (60,9 cm) carga superior"
+        },
+        {
+          "group": "Manejo de Papel en Rollo",
+          "name": "Núcleo de Rollo",
+          "value": "2\" de diámetro"
+        },
+        {
+          "group": "Manejo de Papel en Rollo",
+          "name": "Diámetro Máximo del Rollo",
+          "value": "Hasta 4,3\" (10,9 cm)"
+        },
+        {
+          "group": "Manejo de Papel en Rollo",
+          "name": "Grosor del Sustrato",
+          "value": "Espesor de rollo: 0,05 mm hasta 0,21 mm Cortador integrado: cortador rotativo automático"
+        },
+        {
+          "group": "Manejo de Papel en Rollo",
+          "name": "Rollo de Corte",
+          "value": "Cortador giratorio interno de alta velocidad; auto o manual"
+        },
+        {
+          "group": "Manejo de Papel en Rollo",
+          "name": "Márgenes Izquierda/Derecha",
+          "value": "3 mm, 15 mm, 45 mm (superior) / 3 mm, 15 mm (fondo) / 3 mm (derecha/izquierda)"
+        },
+        {
+          "group": "Manejo de Papel en Rollo",
+          "name": "Terminación",
+          "value": "La cantidad de papel restante en el rollo puede ser ajustada desde el panel de control"
+        },
+        {
+          "group": "Manejo de Papel en Rollo",
+          "name": "Ancho permitido del rollo de sustrato",
+          "value": "Mínimo: 13\" (33 cm) /hoja: 8,27\" (21 cm) / Espesor de la hoja: 0,12 mm hasta 0,27 mm"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Pantalla",
+          "value": "Pantalla táctil de 4,3\""
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Lenguaje de la Impresora",
+          "value": "Epson ESC/P® raster HP-GL/2, HP RTL *1"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Interfaces",
+          "value": "SuperSpeed USB (compatible con la especicación USB 3.0 ), LAN inalámbrico IEEE (802.11 b/g/n), conexión Ethernet (1000 Base-T/100 Base-TX/10 Base-T), Wi-Fi Direct®"
+        },
+        {
+          "group": "Energía",
+          "name": "Voltaje Nominal",
+          "value": "AC 110 V - 240 V"
+        },
+        {
+          "group": "Energía",
+          "name": "Frecuencia Nominal",
+          "value": "50 Hz - 60 Hz"
+        },
+        {
+          "group": "Energía",
+          "name": "Corriente Nominal",
+          "value": "1,4 A"
+        },
+        {
+          "group": "Energía",
+          "name": "Consumo de Energía",
+          "value": "En impresión: aprox. 22 W / Lista: aprox. 8 W / Modo reposo: aprox. 1,6 W / Apagada (en modo de espera): 0,2 W"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-gran-formato"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Gran-Formato/Impresora-de-Escritorio-SureColor-T3170x-24%22/p/SCT3170X",
+      "variants": [
+        {
+          "sku": "SCT3170X",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "sct3170x-1.jpg",
+            "sct3170x-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "2190.00",
+            "currency": "USD",
+            "compareAtAmount": null
+          },
+          "sampleStock": 2
+        }
+      ]
+    },
+    {
+      "name": "Impresora de Gran Formato SureColor P7370 de 24”",
+      "slug": "impresora-de-gran-formato-surecolor-p7370-de-24",
+      "category": "gran-formato",
+      "brand": "epson",
+      "shortDescription": "Presentamos la impresora SureColor P7370 de 24 pulgadas, ideal para satisfacer las exigentes necesidades de la fotografía profesional, las bellas artes y el diseño gráfico.",
+      "description": "Presentamos la impresora SureColor P7370 de 24 pulgadas, ideal para satisfacer las exigentes necesidades de la fotografía profesional, las bellas artes y el diseño gráfico. Esta impresora que está equipada con un cabezal de impresión PrecisionCore de 10 canales y una amplia variedad de colores, está diseñada para ofrecer alta calidad para exposiciones a velocidades de producción.",
+      "specifications": [
+        {
+          "group": "Documentos",
+          "name": "Ficha técnica (PDF)",
+          "value": "https://mediaserver.goepson.com/ImConvServlet/imconv/f05d03cfd8ffc2fc6cabcbcf9d4c55bfe95752ba/original?assetDescr=Catsheet_P7370_ESP_Digital.pdf"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-gran-formato"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Gran-Formato/Impresora-de-Gran-Formato-SureColor-P7370-de-24%E2%80%9D/p/SCP7370SE",
+      "variants": [
+        {
+          "sku": "SCP7370SE",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "scp7370se-1.jpg",
+            "scp7370se-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "6490.00",
+            "currency": "USD",
+            "compareAtAmount": null
+          },
+          "sampleStock": 0
+        }
+      ]
+    },
+    {
+      "name": "Impresora de Sublimación de Tinta SureColor F170",
+      "slug": "impresora-de-sublimacion-de-tinta-surecolor-f170",
+      "category": "sublimacion",
+      "brand": "epson",
+      "shortDescription": "This turnkey dye-sublimation solution includes genuine Epson dye-sublimation ink technology, a 150-sheet auto-feed tray and Mac and Windows print software for easy printing right out of the box.",
+      "description": "This turnkey dye-sublimation solution includes genuine Epson dye-sublimation ink technology, a 150-sheet auto-feed tray and Mac and Windows print software for easy printing right out of the box.",
+      "specifications": [
+        {
+          "group": "Documentos",
+          "name": "Ficha técnica (PDF)",
+          "value": "https://mediaserver.goepson.com/ImConvServlet/imconv/d2c40e7d8fe69c1818d1e06e7a7929d2e538c118/original?assetDescr=Especificaciones-F170.pdf"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Tecnología de Impresión",
+          "value": "Cabezal de impresión PrecisionCore® MicroTFP®"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Resolución Máxima de Impresión",
+          "value": "1.200 ppp x 600 ppp"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Área Máxima de Impresión",
+          "value": "Limitado por la aplicación, el sistema operativo y el controlador/RIP utilizados"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Velocidad de Impresión",
+          "value": "A4: 65 segundos"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Tamaño Mínimo de la Gota de Tinta",
+          "value": "Variable-Sized Droplet Technology"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Configuración del Cabezal",
+          "value": "784 boquillas; 400 boquillas negro, 128 boquillas x cian, magenta y amarillo"
+        },
+        {
+          "group": "Tinta",
+          "name": "Tipo de Tinta",
+          "value": "Tinta de sublimación Epson UltraChrome® DS 4 colores (C, M, Y, K)"
+        },
+        {
+          "group": "Tinta",
+          "name": "Paleta de Tintas",
+          "value": "4-color (C, M, Y, K)"
+        },
+        {
+          "group": "Tinta",
+          "name": "Tinta de Reemplazo",
+          "value": "Black Ink Bottle T49M120 Cyan Ink Bottle T49M220 Magenta Ink Bottle T49M320 Yellow Ink Bottle T49M420"
+        },
+        {
+          "group": "General",
+          "name": "Sistemas de Operación",
+          "value": "Windows® 10, Windows® 8, 8.1 (32 bits, 64 bits) / Windows® 7 (32 bits, 64 bits) / Mac® OS X® 10.6 - mac OS® 10.15.x"
+        },
+        {
+          "group": "General",
+          "name": "Temperatura",
+          "value": "En funcionamiento: 10 °C a 35 °C / Almacenamiento: -20 °C a 40 °C"
+        },
+        {
+          "group": "General",
+          "name": "Humedad",
+          "value": "En funcionamiento: 20% - 80% / Almacenamiento: 5% - 85% (sin condensación)"
+        },
+        {
+          "group": "General",
+          "name": "Nivel de Sonido",
+          "value": "Potencia: 6,6 B (A) / Presión: 53 dB (A)"
+        },
+        {
+          "group": "General",
+          "name": "Dimensiones",
+          "value": "En funcionamiento: 375 mm x 503 mm x 187 mm / Almacenamiento: 375 mm x 347 mm x 187 mm"
+        },
+        {
+          "group": "General",
+          "name": "Peso",
+          "value": "4,6 kg"
+        },
+        {
+          "group": "General",
+          "name": "Normas de Seguridad",
+          "value": "Normas de seguridad UL60950, CSA C22.2 No. 60950 EMI FCC parte 15 subparte B clase B, CAN/CSA-CEI/IEC CISPR 22 clase B"
+        },
+        {
+          "group": "General",
+          "name": "País de Origen",
+          "value": "Filipins"
+        },
+        {
+          "group": "General",
+          "name": "Garantía",
+          "value": "Garantía estándar por 1 año"
+        },
+        {
+          "group": "Sistema de Alimentación de Tinta",
+          "name": "Volumen de llenado de suministro de tinta",
+          "value": "C, M, Y, K: 100 ml cada uno"
+        },
+        {
+          "group": "Sistema de Alimentación de Tinta",
+          "name": "Volumen de Llenado de Tinta en la Caja",
+          "value": "C, M, Y, K: 140 ml cada uno"
+        },
+        {
+          "group": "Sistema de Alimentación de Tinta",
+          "name": "Duración de la Tinta",
+          "value": "2 años a partir de la fecha de producción impresa o 6 meses después de abierta La impresora está diseñada para usarse solo con botellas de tinta Epson, no con botellas de tinta o tintas de terceros*"
+        },
+        {
+          "group": "Cartuchos Epson de Tinta Inteligente",
+          "name": "Set de tinta incluido",
+          "value": "Bottle: C, M, Y, K: 140 mL each"
+        },
+        {
+          "group": "Cartuchos Epson de Tinta Inteligente",
+          "name": "Cartuchos de tinta",
+          "value": "Bottle: C, M, Y, K: 140 mL"
+        },
+        {
+          "group": "Cartuchos Epson de Tinta Inteligente",
+          "name": "Vida útil de la tinta",
+          "value": "2 years from printed production date or 6 months after opened / Printer is designed for use with Epson ink bottles only, not third-party ink bottles or ink.*"
+        },
+        {
+          "group": "Precisión y área imprimible",
+          "name": "Ancho Máximo del Papel",
+          "value": "8,5\""
+        },
+        {
+          "group": "Precisión y área imprimible",
+          "name": "Ancho Mínimo del Papel",
+          "value": "3,5\""
+        },
+        {
+          "group": "Precisión y área imprimible",
+          "name": "Ancho Máximo de Impresión",
+          "value": "8,5\" x 47,2\""
+        },
+        {
+          "group": "Precisión y área imprimible",
+          "name": "Largo Máximo de Impresión",
+          "value": "Limited by application, OS and driver/RIP used"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Tamaños de Papel",
+          "value": "A4, carta y legal"
+        },
+        {
+          "group": "Manejo de Papel en Hoja",
+          "name": "Alimentación de Hojas",
+          "value": "Max. Paper Size: 8.5\" x 47.2\"Paper Types: Epson DS Multi Use transfer paperInput Paper Capacity: Up to 150 sheets"
+        },
+        {
+          "group": "Manejo de Papel en Hoja",
+          "name": "Márgenes Izquierdo/Derecho",
+          "value": "3 mm cada uno (0,24\" en total)"
+        },
+        {
+          "group": "Manejo Textil",
+          "name": "Tipo de Sustrato",
+          "value": "Papel de transferencia Epson DS Multi-Use"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Pantalla",
+          "value": "LCD a color de 2,4\" con botones"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Interfaces",
+          "value": "USB de alta velocidad / Inalámbrico (802,11 b/g/n) / USB 2.0 / Ethernet (10/100 Mbps)"
+        },
+        {
+          "group": "Energía",
+          "name": "Voltaje Nominal",
+          "value": "CA 100V - 240V universal (automático)"
+        },
+        {
+          "group": "Energía",
+          "name": "Frecuencia Nominal",
+          "value": "50 Hz - 60 Hz"
+        },
+        {
+          "group": "Energía",
+          "name": "Corriente Nominal",
+          "value": "0,4 A - 0,2 A"
+        },
+        {
+          "group": "Energía",
+          "name": "Consumo de Energía",
+          "value": "Aprox. 13 W (en funcionamiento) / Aprox. 4,1 W (listo) / Aprox. 0,7 W (suspensión)"
+        }
+      ],
+      "isFeatured": true,
+      "tags": [
+        "uso-textil"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Gran-Formato/Impresora-de-Sublimaci%C3%B3n-de-Tinta-SureColor-F170/p/C11CJ80201",
+      "variants": [
+        {
+          "sku": "C11CJ80201",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "c11cj80201-1.jpg",
+            "c11cj80201-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "890.00",
+            "currency": "USD",
+            "compareAtAmount": null
+          },
+          "sampleStock": 3
+        }
+      ]
+    },
+    {
+      "name": "Impresora Epson SureColor F570",
+      "slug": "impresora-epson-surecolor-f570",
+      "category": "sublimacion",
+      "brand": "epson",
+      "shortDescription": "Obtenga impresiones rápidas y confiables con la SureColor® F570 de 24.",
+      "description": "Obtenga impresiones rápidas y confiables con la SureColor® F570 de 24. Ideal para personalizar premios, tazas, almohadillas y más, esta impresora de sublimación de tinta de alto rendimiento, ofrece calidad profesional utilizando la potente tecnología PrecisionCore®. Una solución clave en mano, la SureColor® F570 consta de una serie de características convenientes para agilizar el flujo de trabajo, incluido el papel de transferencia especializado para medios rígidos y blandos, una bandeja de alimentación automática de 50 hojas, un cortador incorporado, y controladores para Windows® y Mac®. Además, con su diseño notablemente compacto, puede maximizar el espacio en su taller. ¿Quiere que lo contactemos?",
+      "specifications": [
+        {
+          "group": "Imprimir",
+          "name": "Tecnología de Impresión",
+          "value": "Avanzado cabezal de impresión de inyección de tinta PrecisionCore® Micro TFP® tecnología de gota de tamaño variable"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Resolución Máxima de Impresión",
+          "value": "2400 dpi x 1200 dpi"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Velocidad de Impresión",
+          "value": "Tamaño A1/D: 62 segundos"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Tamaño Mínimo de la Gota de Tinta",
+          "value": "4 picolitros (tecnología de gota de tamaño variable)"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Configuración del Cabezal",
+          "value": "800 boquillas x 4 canales x 1 cabezal"
+        },
+        {
+          "group": "Tinta",
+          "name": "Tipo de Tinta",
+          "value": "Tinta de sublimación Epson UltraChrome® DS (4 colores)"
+        },
+        {
+          "group": "Tinta",
+          "name": "Configuración de la Tinta",
+          "value": "Cian, magenta, amarillo, negro (C, M, Y, K)"
+        },
+        {
+          "group": "Tinta",
+          "name": "Tinta de Reemplazo",
+          "value": "Botellas de tinta de 140 ml x 4 colores en total"
+        },
+        {
+          "group": "General",
+          "name": "Sistemas de Operación",
+          "value": "macOS 10.13.x, Mac OS X 10.12.x, 10.11.x, 10.10.x, 10.9.x, 10.8.x and 10.7.x Windows 10, 8.1, 7 (32-bit, 64-bit), Windows Vista and Windows XP"
+        },
+        {
+          "group": "General",
+          "name": "Requisitos de sistema",
+          "value": "Sistema para PC Windows® 10, 8.1, 8, 7, VistaTM, XP (32/64bit) o superior; CPU Intel® Core™ 2 Duo 3.05 GHz o superior; 1GB de memoria RAM; HDD con 32 GB de espacio libre / Sistema Mac®: Macintosh® Mac OS® X (10.6.8 o superior); CPU Intel® Core™ 2 Duo 3.05 GHz o superior; 4GB de memoria RAM; HDD con 32 GB de espacio libre"
+        },
+        {
+          "group": "General",
+          "name": "Temperatura",
+          "value": "Operating: 50 ˚ to 95 ˚F (10 ˚ to 35 ˚C) / Operating (Recommended): 65 ˚ to 75 ˚F (18 ˚ to 24 ˚C) / Storage: -4 ˚ to 104 ˚F (-20 ˚ to 40 ˚C)"
+        },
+        {
+          "group": "General",
+          "name": "Humedad",
+          "value": "En operación (Recomendada) 20% a 80% (sin condensación) / Almacenamiento 5% a 85% (sin condensación)"
+        },
+        {
+          "group": "General",
+          "name": "Temperatura de uso",
+          "value": "En operación (Recomendada) 10 ºC a 35 ºC / Almacenamiento -20 ºC a 40 ºC"
+        },
+        {
+          "group": "General",
+          "name": "Nivel de Sonido",
+          "value": "En operación: aprox. 50 dB / Modo de suspensión: aprox. 32 dB"
+        },
+        {
+          "group": "General",
+          "name": "Dimensiones",
+          "value": "970 mm x 577 mm x 245 mm"
+        },
+        {
+          "group": "General",
+          "name": "Peso",
+          "value": "29 kg"
+        },
+        {
+          "group": "General",
+          "name": "Funciones ECO",
+          "value": "ENERGY STAR qualified / RoHS compliant / Recyclable product / Epson America, Inc. is a SmartWay Transport Partner"
+        },
+        {
+          "group": "General",
+          "name": "Normas de Seguridad",
+          "value": "UL (MET), FCC (Class A), CSA, CE, EMC"
+        },
+        {
+          "group": "General",
+          "name": "País de Origen",
+          "value": "China"
+        },
+        {
+          "group": "General",
+          "name": "Garantía",
+          "value": "Un año de garantía limitada estándar. Programa de servicio opcional de Epson disponible para una cobertura total de dos años"
+        },
+        {
+          "group": "Cartuchos Epson de Tinta Inteligente",
+          "name": "Vida útil de la tinta",
+          "value": "2 años a partir de la fecha de producción impresa. La impresora está diseñada para ser usada solo con botellas de tinta Epson, no con sistemas de tinta de otras marcas"
+        },
+        {
+          "group": "Precisión y área imprimible",
+          "name": "Ancho Máximo del Papel",
+          "value": "24.4\""
+        },
+        {
+          "group": "Precisión y área imprimible",
+          "name": "Tamaño Mínimo de las Hojas Sueltas",
+          "value": "Ancho máximo de papel 620 mm / Ancho mínimo de papel 210 mm"
+        },
+        {
+          "group": "Precisión y área imprimible",
+          "name": "Ancho Mínimo del Papel",
+          "value": "Roll: 13\"/Sheet: 8.27\""
+        },
+        {
+          "group": "Precisión y área imprimible",
+          "name": "Ancho Máximo de Impresión",
+          "value": "Margen superior 3 mm, 15 mm, 45 mm / Margen inferior 3 mm, 15 mm / Márgenes izquierda/derecha 3 mm (6 mm total)"
+        },
+        {
+          "group": "Precisión y área imprimible",
+          "name": "Largo Máximo de Impresión",
+          "value": "Limited by application, OS and driver/RIP used"
+        },
+        {
+          "group": "Manejo de Papel en Hoja",
+          "name": "Alimentación de Hojas",
+          "value": "Auto Sheet Feeder, up to 11.7\" wide"
+        },
+        {
+          "group": "Manejo de Papel en Hoja",
+          "name": "Hojas Sueltas, Alimentación Superior",
+          "value": "Up to 24.4\" wide"
+        },
+        {
+          "group": "Manejo de Papel en Hoja",
+          "name": "Márgenes Izquierdo/Derecho",
+          "value": "3 mm each (0.24\" total)"
+        },
+        {
+          "group": "Manejo de Papel en Rollo",
+          "name": "Rollo Sencillo / Hojas Sueltas de Carga Superior",
+          "value": "210 mm (A4) hasta 620 mm (A3)"
+        },
+        {
+          "group": "Manejo de Papel en Rollo",
+          "name": "Núcleo de Rollo",
+          "value": "Diámetro de núcleo de 5 cm (2\")"
+        },
+        {
+          "group": "Manejo de Papel en Rollo",
+          "name": "Diámetro Máximo del Rollo",
+          "value": "110 mm"
+        },
+        {
+          "group": "Manejo de Papel en Rollo",
+          "name": "Peso Máximo del Rollo",
+          "value": "17 kg"
+        },
+        {
+          "group": "Manejo de Papel en Rollo",
+          "name": "Grosor del Sustrato",
+          "value": "Rollo: 0,05mm hasta 0,21mm / Hojas: 0,12mm hasta 0,27mm"
+        },
+        {
+          "group": "Manejo de Papel en Rollo",
+          "name": "Rollo de Corte",
+          "value": "Cortador rotativo automático"
+        },
+        {
+          "group": "Manejo de Papel en Rollo",
+          "name": "Rollo de Papel Remanente",
+          "value": "The amount of remaining paper can be controlled from the control panel"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Pantalla",
+          "value": "LCD táctil 4,3\""
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Lenguaje de la Impresora",
+          "value": "Imágenes por tramas ESC/P®"
+        },
+        {
+          "group": "Detalles de la Impresora",
+          "name": "Interfaces",
+          "value": "USB 3,0 de alta velocidad, Wireless LAN IEEE (802.11 b/g/n), Wired Ethernet (1000 Base-T/100 Base-TX/10 Base-T)"
+        },
+        {
+          "group": "Energía",
+          "name": "Voltaje Nominal",
+          "value": "100 V - 240 V"
+        },
+        {
+          "group": "Energía",
+          "name": "Frecuencia Nominal",
+          "value": "50 Hz - 60 Hz"
+        },
+        {
+          "group": "Energía",
+          "name": "Corriente Nominal",
+          "value": "1,4 A"
+        },
+        {
+          "group": "Energía",
+          "name": "Consumo de Energía",
+          "value": "En operación: aprox. 22 W / En espera: aprox. 8 W / Modo de suspensión: aprox. 1,6 W / Apagada: aprox. 0.4 W"
+        }
+      ],
+      "isFeatured": true,
+      "tags": [
+        "uso-textil"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Gran-Formato/Impresora-Epson-SureColor-F570/p/SCF570LA",
+      "variants": [
+        {
+          "sku": "SCF570LA",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "scf570la-1.jpg",
+            "scf570la-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "2890.00",
+            "currency": "USD",
+            "compareAtAmount": "3190.00"
+          },
+          "sampleStock": 2
+        }
+      ]
+    },
+    {
+      "name": "Impresora de Sublimación SureColor F6470 de 44\"",
+      "slug": "impresora-de-sublimacion-surecolor-f6470-de-44",
+      "category": "sublimacion",
+      "brand": "epson",
+      "shortDescription": "High-performance 44 dye-sublimation printer has speeds up to 820 ft2/hr1, PrecisionCore MicroTFP printhead, built-in cutter and media take-up reel system.",
+      "description": "High-performance 44 dye-sublimation printer has speeds up to 820 ft2/hr1, PrecisionCore MicroTFP printhead, built-in cutter and media take-up reel system.",
+      "specifications": [
+        {
+          "group": "Documentos",
+          "name": "Ficha técnica (PDF)",
+          "value": "https://mediaserver.goepson.com/ImConvServlet/imconv/8c5ebfc80150bcf1caafbc6a9798ad5b501fdfa9/original?assetDescr=Especificaciones-SureColor-F6470.pdf"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-textil"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Gran-Formato/Impresora-de-Sublimaci%C3%B3n-SureColor-F6470-de-44%22/p/SCF6470PE",
+      "variants": [
+        {
+          "sku": "SCF6470PE",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "scf6470pe-1.jpg",
+            "scf6470pe-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "9900.00",
+            "currency": "USD",
+            "compareAtAmount": null
+          },
+          "sampleStock": 1
+        }
+      ]
+    },
+    {
+      "name": "Escáner Dúplex de Documentos WorkForce ES-400 II",
+      "slug": "escaner-duplex-de-documentos-workforce-es-400-ii",
+      "category": "escaneres",
+      "brand": "epson",
+      "shortDescription": "Speeds up to 35 ppm/70 ipm.",
+      "description": "Speeds up to 35 ppm/70 ipm. 50-sheet ADF. Includes TWAIN driver for seamless integration with document software. Scan to cloud storage accounts or searchable PDFs.",
+      "specifications": [
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Tipo de Escáner",
+          "value": "Alimentación vertical, escáner dúplex a color de una pasada"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Sensor",
+          "value": "Sensor de imagen de contacto a color (CIS)"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Resolución Óptica",
+          "value": "600 dpi"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Resolución Máxima",
+          "value": "1.200 dpi"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Profundidad del Bit de Color",
+          "value": "RGB: 30 bits de entrada/24 bits de salida"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Características del escáner",
+          "value": "Carro fijo y documento en movimiento"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Máxima Superficie de Digitalización",
+          "value": "A 200 dpi: máx. 21,6 cm x 609,6 cm (8,5\" x 240\"); mín. 5,1 cm x 5,1 cm (2\" x 2\")"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Peso del Papel",
+          "value": "27 g/m - 413 g/m"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Fuente de Luz",
+          "value": "LED RGB de 3 colores"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Velocidad de Escaneo",
+          "value": "Blanco y negro, color, escala de grises, 300 dpi: 35 ppm (simplex)/70 ipm (dúplex)"
+        },
+        {
+          "group": "General",
+          "name": "Sistemas de Operación",
+          "value": "Windows® 10 (32-bit, 64-bit), Windows® 8/8.1 (32-bit, 64-bit), Windows® 7 (32-bit, 64-bit) SP1 / Mac OS X® 10.11.x a Mac OS® 10.15x / El software requiere conexión a internet para descargar e instalar"
+        },
+        {
+          "group": "General",
+          "name": "Temperatura",
+          "value": "Funcionamiento: 5 °C a 35 °C (41 °F a 95 °F)"
+        },
+        {
+          "group": "General",
+          "name": "Humedad",
+          "value": "Funcionamiento: 15% - 80% (sin condensación)"
+        },
+        {
+          "group": "General",
+          "name": "Dimensiones",
+          "value": "16,8 cm x 29,5 cm x 17,5 cm (ancho x profundidad x altura)"
+        },
+        {
+          "group": "General",
+          "name": "Peso",
+          "value": "3,7 kg"
+        },
+        {
+          "group": "General",
+          "name": "País de Origen",
+          "value": "Indonesia"
+        },
+        {
+          "group": "Detalles del Escáner",
+          "name": "Software incluido",
+          "value": "Epson Scan 2, Epson ScanSmart"
+        },
+        {
+          "group": "Detalles del Escáner",
+          "name": "Interfaces",
+          "value": "USB 3.0 de alta velocidad"
+        },
+        {
+          "group": "Detalles del Escáner",
+          "name": "Ciclo Diario de Trabajo",
+          "value": "Hasta 4.000 páginas"
+        },
+        {
+          "group": "Energía",
+          "name": "Voltaje de Fuente de Poder",
+          "value": "Adaptador CA universal 100-240 VAC (50 Hz/60 Hz)"
+        },
+        {
+          "group": "Energía",
+          "name": "Consumo de Energía",
+          "value": "Modo operación: 17 W / Modo en espera: 9,2 W / Modo en reposo: 1,2 W / Modo apagado: 0,1 W"
+        }
+      ],
+      "isFeatured": true,
+      "tags": [
+        "uso-oficina"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-hogar/Esc%C3%A1neres/Esc%C3%A1neres-de-documentos/Esc%C3%A1ner-D%C3%BAplex-de-Documentos-WorkForce-ES-400-II/p/B11B261201",
+      "variants": [
+        {
+          "sku": "B11B261201",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "b11b261201-1.jpg",
+            "b11b261201-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "899999.00",
+            "currency": "ARS",
+            "compareAtAmount": null
+          },
+          "sampleStock": 4
+        }
+      ]
+    },
+    {
+      "name": "Escáner de Documentos Dúplex Inalámbrico WorkForce ES-580W",
+      "slug": "escaner-de-documentos-duplex-inalambrico-workforce-es-580w",
+      "category": "escaneres",
+      "brand": "epson",
+      "shortDescription": "Large 4.3 touchscreen and 100-sheet ADF deliver fast, easy scans up to 35 ppm/70 ipm.",
+      "description": "Large 4.3 touchscreen and 100-sheet ADF deliver fast, easy scans up to 35 ppm/70 ipm. Wirelessly scan to smartphones, tablets and the cloud. Also features Epson Smart Panel mobile app.",
+      "specifications": [
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Tipo de Escáner",
+          "value": "Alimentación vertical, escáner dúplex a color de una pasada"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Resolución Óptica",
+          "value": "600 dpi"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Resolución Máxima",
+          "value": "1.200 dpi"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Profundidad del Bit de Color",
+          "value": "RGB: 30 bits de entrada/24 bits de salida"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Características del escáner",
+          "value": "Alimentación vertical (cara abajo)"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Sensor Óptico",
+          "value": "Sensor de imagen de contacto a color (CIS)"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Máxima Superficie de Digitalización",
+          "value": "A 200 dpi: máx. 21,6 cm x 609,6 cm (8,5\" x 240\") mín. 5,1 cm x 5,1 cm (2\" x 2\")"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Peso del Papel",
+          "value": "27 g/m – 413 g/m"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Fuente de Luz",
+          "value": "LED RGB de 3 colores"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Velocidad de Escaneo",
+          "value": "Blanco y negro, color, escala de grises, 300 dpi: 35 ppm (simplex)/70 ipm (dúplex)"
+        },
+        {
+          "group": "General",
+          "name": "Sistemas de Operación",
+          "value": "Windows® 10 (32-bit, 64-bit), Windows® 8/8.1 (32-bit, 64-bit), Windows® 7 (32-bit, 64-bit) SP1 Mac OS X® 10.11.x, Mac OS® 10.15x. / El software requiere conexión a internet para descargar e instalar"
+        },
+        {
+          "group": "General",
+          "name": "Temperatura",
+          "value": "Funcionamiento: 5 °C a 35 °C (41 °F a 95 °F)"
+        },
+        {
+          "group": "General",
+          "name": "Humedad",
+          "value": "Funcionamiento: 10% - 80% (sin condensación)"
+        },
+        {
+          "group": "General",
+          "name": "Dimensiones",
+          "value": "29,5 cm x 17 cm x 16,8 cm - 11,6\" x 6,7\" x 6,6\" (ancho x profundidad x altura)"
+        },
+        {
+          "group": "General",
+          "name": "Peso",
+          "value": "3,7 kg"
+        },
+        {
+          "group": "General",
+          "name": "País de Origen",
+          "value": "Indonesia"
+        },
+        {
+          "group": "General",
+          "name": "General",
+          "value": "Carro fijo y documento en movimiento"
+        },
+        {
+          "group": "Detalles del Escáner",
+          "name": "Software incluido",
+          "value": "Epson Scan 2, Epson ScanSmart software, OCR Software requiere conexión a Internet para descargar e instalar, Presto! BizCard®"
+        },
+        {
+          "group": "Detalles del Escáner",
+          "name": "Interfaces",
+          "value": "USB 3.0 de alta velocidad"
+        },
+        {
+          "group": "Detalles del Escáner",
+          "name": "Ciclo Diario de Trabajo",
+          "value": "Hasta 4.000 páginas"
+        },
+        {
+          "group": "Energía",
+          "name": "Voltaje de Fuente de Poder",
+          "value": "Adaptador CA universal 100V - 240V AC (50 Hz/60 Hz)"
+        },
+        {
+          "group": "Energía",
+          "name": "Consumo de Energía",
+          "value": "Modo operación: 13 W / Modo en espera: 6,9 W / Modo en reposo: 1,4 W / Modo apagado: 0,1 W"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-oficina"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-hogar/Esc%C3%A1neres/Esc%C3%A1neres-de-documentos/Esc%C3%A1ner-de-Documentos-D%C3%BAplex-Inal%C3%A1mbrico-WorkForce-ES-580W/p/B11B258201",
+      "variants": [
+        {
+          "sku": "B11B258201",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "b11b258201-1.jpg",
+            "b11b258201-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "1149999.00",
+            "currency": "ARS",
+            "compareAtAmount": null
+          },
+          "sampleStock": 2
+        }
+      ]
+    },
+    {
+      "name": "Escáner de Cama Plana Epson Perfection V39 II para Fotografías y Documentos a color",
+      "slug": "escaner-de-cama-plana-epson-perfection-v39-ii-para-fotografias-y-documentos-a-color",
+      "category": "escaneres",
+      "brand": "epson",
+      "shortDescription": "Este escáner fácil de usar cuenta con una resolución óptica de 4800 dpi; escaneo simple con un solo toque; escanea en tan solo 10 segundos; unión de imágenes y escaneo en la nube.",
+      "description": "Este escáner fácil de usar cuenta con una resolución óptica de 4800 dpi; escaneo simple con un solo toque; escanea en tan solo 10 segundos; unión de imágenes y escaneo en la nube.",
+      "specifications": [
+        {
+          "group": "Documentos",
+          "name": "Ficha técnica (PDF)",
+          "value": "https://mediaserver.goepson.com/ImConvServlet/imconv/0b13014dd9058556cc27c5e3567448bc6f6d67b4/original?assetDescr=Especificaciones-V39-II.pdf"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-oficina"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-hogar/Esc%C3%A1neres/Fotos/Esc%C3%A1ner-de-Cama-Plana-Epson-Perfection-V39-II-para-Fotograf%C3%ADas-y-Documentos-a-color/p/B11B268201",
+      "variants": [
+        {
+          "sku": "B11B268201",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "b11b268201-1.jpg",
+            "b11b268201-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "239999.00",
+            "currency": "ARS",
+            "compareAtAmount": null
+          },
+          "sampleStock": 10
+        }
+      ]
+    },
+    {
+      "name": "Epson DS-C330 Escáner Compacto de Documentos con Alimentador Automático",
+      "slug": "epson-ds-c330-escaner-compacto-de-documentos-con-alimentador-automatico",
+      "category": "escaneres",
+      "brand": "epson",
+      "shortDescription": "Este potente y compacto escáner de documentos dúplex cuenta con un ADF de 20 páginas y alimentación de papel vertical; escanea documentos de distintos tamaños e incluye controladores TWAIN e ISIS.",
+      "description": "Este potente y compacto escáner de documentos dúplex cuenta con un ADF de 20 páginas y alimentación de papel vertical; escanea documentos de distintos tamaños e incluye controladores TWAIN e ISIS.",
+      "specifications": [
+        {
+          "group": "Documentos",
+          "name": "Ficha técnica (PDF)",
+          "value": "https://mediaserver.goepson.com/ImConvServlet/imconv/1e9d7e50a2194315f8864dbffcd25c114cd578a0/original?assetDescr=Especificaciones-DS-C330-ES-v2.pdf"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-oficina"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Esc%C3%A1neres/Esc%C3%A1neres-de-documentos/Epson-DS-C330-Esc%C3%A1ner-Compacto-de-Documentos-con-Alimentador-Autom%C3%A1tico/p/B11B272201",
+      "variants": [
+        {
+          "sku": "B11B272201",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "b11b272201-1.jpg",
+            "b11b272201-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "699999.00",
+            "currency": "ARS",
+            "compareAtAmount": null
+          },
+          "sampleStock": 3
+        }
+      ]
+    },
+    {
+      "name": "Escáner Portátil Inalámbrico WorkForce ES-60W",
+      "slug": "escaner-portatil-inalambrico-workforce-es-60w",
+      "category": "escaneres",
+      "brand": "epson",
+      "shortDescription": "WorkForce® ES-60W hace que el escaneo inalámbrico sea simple y eficiente.",
+      "description": "WorkForce® ES-60W hace que el escaneo inalámbrico sea simple y eficiente. El escáner de documentos portátil e inalámbrico, más rápido, más pequeño y más ligero de su clase cuenta con escaneo inalámbrico y velocidades innovadoras: escanea una página en tan solo 4 segundos. Escanea documentos en forma inalámbrica a un PC, Mac®, iOS® o Android™3. El escáner cuenta con los software OCR Kofax®, para crear archivos PDF con capacidad de búsqueda y archivos editables de Word y Excel®, y Epson® ScanSmart Software para escanear, revisar y guardar documentos fácilmente. Con alimentación por batería o USB, el escáner detecta automáticamente si está en modo inalámbrico o USB. Su conveniente pantalla LCD muestra el estado inalámbrico y el nivel de la batería.",
+      "specifications": [
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Tipo de Escáner",
+          "value": "Escáner a una faz, portatil y a color"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Resolución Óptica",
+          "value": "600 dpi"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Resolución de Hardware",
+          "value": "600 ppp"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Resolución Máxima",
+          "value": "1200 dpi"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Profundidad del Bit de Color",
+          "value": "16 bits de entrada"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Profundidad de la Escala de Grises del Bit",
+          "value": "8 bits de salida"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Sensor Óptico",
+          "value": "CIS color de 1200 dpi (salida de hasta 600dpi)"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Fuente de Luz",
+          "value": "RGB LED de 3 colores"
+        },
+        {
+          "group": "Especificaciones del Escáner",
+          "name": "Velocidad de Escaneo",
+          "value": "Blanco y negro, 300dpi, hoja simple: 4ppm (con batería); 5.5ppm (conectado vía USB) / Color, 300dpi, hoja simple: 4ppm (con batería); 5.5ppm (conectado vía USB)"
+        },
+        {
+          "group": "General",
+          "name": "Sistemas de Operación",
+          "value": "Windows 10 (32-bit, 64-bit), Windows 8/8.1 (32-bit, 64-bit), Windows 7 (32-bit, 64-bit) SP1 / Mac OS X 10.11.x – Mac OS X 10.15.x / El software requiere conexión a internet para descarga e instalación"
+        },
+        {
+          "group": "General",
+          "name": "Temperatura",
+          "value": "Funcionamiento: 5 ° to 35 °C (41 ° to 95 °F)"
+        },
+        {
+          "group": "General",
+          "name": "Humedad",
+          "value": "Funcionamiento: 10 – 85% (sin condensación)"
+        },
+        {
+          "group": "General",
+          "name": "Temperatura de uso",
+          "value": "5° a 35° C (41° a 95° F)"
+        },
+        {
+          "group": "General",
+          "name": "Dimensiones",
+          "value": "Solo Producto: 27.2 x 4.7 x 33.8 cm / Producto en la Caja:13.3\" x 5.6\" x 2.6\""
+        },
+        {
+          "group": "General",
+          "name": "Peso",
+          "value": "300 g"
+        },
+        {
+          "group": "General",
+          "name": "Garantía",
+          "value": "12 meses"
+        },
+        {
+          "group": "Carcaterísticas del Escaner",
+          "name": "Botones",
+          "value": "Scan Start/Stop, Power, Wireless Connect, Wireless On/Off"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Conectividad Estándar",
+          "value": "USB 2.0, Wireless 802.11 b/g/n"
+        },
+        {
+          "group": "Detalles del Escáner",
+          "name": "Software incluido",
+          "value": "Epson ScanSmart, Document Capture Pro"
+        },
+        {
+          "group": "Detalles del Escáner",
+          "name": "Interfaces",
+          "value": "USB 2.0 – Micro Tipo B, Wi-Fi® 802.11 b/g/n"
+        },
+        {
+          "group": "Detalles del Escáner",
+          "name": "Ciclo Diario de Trabajo",
+          "value": "Hasta 500 páginas/día"
+        },
+        {
+          "group": "Energía",
+          "name": "Voltaje Nominal",
+          "value": "CA 120 - 240 V"
+        },
+        {
+          "group": "Energía",
+          "name": "Consumo de Energía",
+          "value": "Con Bateria, Modo operación 3,1 W / Con Bateria, Modo en espera 2,5 W / Con Bateria, Modo en reposo 1,9 W / Con Batería: Modo apagado 0,2 W / Con USB: Modo operación 2,7 W / Con USB: Modo en espera 1,6 W / Con USB: Modo en reposo 1,2 W / Con USB: Modo apagado: 0,2W"
+        },
+        {
+          "group": "Energía",
+          "name": "Requerimientos Energéticos",
+          "value": "5 V DC (USB Bus)"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-oficina"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-hogar/Esc%C3%A1neres/Esc%C3%A1neres-de-documentos/Esc%C3%A1ner-Port%C3%A1til-Inal%C3%A1mbrico-WorkForce-ES-60W/p/B11B253201",
+      "variants": [
+        {
+          "sku": "B11B253201",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "b11b253201-1.jpg",
+            "b11b253201-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "549999.00",
+            "currency": "ARS",
+            "compareAtAmount": null
+          },
+          "sampleStock": 5
+        }
+      ]
+    },
+    {
+      "name": "Proyector Láser Portátil Smart Epson EF21",
+      "slug": "proyector-laser-portatil-smart-epson-ef21",
+      "category": "proyectores",
+      "brand": "epson",
+      "shortDescription": "Convierta cada evento en una experiencia verdaderamente épica con el proyector Láser Portátil Smart Epson EF21.",
+      "description": "Convierta cada evento en una experiencia verdaderamente épica con el proyector Láser Portátil Smart Epson EF21.",
+      "specifications": [
+        {
+          "group": "Documentos",
+          "name": "Ficha técnica (PDF)",
+          "value": "https://mediaserver.goepson.com/ImConvServlet/imconv/4c9a2147a478505ec3dffa555efce769152cbc2f/original?assetDescr=Especificaciones_EpiqVision_EF21_RosaCuarzo.pdf"
+        }
+      ],
+      "isFeatured": true,
+      "tags": [
+        "uso-hogar"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-hogar/Proyectores/Cine-en-Casa/Proyector-L%C3%A1ser-Port%C3%A1til-Smart-Epson-EF21---Rosa-Cuarzo/p/V11HB35220",
+      "variants": [
+        {
+          "sku": "V11HB35220",
+          "name": "Rosa Cuarzo",
+          "optionValues": {
+            "Color": "Rosa Cuarzo"
+          },
+          "images": [
+            "v11hb35220-1.jpg",
+            "v11hb35220-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "990.00",
+            "currency": "USD",
+            "compareAtAmount": null
+          },
+          "sampleStock": 2
+        },
+        {
+          "sku": "V11HB35020",
+          "name": "Blanco Diamante",
+          "optionValues": {
+            "Color": "Blanco Diamante"
+          },
+          "images": [
+            "v11hb35020-1.jpg"
+          ],
+          "samplePrice": {
+            "amount": "990.00",
+            "currency": "USD",
+            "compareAtAmount": null
+          },
+          "sampleStock": 3
+        },
+        {
+          "sku": "V11HB35320",
+          "name": "Verde Ópalo",
+          "optionValues": {
+            "Color": "Verde Ópalo"
+          },
+          "images": [
+            "v11hb35320-1.jpg"
+          ],
+          "samplePrice": {
+            "amount": "990.00",
+            "currency": "USD",
+            "compareAtAmount": null
+          },
+          "sampleStock": 0
+        }
+      ]
+    },
+    {
+      "name": "Proyector Smart Portátil Lifestudio Pop EF-61 Full HD",
+      "slug": "proyector-smart-portatil-lifestudio-pop-ef-61-full-hd",
+      "category": "proyectores",
+      "brand": "epson",
+      "shortDescription": "La familia de proyectores portátiles Lifestudio acompaña tu estilo de vida y está diseñada para crear momentos que nos unen.",
+      "description": "La familia de proyectores portátiles Lifestudio acompaña tu estilo de vida y está diseñada para crear momentos que nos unen. Ya sea una noche de cine, un cumpleaños, videojuegos con amigos o una velada acogedora, cada experiencia se vive más grande y única.",
+      "specifications": [
+        {
+          "group": "Documentos",
+          "name": "Ficha técnica (PDF)",
+          "value": "https://mediaserver.goepson.com/ImConvServlet/imconv/2967e1c426a41d11a457b154df4fa74580fd0430/original?assetDescr=Catsheet_Pop_EF61_tam_carta_Alta_digital.pdf"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-hogar"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-hogar/Proyectores/Cine-en-Casa/Proyector-Smart-Port%C3%A1til-Lifestudio-Pop-EF-61---Verde-Humo---Full-HD/p/V11HB72321",
+      "variants": [
+        {
+          "sku": "V11HB72321",
+          "name": "Verde Humo",
+          "optionValues": {
+            "Color": "Verde Humo"
+          },
+          "images": [
+            "v11hb72321-1.jpg",
+            "v11hb72321-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "1190.00",
+            "currency": "USD",
+            "compareAtAmount": null
+          },
+          "sampleStock": 2
+        },
+        {
+          "sku": "V11HB72221",
+          "name": "Beige Rosado",
+          "optionValues": {
+            "Color": "Beige Rosado"
+          },
+          "images": [
+            "v11hb72221-1.jpg"
+          ],
+          "samplePrice": {
+            "amount": "1190.00",
+            "currency": "USD",
+            "compareAtAmount": null
+          },
+          "sampleStock": 1
+        },
+        {
+          "sku": "V11HB72021",
+          "name": "Blanco Cálido",
+          "optionValues": {
+            "Color": "Blanco Cálido"
+          },
+          "images": [
+            "v11hb72021-1.jpg"
+          ],
+          "samplePrice": {
+            "amount": "1190.00",
+            "currency": "USD",
+            "compareAtAmount": null
+          },
+          "sampleStock": 2
+        }
+      ]
+    },
+    {
+      "name": "Proyector Home Cinema 2300 para Videojuegos",
+      "slug": "proyector-home-cinema-2300-para-videojuegos",
+      "category": "proyectores",
+      "brand": "epson",
+      "shortDescription": "Disfruta de una experiencia visual inigualable con el proyector Home Cinema 2300.",
+      "description": "Disfruta de una experiencia visual inigualable con el proyector Home Cinema 2300. Tecnología 3LCD, HDR y procesamiento avanzado garantizan colores vibrantes y una resolución impresionante. Ideal para videojuegos.",
+      "specifications": [
+        {
+          "group": "Documentos",
+          "name": "Ficha técnica (PDF)",
+          "value": "https://mediaserver.goepson.com/ImConvServlet/imconv/e3bf6733917f12e7f7ad057e6f39e988a873f4dc/original?assetDescr=Especificaciones-HC-2300.pdf"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-hogar"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-hogar/Proyectores/Cine-en-Casa/Proyector-Home-Cinema-2300-para-Videojuegos/p/V11HA74020",
+      "variants": [
+        {
+          "sku": "V11HA74020",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "v11ha74020-1.jpg",
+            "v11ha74020-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "1090.00",
+            "currency": "USD",
+            "compareAtAmount": null
+          },
+          "sampleStock": 2
+        }
+      ]
+    },
+    {
+      "name": "Proyector Epson PowerLite FH52+",
+      "slug": "proyector-epson-powerlite-fh52",
+      "category": "proyectores",
+      "brand": "epson",
+      "shortDescription": "El PowerLite® FH52+ es el proyector ideal para el negocio, ya que se pueden conectar los dispositivos favoritos de forma inalámbrica.",
+      "description": "El PowerLite® FH52+ es el proyector ideal para el negocio, ya que se pueden conectar los dispositivos favoritos de forma inalámbrica. Brinda una pantalla de más de 100 con calidad excepcional. Este proyector tiene un excelente brillo para situaciones de gran luz ambiental o artificial. La tecnología 3LCD ofrece imágenes claras, brillantes y llenas de color. Su luminosidad de 4.000 lúmenes en color y 4.000 lúmenes en blanco lo convierten en la mejor opción. Su resolución de alta definición es ideal para presentaciones de gran calidad. Su diseño compacto y portable lo convierten en la mejor opción para los ejecutivos actuales. ¿Quiere que lo contactemos?",
+      "specifications": [
+        {
+          "group": "Especificaciones del Proyector",
+          "name": "Sistema de Proyección",
+          "value": "Tecnología Epson 3LCD de 3 chips"
+        },
+        {
+          "group": "Especificaciones del Proyector",
+          "name": "Método de Proyección",
+          "value": "Frontal / Posterior / Techo"
+        },
+        {
+          "group": "Especificaciones del Proyector",
+          "name": "Pantalla LCD",
+          "value": "0,61 pulgadas (C2fine)"
+        },
+        {
+          "group": "Especificaciones del Proyector",
+          "name": "Método de visualización",
+          "value": "Poly-silicon TFT active matrix"
+        },
+        {
+          "group": "Especificaciones del Proyector",
+          "name": "Número de Pixeles",
+          "value": "2.073.600 pixeles (1.920 px x 1.080 px) x 3"
+        },
+        {
+          "group": "Especificaciones del Proyector",
+          "name": "Luminosidad en Color",
+          "value": "4.000 Lúmenes"
+        },
+        {
+          "group": "Especificaciones del Proyector",
+          "name": "Luminosidad en Blanco",
+          "value": "4.000 Lúmenes"
+        },
+        {
+          "group": "Especificaciones del Proyector",
+          "name": "Relación de Aspecto",
+          "value": "16:9"
+        },
+        {
+          "group": "Especificaciones del Proyector",
+          "name": "Resolución Nativa",
+          "value": "Full HD"
+        },
+        {
+          "group": "Especificaciones del Proyector",
+          "name": "Tipo de Lámpara",
+          "value": "230W UHE"
+        },
+        {
+          "group": "Especificaciones del Proyector",
+          "name": "Vida Útil de la Lámpara",
+          "value": "5.500 horas (normal) / 12.000 horas (Eco)"
+        },
+        {
+          "group": "Especificaciones del Proyector",
+          "name": "Corrección de Trapecio",
+          "value": "Vertical: -30° +30Horizontal: -30° +30°"
+        },
+        {
+          "group": "Especificaciones del Proyector",
+          "name": "Relación de Contraste",
+          "value": "Hasta 16.000:1"
+        },
+        {
+          "group": "Especificaciones del Proyector",
+          "name": "Reproducción del Color",
+          "value": "Hasta 1 billón de colores"
+        },
+        {
+          "group": "General",
+          "name": "Temperatura de uso",
+          "value": "5°C a 40°C"
+        },
+        {
+          "group": "General",
+          "name": "Dimensiones",
+          "value": "309 mm x 90 mm x 282 mm (ancho x alto x profundidad)"
+        },
+        {
+          "group": "General",
+          "name": "Peso",
+          "value": "3,1 Kg"
+        },
+        {
+          "group": "General",
+          "name": "Seguridad",
+          "value": "Kensington Lock , Traba de seguridad"
+        },
+        {
+          "group": "Lente de Proyección",
+          "name": "Tipo",
+          "value": "Optical Zoom (Manual) / Focus (Manual)"
+        },
+        {
+          "group": "Lente de Proyección",
+          "name": "Número - F",
+          "value": "1,51-1,91"
+        },
+        {
+          "group": "Lente de Proyección",
+          "name": "Tamaño de la Imagen",
+          "value": "30\" a 300\" (0,87 m - 14,41 m)"
+        },
+        {
+          "group": "Lente de Proyección",
+          "name": "Longitud Focal",
+          "value": "18,2 mm - 29,2 mm"
+        },
+        {
+          "group": "Lente de Proyección",
+          "name": "Relación de Zoom",
+          "value": "1 - 1,6"
+        },
+        {
+          "group": "Lente de Proyección",
+          "name": "Tapa del Lente",
+          "value": "Slide lens shutter"
+        },
+        {
+          "group": "Conectividad del Proyector",
+          "name": "Conectividad Estándar",
+          "value": "Entrada computadora x 1 D-sub15 pin RCA Video In Amarillo x 1 HDMI x 2 Entrada Audio RCA (Blanco x1, Rojo x1) Usb Tipo A (para módulo inalámbrico) Usb Tipo B (para actualización Firmware) Módulo inalámbrico Integrado Wi-Fi Certified™ Miracast"
+        },
+        {
+          "group": "Detalles del Proyector",
+          "name": "Parlante",
+          "value": "Monoaural: 16W x 1"
+        },
+        {
+          "group": "Detalles del Proyector",
+          "name": "Ruido del Ventilador",
+          "value": "28 dB / 37 dB"
+        },
+        {
+          "group": "Energía",
+          "name": "Voltaje de Fuente de Poder",
+          "value": "100V - 240V AC +/- 10%, 50Hz/60 Hz"
+        },
+        {
+          "group": "Energía",
+          "name": "Consumo de Energía",
+          "value": "100V-120V: 345 (normal) - 235 (Eco)220V-240V: 327 (normal) - 225 (Eco)"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-hogar"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Proyectores/Port%C3%A1til/Proyector-Epson-PowerLite-FH52%2B/p/V11H978021",
+      "variants": [
+        {
+          "sku": "V11H978021",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "v11h978021-1.jpg",
+            "v11h978021-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "990.00",
+            "currency": "USD",
+            "compareAtAmount": null
+          },
+          "sampleStock": 4
+        }
+      ]
+    },
+    {
+      "name": "Proyector Portátil PowerLite E24",
+      "slug": "proyector-portatil-powerlite-e24",
+      "category": "proyectores",
+      "brand": "epson",
+      "shortDescription": "Obtenga una proyección asombrosa en el aula a un precio accesible con el proyector PowerLite E24.",
+      "description": "Obtenga una proyección asombrosa en el aula a un precio accesible con el proyector PowerLite E24. Con tecnología 3LCD de 3 chips, este proyector ultrabrillante de 3600 lúmenes ofrece imágenes vibrantes y de gran tamaño con resolución XGA nativa.",
+      "specifications": [
+        {
+          "group": "Documentos",
+          "name": "Ficha técnica (PDF)",
+          "value": "https://mediaserver.goepson.com/ImConvServlet/imconv/668e55a76a01acca21be862fa95248e1199fea23/original?assetDescr=Especificaciones-PowerLite-E24.pdf"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-hogar"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Proyectores/Proyectores-para-Salas-de-Clases-/Proyector-Port%C3%A1til-PowerLite-E24/p/V11HB51021",
+      "variants": [
+        {
+          "sku": "V11HB51021",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "v11hb51021-1.jpg",
+            "v11hb51021-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "590.00",
+            "currency": "USD",
+            "compareAtAmount": null
+          },
+          "sampleStock": 6
+        }
+      ]
+    },
+    {
+      "name": "Impresora Térmica de Recibos TM-T20IV-SP",
+      "slug": "impresora-termica-de-recibos-tm-t20iv-sp",
+      "category": "puntos-de-venta",
+      "brand": "epson",
+      "shortDescription": "Impresora térmica de recibos compacta, rápida y accesible, compatible con los sistemas tradicionales PC-POS y mPOS, conectividad versátil y diseño moderno.",
+      "description": "Impresora térmica de recibos compacta, rápida y accesible, compatible con los sistemas tradicionales PC-POS y mPOS, conectividad versátil y diseño moderno.",
+      "specifications": [
+        {
+          "group": "Documentos",
+          "name": "Ficha técnica (PDF)",
+          "value": "https://mediaserver.goepson.com/ImConvServlet/imconv/4c637c39d382da139693ba73923ec260a04166e1/original?assetDescr=Catsheet_TM-T20IV_C31CL47022_ESP_26-02-09.pdf"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-comercio"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Punto-de-Venta/Impresora-T%C3%A9rmica-de-Recibos-TM-T20IV-SP/p/C31CL47022",
+      "variants": [
+        {
+          "sku": "C31CL47022",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "c31cl47022-1.jpg",
+            "c31cl47022-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "289999.00",
+            "currency": "ARS",
+            "compareAtAmount": null
+          },
+          "sampleStock": 12
+        }
+      ]
+    },
+    {
+      "name": "Impresora Térmica de Recibos TM-m30III",
+      "slug": "impresora-termica-de-recibos-tm-m30iii",
+      "category": "puntos-de-venta",
+      "brand": "epson",
+      "shortDescription": "Modern, compact receipt printer features enhanced connectivity options; network tethering; USB hub capability.",
+      "description": "Modern, compact receipt printer features enhanced connectivity options; network tethering; USB hub capability. Ready for cloud printing and online ordering.",
+      "specifications": [
+        {
+          "group": "Documentos",
+          "name": "Ficha técnica (PDF)",
+          "value": "https://mediaserver.goepson.com/ImConvServlet/imconv/b4fb601f8bd377437c8c30bf4012d11e48f2dfc1/original?assetDescr=Especificaciones_TM-m30III_C31CK50012-ESP_26-02-06.pdf"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-comercio"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Punto-de-Venta/Impresora-T%C3%A9rmica-de-Recibos-TM-m30III/p/C31CK50012",
+      "variants": [
+        {
+          "sku": "C31CK50012",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "c31ck50012-1.jpg",
+            "c31ck50012-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "469999.00",
+            "currency": "ARS",
+            "compareAtAmount": null
+          },
+          "sampleStock": 5
+        }
+      ]
+    },
+    {
+      "name": "Impresora Térmica de Etiquetas TM-L100",
+      "slug": "impresora-termica-de-etiquetas-tm-l100",
+      "category": "puntos-de-venta",
+      "brand": "epson",
+      "shortDescription": "Supporting the widest variety of use cases in Epson’s liner-free lineup, the new OmniLink TM-L100 offers connectivity for virtually any business environment.",
+      "description": "Supporting the widest variety of use cases in Epson’s liner-free lineup, the new OmniLink TM-L100 offers connectivity for virtually any business environment.",
+      "specifications": [
+        {
+          "group": "Documentos",
+          "name": "Ficha técnica (PDF)",
+          "value": "https://mediaserver.goepson.com/ImConvServlet/imconv/e58164b26f2314084efc6493fe2184b6cf1109db/original?assetDescr=Especificaciones-TM_L100-v3.pdf"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-comercio"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Punto-de-Venta/Impresora-T%C3%A9rmica-de-Etiquetas-TM-L100/p/C31CJ52001",
+      "variants": [
+        {
+          "sku": "C31CJ52001",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "c31cj52001-1.jpg",
+            "c31cj52001-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "399999.00",
+            "currency": "ARS",
+            "compareAtAmount": null
+          },
+          "sampleStock": 3
+        }
+      ]
+    },
+    {
+      "name": "Impresora portátil de recibos Epson TM-P60II",
+      "slug": "impresora-portatil-de-recibos-epson-tm-p60ii",
+      "category": "puntos-de-venta",
+      "brand": "epson",
+      "shortDescription": "La P60II tiene todas las características necesarias para imprimir desde cualquier lugar en cualquier momento.",
+      "description": "La P60II tiene todas las características necesarias para imprimir desde cualquier lugar en cualquier momento. Compacta y liviana, provee la impresión más rápida de recibos en su clase con velocidades de hasta 100mm/seg. La batería de la P60II es líder en la industria por su extensa durabilidad, con servicio ininterrumpido de hasta 14 horas de operación en Wi-Fi (802.11) y hasta 46 horas con modalidad Bluetooth.",
+      "specifications": [
+        {
+          "group": "Imprimir",
+          "name": "Tecnología de Impresión",
+          "value": "Impresión térmica de líneas"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Resolución de Impresión",
+          "value": "Dot / Line: 420/432 dots"
+        },
+        {
+          "group": "Imprimir",
+          "name": "Velocidad de Impresión",
+          "value": "Modo de recibos 100 mm/seg. / Modo de separación de etiquetas 40mm/seg"
+        },
+        {
+          "group": "General",
+          "name": "Temperatura",
+          "value": "Operating: 0° C to 45° C"
+        },
+        {
+          "group": "General",
+          "name": "Dimensiones",
+          "value": "4.05\" x 6.25\" x 2.55\" (103 x 159 x 65 mm) (W x D x H)"
+        },
+        {
+          "group": "General",
+          "name": "Peso",
+          "value": "Receipt version: 1.4 lbs (630g) with battery, belt clipLabel version: 1.3 lbs (600g) with battery, belt clip"
+        },
+        {
+          "group": "General",
+          "name": "Color de la Carcasa",
+          "value": "Epson Black"
+        },
+        {
+          "group": "Fuentes de Impresión",
+          "name": "Fuentes de impresión",
+          "value": "Font A 12 x 24, new Font B 10 x 24, new Font C 8 x 16"
+        },
+        {
+          "group": "Fuentes de Impresión",
+          "name": "Capacidad de la columna",
+          "value": "58mm paper, Font A/B/C, 35/42/52 columns;60mm paper, Font A/B/C, 36/43/54 columns"
+        },
+        {
+          "group": "Fuentes de Impresión",
+          "name": "Tamaño del carácter",
+          "value": "1.5 × 3.0 / 1.25 × 3.0 / 1.0 x 2.0 mm (W x H)"
+        },
+        {
+          "group": "Fuentes de Impresión",
+          "name": "Fuentes",
+          "value": "Font A 12 x 24, new Font B 10 x 24, new Font C 8 x 16"
+        },
+        {
+          "group": "Fuentes de Impresión",
+          "name": "Conjunto de caracteres",
+          "value": "95 Alphanumeric, 48 International, 128 x 10 Graphic"
+        },
+        {
+          "group": "Fuentes de Impresión",
+          "name": "Características por púlgada",
+          "value": "17/20/25 cpi"
+        },
+        {
+          "group": "Fuentes de Impresión",
+          "name": "Código de Barras",
+          "value": "1D: EAN-8, EAN-13, UPC-A, UPC-E, JAN13, JAN8,Code 39, Code 93, Code 128, ITF, CODEBAR, GS-1-128, GS1 DataBar, GS1 DataBar Truncated, GS1DataBar Limited, GS1 DataBar Expanded2D: QR Code, Maxi Code, PDF417, Composite, DataMatrix, RSS/GS1 and Aztec"
+        },
+        {
+          "group": "Manejo de Sustratos",
+          "name": "Ancho",
+          "value": "Recibos: Papel o etiquetas, ancho de 58 mm: o 60 mm / Etiquetas: Papel o etiquetas, 30-60mm"
+        },
+        {
+          "group": "Manejo de Sustratos",
+          "name": "Diámetro del núcleo",
+          "value": "51mm"
+        },
+        {
+          "group": "Manejo de Sustratos",
+          "name": "Cortador automático",
+          "value": "Corte parcial, lado izquierdo sin corte (versión recibos)"
+        },
+        {
+          "group": "Manejo de Sustratos",
+          "name": "Carga de papel",
+          "value": "Automatic label removal from backing (label version)"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Conectividad Estándar",
+          "value": "802.11b/g/n (2.4GHz) y 802.11a/n (5GHz) o Bluetooth 2.1 + EDR"
+        },
+        {
+          "group": "Conectividad",
+          "name": "Impresión desde un dispositivo móvil",
+          "value": "WiFi (802.11): iOS, Android y Windows / Bluetooth: Android y Windows"
+        },
+        {
+          "group": "Detalles del POS",
+          "name": "Confiabilidad",
+          "value": "10 millones de líneas; 500.000 autocortes (versión recibos)"
+        },
+        {
+          "group": "Detalles del POS",
+          "name": "Clasificación de Gota",
+          "value": "4 feet"
+        },
+        {
+          "group": "Detalles del POS",
+          "name": "Buffer de Datos",
+          "value": "4096 bytes"
+        },
+        {
+          "group": "Detalles del POS",
+          "name": "Sensores",
+          "value": "Paper out (receipt and label versions); Gap, black mark, label taken (label version)"
+        },
+        {
+          "group": "Detalles del POS",
+          "name": "Software Incluido",
+          "value": "TM-P60II Utility, EpsonNet Config, EpsonNet Simple Viewer, TM-P60II Remote Configuration Tool, TM Bluetooth Connector, Built-In Configuration Page"
+        },
+        {
+          "group": "Detalles del POS",
+          "name": "Alerta Audible",
+          "value": "Programmable buzzer"
+        },
+        {
+          "group": "Detalles del POS",
+          "name": "Indicadores LED",
+          "value": "Green LED: Power (ON=Power on, OFF=Power off)Orange LED: Only shown when power is ON; Error, Paper end, Cover open, Battery level low (printer does not operate)Blue LEDs, Four battery level indicators:3 LED ON = approx. 100%–60%2 LED ON = approx. 60%–20%1 LED ON = approx. 20%–10%1 LED Flashing = approx. 10%–1%"
+        },
+        {
+          "group": "Energía",
+          "name": "Fuente de Energía",
+          "value": "Custom Lithium-Ion battery pack, AC adapter (option)"
+        },
+        {
+          "group": "Energía",
+          "name": "Vida de la Batería",
+          "value": "Hasta 14 horas con 802.11n; hasta 46 horas con Bluetooth 2.1 + EDR*"
+        },
+        {
+          "group": "Energía",
+          "name": "Cargando",
+          "value": "AC adapter (2.5 hours to full charge), custom quad baycharger (2.5 hours to full charge)"
+        }
+      ],
+      "isFeatured": false,
+      "tags": [
+        "uso-comercio"
+      ],
+      "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Punto-de-Venta/Impresora-port%C3%A1til-de-recibos-Epson-TM-P60II/p/C31CC79011",
+      "variants": [
+        {
+          "sku": "C31CC79011",
+          "name": null,
+          "optionValues": null,
+          "images": [
+            "c31cc79011-1.jpg",
+            "c31cc79011-2.jpg"
+          ],
+          "samplePrice": {
+            "amount": "549999.00",
+            "currency": "ARS",
+            "compareAtAmount": null
+          },
+          "sampleStock": 2
+        }
+      ]
+    },
+    {
+      "name": "Botella de tinta original Epson T544",
+      "slug": "botella-de-tinta-original-epson-t544",
+      "category": "tintas",
+      "brand": "epson",
+      "shortDescription": "Tinta original para EcoTank: rinde hasta 4.500 páginas en negro o 7.500 a color por juego de botellas.",
+      "description": "Botellas de tinta original Epson T544 para impresoras EcoTank. Con cada juego de botellas de repuesto imprimís hasta 4.500 páginas en negro o 7.500 páginas a color. La tinta original protege el cabezal y la garantía de tu equipo.",
+      "specifications": [
+        {
+          "group": "General",
+          "name": "Rendimiento",
+          "value": "Hasta 4.500 páginas en negro o 7.500 páginas a color por juego de botellas de repuesto"
+        }
+      ],
+      "isFeatured": true,
+      "tags": [
+        "uso-hogar",
+        "uso-oficina"
+      ],
+      "sourceUrl": null,
+      "needsReview": "TODO(client-data): confirm SKUs, contents and compatible models; add official photos",
+      "compatibleWith": [
+        "C11CJ71303",
+        "C11CJ68303",
+        "C11CJ67304",
+        "C11CJ65303"
+      ],
+      "variants": [
+        {
+          "sku": "T544120-AL",
+          "name": "Negro",
+          "optionValues": {
+            "Color": "Negro"
+          },
+          "images": [],
+          "samplePrice": {
+            "amount": "18999.00",
+            "currency": "ARS",
+            "compareAtAmount": null
+          },
+          "sampleStock": 40
+        },
+        {
+          "sku": "T544220-AL",
+          "name": "Cian",
+          "optionValues": {
+            "Color": "Cian"
+          },
+          "images": [],
+          "samplePrice": {
+            "amount": "18999.00",
+            "currency": "ARS",
+            "compareAtAmount": null
+          },
+          "sampleStock": 25
+        },
+        {
+          "sku": "T544320-AL",
+          "name": "Magenta",
+          "optionValues": {
+            "Color": "Magenta"
+          },
+          "images": [],
+          "samplePrice": {
+            "amount": "18999.00",
+            "currency": "ARS",
+            "compareAtAmount": null
+          },
+          "sampleStock": 25
+        },
+        {
+          "sku": "T544420-AL",
+          "name": "Amarillo",
+          "optionValues": {
+            "Color": "Amarillo"
+          },
+          "images": [],
+          "samplePrice": {
+            "amount": "18999.00",
+            "currency": "ARS",
+            "compareAtAmount": null
+          },
+          "sampleStock": 25
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,163 @@
+// Payments (orders and current-account settlements), Mercado Pago webhook log, transfer receipts and invoices.
+
+enum PaymentPurpose {
+  /// Pays an order.
+  ORDER
+  /// Pays down a wholesale current account balance.
+  ACCOUNT_SETTLEMENT
+}
+
+enum PaymentProvider {
+  MERCADO_PAGO
+  BANK_TRANSFER
+  /// Registered by an admin (e.g. cash at the store).
+  MANUAL
+}
+
+enum PaymentStatus {
+  PENDING
+  IN_REVIEW
+  APPROVED
+  REJECTED
+  CANCELLED
+  REFUNDED
+}
+
+enum NotificationStatus {
+  RECEIVED
+  PROCESSED
+  IGNORED
+  FAILED
+}
+
+enum ReceiptStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum InvoiceType {
+  INVOICE_A
+  INVOICE_B
+  INVOICE_C
+  CREDIT_NOTE_A
+  CREDIT_NOTE_B
+  CREDIT_NOTE_C
+}
+
+/// No deletedAt: financial record (see database.md).
+model Payment {
+  id                   Int             @id @default(autoincrement())
+  purpose              PaymentPurpose
+  /// Set when purpose = ORDER.
+  orderId              Int?
+  /// Set when purpose = ACCOUNT_SETTLEMENT.
+  currentAccountId     Int?
+  provider             PaymentProvider
+  status               PaymentStatus   @default(PENDING)
+  amount               Decimal         @db.Decimal(12, 2)
+  currency             Currency
+  installments         Int?
+  /// Mercado Pago checkout preference id.
+  preferenceId         String?         @db.VarChar(100)
+  /// Mercado Pago payment id. Always re-fetched from the MP API; never trusted from the client.
+  externalId           String?         @db.VarChar(100)
+  externalStatus       String?         @db.VarChar(60)
+  externalStatusDetail String?         @db.VarChar(120)
+  approvedAt           DateTime?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  order          Order?          @relation(fields: [orderId], references: [id])
+  currentAccount CurrentAccount? @relation(fields: [currentAccountId], references: [id])
+
+  receipts        TransferReceipt[]
+  accountMovement AccountMovement?
+
+  @@unique([provider, externalId])
+  @@index([orderId])
+  @@index([currentAccountId])
+  @@index([status])
+}
+
+/// Webhook inbox: one row per notification id, so a notification is never processed twice.
+/// Operational log: no deletedAt (see database.md). The raw payload is never stored.
+model PaymentNotification {
+  id          Int                @id @default(autoincrement())
+  provider    PaymentProvider
+  externalId  String             @db.VarChar(100)
+  topic       String             @db.VarChar(50)
+  /// Id of the resource the notification is about (e.g. MP payment id).
+  resourceId  String             @db.VarChar(100)
+  status      NotificationStatus @default(RECEIVED)
+  error       String?            @db.Text
+  processedAt DateTime?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@unique([provider, externalId])
+  @@index([status])
+}
+
+/// Bank transfer proof uploaded by the customer, reviewed by an admin.
+model TransferReceipt {
+  id             Int           @id @default(autoincrement())
+  paymentId      Int
+  fileId         Int
+  declaredAmount Decimal       @db.Decimal(12, 2)
+  currency       Currency
+  transferDate   DateTime?
+  uploadedById   Int
+  status         ReceiptStatus @default(PENDING)
+  reviewedById   Int?
+  reviewedAt     DateTime?
+  reviewNote     String?       @db.VarChar(500)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  deletedAt      DateTime?
+
+  payment    Payment    @relation(fields: [paymentId], references: [id])
+  file       StoredFile @relation(fields: [fileId], references: [id])
+  uploadedBy User       @relation("ReceiptUploadedBy", fields: [uploadedById], references: [id])
+  reviewedBy User?      @relation("ReceiptReviewedBy", fields: [reviewedById], references: [id])
+
+  @@index([paymentId])
+  @@index([fileId])
+  @@index([uploadedById])
+  @@index([reviewedById])
+  @@index([status])
+}
+
+/// Fiscal voucher, usually issued by Tango. No deletedAt: fiscal record (see database.md).
+model Invoice {
+  id           Int         @id @default(autoincrement())
+  orderId      Int?
+  companyId    Int?
+  type         InvoiceType
+  pointOfSale  Int?
+  number       String?     @db.VarChar(20)
+  /// AFIP electronic authorization code.
+  cae          String?     @db.VarChar(20)
+  caeExpiresAt DateTime?
+  issuedAt     DateTime
+  total        Decimal     @db.Decimal(12, 2)
+  currency     Currency
+  fileId       Int?
+  source       DataSource  @default(TANGO)
+  /// Voucher id in Tango.
+  externalId   String?     @db.VarChar(60)
+  emailedAt    DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  order   Order?      @relation(fields: [orderId], references: [id])
+  company Company?    @relation(fields: [companyId], references: [id])
+  file    StoredFile? @relation(fields: [fileId], references: [id])
+
+  accountMovements AccountMovement[]
+
+  @@unique([type, pointOfSale, number])
+  @@index([orderId])
+  @@index([companyId])
+  @@index([fileId])
+}

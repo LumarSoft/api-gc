@@ -31,7 +31,7 @@ npx prisma migrate dev --name add-wholesale-application
 ```
 
 - Never modify an already-applied migration — always create a new one.
-- Commit the migration folder together with the `schema.prisma` change.
+- Commit the migration folder together with the `prisma/schema/*.prisma` change.
 - Run `npx prisma generate` after every schema change **and after pulling new migrations**. Since Prisma 7,
   `migrate dev` no longer regenerates the client — skipping this leaves the code with stale types.
 - Never edit the `_prisma_migrations` table manually.
@@ -50,6 +50,8 @@ npx prisma migrate dev --name add-wholesale-application
 - Document non-obvious fields with `///` comments in the schema (why the field exists, units, allowed shapes for
   `Json`).
 - Keep the schema as the single source of truth for the database structure.
+- The schema is split by domain in `prisma/schema/` (one `.prisma` file per domain, see `docs/database.md`). Put a
+  new model in the file of its domain; create a new file only for a new domain and list it in `schema.prisma`.
 
 ## Soft deletes
 
@@ -75,3 +77,21 @@ await this.prisma.product.findMany({
 ```
 
 Any exception to soft delete must be justified and documented in this file.
+
+### Documented exceptions
+
+These models have **no `deletedAt`** on purpose (and append-only ones have no `updatedAt` either):
+
+| Kind                         | Models                                                                                                                                          | Why                                                                                                                   |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Append-only ledgers and logs | `StockMovement`, `ExchangeRate`, `CouponRedemption`, `OrderStatusHistory`, `PaymentAllocation`, `AssistantMessage`, `ActivityEvent`, `AuditLog` | They record what happened. Rows are never edited or deleted; a mistake is corrected with a new row.                   |
+| Financial and fiscal records | `Order`, `OrderItem`, `OrderAddress`, `Payment`, `Invoice`, `AccountMovement`                                                                   | Never deleted by business/legal rule: orders are cancelled, payments are refunded, ledger errors get an `ADJUSTMENT`. |
+| Operational logs             | `PaymentNotification`, `ShippingQuote`, `ExternalSync`, `EmailMessage`                                                                          | Technical state; old rows may be purged by a maintenance job, never soft-deleted.                                     |
+| Pure join tables             | `ProductTag`, `BundleItem`, `ProductCompatibility`, `PromotionTarget`, `Favorite`, `ConfiguratorOptionTag`                                      | Only link two rows. Removing the link is a real delete so their `@@unique` keeps working.                             |
+
+### Unique fields on soft-deletable models
+
+`email`, `slug`, `sku`, `code`, `cuit`, `tangoCode`… are `@unique`, and a soft-deleted row still holds its value.
+When creating a record whose unique value already belongs to a soft-deleted row, **restore and update that row**
+(`deletedAt: null`) instead of inserting a new one. This keeps the history linked (orders, movements) and never breaks
+the constraint.

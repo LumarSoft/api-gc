@@ -17,11 +17,29 @@
 
 ## Service rules
 
-- All business logic lives in the service.
+- Business logic lives in the service layer: the service plus its `lib/` rules and mapper (see below), never in controllers.
 - Services are the only layer that calls `PrismaService`.
 - One service per module — do not inject one feature's service into another unless strictly necessary.
   If shared logic is needed, extract it into a dedicated shared module.
 - Every service method has an explicit return type.
+
+## Size and responsibility
+
+- No god services. A service **orchestrates** a use case; around 250 lines is a signal to split it.
+- Move the parts that are not orchestration out of the service, inside the same module:
+  - `lib/<thing>-selects.ts` — Prisma `select`/`include` shapes and the row types inferred from them.
+  - `lib/<thing>-rules.ts` — pure business rules (no Nest, no Prisma): easy to unit test.
+  - `<thing>.mapper.ts` — an `@Injectable()` that turns rows into response DTOs (prices, URLs, labels).
+- Reference: `src/products/` (service + `product.mapper.ts` + `lib/`).
+
+## Admin routes
+
+- The admin panel uses `/admin/<resource>` routes. They live in the module of their resource, in a separate
+  `admin-<resource>.controller.ts` (and `admin-<resource>.service.ts` when the logic is not trivial), so the public
+  service does not grow. Reference: `src/files/admin-files.controller.ts`.
+- Guard every admin controller at class level: `@UseGuards(JwtAuthGuard, RolesGuard)` + `@Roles(UserRole.ADMIN)`.
+- Every admin write is recorded with `AuditLogsService.record()` (actor from `@CurrentAuditActor()`, changes from
+  `diffForAudit()`). When the write runs in a transaction, pass the transaction client so the log is atomic with it.
 
 ## PrismaService
 

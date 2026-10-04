@@ -17,6 +17,8 @@ Domain rules that apply across modules. When a request contradicts one of these,
 - `WHOLESALE`: a company whose sign-up application (CUIT, legal name, tax status, addresses, documents) was
   **approved** by an admin. Application states: `PENDING`, `APPROVED`, `REJECTED`, `PAUSED`.
 - A wholesaler that is `PENDING` or `PAUSED` buys as `RETAIL` (retail prices, no current account).
+- The buyer profile is **derived**: `User.role` is only `CUSTOMER` or `ADMIN`; a customer is `WHOLESALE` when their
+  company's `wholesaleStatus` is `APPROVED`. Never store the profile on the user.
 - Wholesalers buy directly with the wholesale price list — individual orders do not need approval.
 
 ## Orders

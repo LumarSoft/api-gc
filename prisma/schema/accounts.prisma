@@ -1,0 +1,128 @@
+// Wholesale current accounts ("cuenta corriente"): a ledger of debits and credits per company,
+// partial payments applied to specific debits, and the initial Excel import.
+
+enum MovementType {
+  /// Increases what the company owes.
+  DEBIT
+  /// Decreases what the company owes.
+  CREDIT
+}
+
+enum AccountMovementReason {
+  PURCHASE
+  PAYMENT
+  ADJUSTMENT
+  OPENING_BALANCE
+  CREDIT_NOTE
+}
+
+enum ImportStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model CurrentAccount {
+  id              Int       @id @default(autoincrement())
+  companyId       Int       @unique
+  currency        Currency  @default(ARS)
+  /// Positive = the company owes. Updated in the same transaction as every AccountMovement.
+  balance         Decimal   @default(0) @db.Decimal(12, 2)
+  /// Null = no limit.
+  creditLimit     Decimal?  @db.Decimal(12, 2)
+  /// Days from purchase to due date for new debits.
+  paymentTermDays Int       @default(30)
+  /// Blocks new purchases on account (e.g. overdue debt).
+  isBlocked       Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  movements AccountMovement[]
+  payments  Payment[]
+}
+
+/// Ledger row. Never edited or deleted except `openAmount`; corrections are new ADJUSTMENT rows (see database.md).
+model AccountMovement {
+  id               Int                   @id @default(autoincrement())
+  currentAccountId Int
+  type             MovementType
+  reason           AccountMovementReason
+  /// Always positive; `type` gives the direction.
+  amount           Decimal               @db.Decimal(12, 2)
+  currency         Currency
+  /// Debits only.
+  dueDate          DateTime?
+  /// Debits only: amount still unpaid after allocations. 0 = fully paid.
+  openAmount       Decimal?              @db.Decimal(12, 2)
+  description      String                @db.VarChar(255)
+  orderId          Int?
+  invoiceId        Int?
+  /// The payment that generated this credit.
+  paymentId        Int?                  @unique
+  importBatchId    Int?
+  createdById      Int?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+
+  currentAccount CurrentAccount      @relation(fields: [currentAccountId], references: [id])
+  order          Order?              @relation(fields: [orderId], references: [id])
+  invoice        Invoice?            @relation(fields: [invoiceId], references: [id])
+  payment        Payment?            @relation(fields: [paymentId], references: [id])
+  importBatch    AccountImportBatch? @relation(fields: [importBatchId], references: [id])
+  createdBy      User?               @relation(fields: [createdById], references: [id])
+
+  /// Allocations where this movement is the credit (payment) being applied.
+  allocationsGiven    PaymentAllocation[] @relation("AllocationCredit")
+  /// Allocations where this movement is the debit being paid.
+  allocationsReceived PaymentAllocation[] @relation("AllocationDebit")
+
+  @@index([currentAccountId, createdAt])
+  @@index([orderId])
+  @@index([invoiceId])
+  @@index([importBatchId])
+  @@index([createdById])
+  @@index([dueDate])
+}
+
+/// How much of a credit pays which debit (partial payments). Append-only (see database.md).
+model PaymentAllocation {
+  id               Int      @id @default(autoincrement())
+  creditMovementId Int
+  debitMovementId  Int
+  amount           Decimal  @db.Decimal(12, 2)
+  createdAt        DateTime @default(now())
+
+  creditMovement AccountMovement @relation("AllocationCredit", fields: [creditMovementId], references: [id])
+  debitMovement  AccountMovement @relation("AllocationDebit", fields: [debitMovementId], references: [id])
+
+  @@index([creditMovementId])
+  @@index([debitMovementId])
+}
+
+/// Excel upload of opening balances. Each imported row becomes an OPENING_BALANCE movement.
+model AccountImportBatch {
+  id           Int          @id @default(autoincrement())
+  fileId       Int
+  status       ImportStatus @default(PENDING)
+  totalRows    Int          @default(0)
+  importedRows Int          @default(0)
+  /// Shape: [{ "row": 12, "message": "CUIT inexistente" }].
+  errorReport  Json?
+  createdById  Int
+  completedAt  DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  deletedAt    DateTime?
+
+  file      StoredFile @relation(fields: [fileId], references: [id])
+  createdBy User       @relation(fields: [createdById], references: [id])
+
+  movements AccountMovement[]
+
+  @@index([fileId])
+  @@index([createdById])
+}

@@ -1,0 +1,110 @@
+// System: key-value settings, sync state with external systems (Tango), outgoing emails and the admin audit log.
+
+enum IntegrationProvider {
+  TANGO
+}
+
+enum SyncEntity {
+  PRODUCT
+  PRICE
+  STOCK
+  ORDER
+  INVOICE
+  CUSTOMER
+}
+
+enum SyncDirection {
+  /// External system → store (prices, stock, invoices).
+  INBOUND
+  /// Store → external system (orders, customers).
+  OUTBOUND
+}
+
+enum SyncStatus {
+  PENDING
+  SYNCED
+  FAILED
+}
+
+enum EmailStatus {
+  QUEUED
+  SENT
+  FAILED
+  /// Development without credentials: logged instead of sent.
+  LOGGED
+}
+
+/// Store-wide configuration editable from the admin panel, e.g. "reservation.transferHours" → 24.
+model Setting {
+  id          Int       @id @default(autoincrement())
+  key         String    @unique @db.VarChar(100)
+  /// Shape depends on the key; documented next to the code that reads it.
+  value       Json
+  description String?   @db.VarChar(255)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+}
+
+/// Sync state of one record with an external system. A failed sync never blocks a sale: it is retried and
+/// shown in the admin panel. Operational log: no deletedAt (see database.md).
+model ExternalSync {
+  id            Int                 @id @default(autoincrement())
+  provider      IntegrationProvider
+  entityType    SyncEntity
+  /// Local record id (Order.id, ProductVariant.id…). Null for bulk syncs.
+  entityId      Int?
+  externalId    String?             @db.VarChar(100)
+  direction     SyncDirection
+  status        SyncStatus          @default(PENDING)
+  attempts      Int                 @default(0)
+  lastError     String?             @db.Text
+  lastAttemptAt DateTime?
+  nextAttemptAt DateTime?
+  syncedAt      DateTime?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@index([provider, entityType, entityId])
+  @@index([status, nextAttemptAt])
+}
+
+/// Every transactional email (confirmations, invoices, reminders). Operational log: no deletedAt (see database.md).
+model EmailMessage {
+  id            Int         @id @default(autoincrement())
+  toEmail       String      @db.VarChar(191)
+  /// Template key, e.g. "order-confirmation", "payment-reminder".
+  template      String      @db.VarChar(60)
+  subject       String      @db.VarChar(200)
+  status        EmailStatus @default(QUEUED)
+  /// Record the email is about, e.g. "Order" / 123.
+  relatedEntity String?     @db.VarChar(40)
+  relatedId     Int?
+  error         String?     @db.Text
+  sentAt        DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([relatedEntity, relatedId])
+  @@index([status])
+}
+
+/// Who changed what in the admin panel. Append-only (see database.md).
+model AuditLog {
+  id         Int      @id @default(autoincrement())
+  userId     Int?
+  /// e.g. "product.update", "company.approve".
+  action     String   @db.VarChar(60)
+  entityType String   @db.VarChar(60)
+  entityId   Int?
+  /// Shape: { "field": { "from": …, "to": … } }. Never contains secrets.
+  changes    Json?
+  ipAddress  String?  @db.VarChar(45)
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([createdAt])
+}

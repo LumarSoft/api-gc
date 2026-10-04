@@ -1,0 +1,220 @@
+// Identity: users, companies (wholesale customers), wholesale applications, addresses and auth tokens.
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
+/// AFIP tax status ("condición frente al IVA").
+enum TaxCondition {
+  RESPONSABLE_INSCRIPTO
+  MONOTRIBUTISTA
+  EXENTO
+  CONSUMIDOR_FINAL
+  NO_RESPONSABLE
+}
+
+enum WholesaleStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PAUSED
+}
+
+enum AddressType {
+  SHIPPING
+  BILLING
+  FISCAL
+}
+
+enum AuthTokenType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+  REFRESH
+}
+
+enum CompanyDocumentType {
+  AFIP_REGISTRATION
+  GROSS_INCOME_REGISTRATION
+  BYLAWS
+  ID_DOCUMENT
+  OTHER
+}
+
+model User {
+  id              Int       @id @default(autoincrement())
+  email           String    @unique @db.VarChar(191)
+  passwordHash    String    @db.VarChar(255)
+  firstName       String    @db.VarChar(100)
+  lastName        String    @db.VarChar(100)
+  phone           String?   @db.VarChar(30)
+  /// DNI or CUIT, used to invoice retail purchases.
+  documentNumber  String?   @db.VarChar(20)
+  role            UserRole  @default(CUSTOMER)
+  isActive        Boolean   @default(true)
+  marketingOptIn  Boolean   @default(false)
+  emailVerifiedAt DateTime?
+  lastLoginAt     DateTime?
+  /// Set when the user belongs to a company. The buyer profile is WHOLESALE only if that company is APPROVED.
+  companyId       Int?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+
+  company Company? @relation("CompanyMembers", fields: [companyId], references: [id])
+
+  addresses                  Address[]
+  authTokens                 AuthToken[]
+  submittedApplications      WholesaleApplication[]  @relation("ApplicationSubmittedBy")
+  reviewedApplications       WholesaleApplication[]  @relation("ApplicationReviewedBy")
+  uploadedFiles              StoredFile[]
+  carts                      Cart[]
+  favorites                  Favorite[]
+  orders                     Order[]
+  orderStatusChanges         OrderStatusHistory[]
+  uploadedReceipts           TransferReceipt[]       @relation("ReceiptUploadedBy")
+  reviewedReceipts           TransferReceipt[]       @relation("ReceiptReviewedBy")
+  stockMovements             StockMovement[]
+  accountMovements           AccountMovement[]
+  accountImports             AccountImportBatch[]
+  couponRedemptions          CouponRedemption[]
+  conversations              AssistantConversation[] @relation("ConversationCustomer")
+  assignedConversations      AssistantConversation[] @relation("ConversationAssignee")
+  resolvedQuestions          UnansweredQuestion[]
+  configuratorSessions       ConfiguratorSession[]
+  inquiries                  ProductInquiry[]        @relation("InquiryCustomer")
+  assignedInquiries          ProductInquiry[]        @relation("InquiryAssignee")
+  notesAboutUser             CustomerNote[]          @relation("NoteAboutUser")
+  authoredNotes              CustomerNote[]          @relation("NoteAuthor")
+  activityEvents             ActivityEvent[]
+  resolvedWithdrawalRequests WithdrawalRequest[]
+  auditLogs                  AuditLog[]
+
+  @@index([companyId])
+}
+
+/// A business customer. Created when a wholesale application is submitted.
+model Company {
+  id              Int             @id @default(autoincrement())
+  legalName       String          @db.VarChar(200)
+  tradeName       String?         @db.VarChar(200)
+  /// 11 digits, no dashes. Validated with the official check digit.
+  cuit            String          @unique @db.VarChar(11)
+  taxCondition    TaxCondition
+  email           String          @db.VarChar(191)
+  phone           String?         @db.VarChar(30)
+  /// Current access level. Source of truth for wholesale prices and current account access.
+  wholesaleStatus WholesaleStatus @default(PENDING)
+  statusChangedAt DateTime?
+  /// Price list applied when approved. Null = the default WHOLESALE list.
+  priceListId     Int?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  deletedAt       DateTime?
+
+  priceList PriceList? @relation(fields: [priceListId], references: [id])
+
+  members        User[]                 @relation("CompanyMembers")
+  addresses      Address[]
+  applications   WholesaleApplication[]
+  documents      CompanyDocument[]
+  currentAccount CurrentAccount?
+  orders         Order[]
+  invoices       Invoice[]
+  notes          CustomerNote[]
+
+  @@index([priceListId])
+  @@index([wholesaleStatus])
+}
+
+/// Each submission (and its review decision) of a company asking for wholesale access.
+model WholesaleApplication {
+  id            Int             @id @default(autoincrement())
+  companyId     Int
+  submittedById Int
+  status        WholesaleStatus @default(PENDING)
+  message       String?         @db.Text
+  reviewedById  Int?
+  reviewedAt    DateTime?
+  reviewNote    String?         @db.Text
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  deletedAt     DateTime?
+
+  company     Company @relation(fields: [companyId], references: [id])
+  submittedBy User    @relation("ApplicationSubmittedBy", fields: [submittedById], references: [id])
+  reviewedBy  User?   @relation("ApplicationReviewedBy", fields: [reviewedById], references: [id])
+
+  documents CompanyDocument[]
+
+  @@index([companyId])
+  @@index([submittedById])
+  @@index([reviewedById])
+  @@index([status])
+}
+
+model CompanyDocument {
+  id            Int                 @id @default(autoincrement())
+  companyId     Int
+  applicationId Int?
+  type          CompanyDocumentType
+  fileId        Int
+  note          String?             @db.VarChar(255)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  deletedAt     DateTime?
+
+  company     Company               @relation(fields: [companyId], references: [id])
+  application WholesaleApplication? @relation(fields: [applicationId], references: [id])
+  file        StoredFile            @relation(fields: [fileId], references: [id])
+
+  @@index([companyId])
+  @@index([applicationId])
+  @@index([fileId])
+}
+
+/// Saved address of a user or a company (exactly one owner).
+model Address {
+  id            Int         @id @default(autoincrement())
+  userId        Int?
+  companyId     Int?
+  type          AddressType @default(SHIPPING)
+  label         String?     @db.VarChar(60)
+  recipientName String      @db.VarChar(150)
+  phone         String?     @db.VarChar(30)
+  street        String      @db.VarChar(150)
+  streetNumber  String      @db.VarChar(20)
+  floor         String?     @db.VarChar(10)
+  apartment     String?     @db.VarChar(10)
+  city          String      @db.VarChar(100)
+  province      String      @db.VarChar(100)
+  postalCode    String      @db.VarChar(10)
+  notes         String?     @db.VarChar(255)
+  isDefault     Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  deletedAt     DateTime?
+
+  user    User?    @relation(fields: [userId], references: [id])
+  company Company? @relation(fields: [companyId], references: [id])
+
+  @@index([userId])
+  @@index([companyId])
+}
+
+/// One-time tokens. Only the hash is stored, never the token itself.
+model AuthToken {
+  id        Int           @id @default(autoincrement())
+  userId    Int
+  type      AuthTokenType
+  tokenHash String        @unique @db.VarChar(255)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  deletedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, type])
+}

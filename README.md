@@ -75,13 +75,22 @@ DATABASE_URL="mysql://root@localhost:3306/cg"
 Use a user that can create databases: `prisma migrate dev` creates a temporary "shadow" database to detect schema
 drift. The `cg` database itself is created automatically if it does not exist.
 
-| Variable                   | Default                 | Description                                  |
-| -------------------------- | ----------------------- | -------------------------------------------- |
-| `PORT`                     | `3001`                  | API port                                     |
-| `CORS_ORIGIN`              | `http://localhost:3000` | Allowed origins, comma-separated             |
-| `DATABASE_URL`             | —                       | MySQL connection string                      |
-| `DB_POOL_CONNECTION_LIMIT` | `10`                    | Max DB connections                           |
-| `DB_POOL_IDLE_TIMEOUT`     | `60`                    | Idle seconds (keep below MySQL wait_timeout) |
+| Variable                   | Default                       | Description                                                |
+| -------------------------- | ----------------------------- | ---------------------------------------------------------- |
+| `PORT`                     | `3001`                        | API port                                                   |
+| `CORS_ORIGIN`              | `http://localhost:3000`       | Allowed origins, comma-separated                           |
+| `DATABASE_URL`             | —                             | MySQL connection string                                    |
+| `DB_POOL_CONNECTION_LIMIT` | `10`                          | Max DB connections                                         |
+| `DB_POOL_IDLE_TIMEOUT`     | `60`                          | Idle seconds (keep below MySQL wait_timeout)               |
+| `JWT_SECRET`               | —                             | 32+ random chars (required; see `.env.example`)            |
+| `JWT_ACCESS_TTL_MINUTES`   | `15`                          | Access token lifetime                                      |
+| `REFRESH_TOKEN_TTL_DAYS`   | `30`                          | Session lifetime                                           |
+| `FRONT_URL`                | `http://localhost:3000`       | Base URL for links in emails                               |
+| `COOKIE_DOMAIN`            | empty                         | Shared parent domain in production                         |
+| `COOKIE_SECURE`            | `false`                       | `true` in production (HTTPS)                               |
+| `TRUST_PROXY`              | `0`                           | Proxy hops in front of the API (usually `1` in production) |
+| `STORAGE_DIR`              | `storage`                     | Local folder for uploaded files (git-ignored)              |
+| `PUBLIC_FILES_URL`         | `http://localhost:3001/files` | Base URL of public files                                   |
 
 ### 5. Apply migrations
 
@@ -90,13 +99,21 @@ npx prisma migrate dev     # applies every migration in prisma/migrations
 npx prisma generate        # regenerates the Prisma client (Prisma 7 does not do it on migrate)
 ```
 
-### 6. Run
+### 6. Load the starter catalog (optional)
+
+```bash
+npm run db:seed           # ~40 real Epson products with photos; prices and stock are SAMPLE data
+```
+
+Safe to run again: it only creates what is missing.
+
+### 7. Run
 
 ```bash
 npm run dev                # watch mode → http://localhost:3001
 ```
 
-### 7. Verify
+### 8. Verify
 
 ```bash
 curl http://localhost:3001/health
@@ -111,6 +128,11 @@ npm run test               # unit tests (no database needed)
 npm run test:e2e           # end-to-end tests (needs the database from step 3)
 ```
 
+## Staying up to date
+
+After every `git pull`, run `npm run doctor`: it tells you exactly what is missing (new env vars, migrations, seed…)
+and how to fix it. The history of manual steps is in [docs/upgrade-notes.md](docs/upgrade-notes.md).
+
 ## Daily workflow
 
 ```bash
@@ -118,10 +140,11 @@ git pull
 npm install                # if package.json changed
 npx prisma migrate dev     # if there are new migrations
 npx prisma generate        # always after migrate
+npm run doctor             # checks everything else
 npm run dev
 ```
 
-Changed `prisma/schema.prisma`?
+Changed a file in `prisma/schema/`?
 
 ```bash
 npx prisma migrate dev --name <descriptive-name>
@@ -133,18 +156,20 @@ that is already on `main`. More in [docs/rules/database.md](docs/rules/database.
 
 ## Scripts
 
-| Script               | What it does                        |
-| -------------------- | ----------------------------------- |
-| `npm run dev`        | Start in watch mode                 |
-| `npm run build`      | Compile to `dist/`                  |
-| `npm run start:prod` | Run the compiled build              |
-| `npm run lint`       | ESLint (with auto-fix)              |
-| `npm run format`     | Prettier on `src/` and `test/`      |
-| `npm run test`       | Unit tests                          |
-| `npm run test:e2e`   | End-to-end tests (needs MySQL)      |
-| `npm run db:up`      | Start MySQL in Docker               |
-| `npm run db:down`    | Stop MySQL in Docker                |
-| `npx prisma studio`  | Browse and edit data in the browser |
+| Script                 | What it does                                                       |
+| ---------------------- | ------------------------------------------------------------------ |
+| `npm run dev`          | Start in watch mode                                                |
+| `npm run build`        | Compile to `dist/`                                                 |
+| `npm run start:prod`   | Run the compiled build                                             |
+| `npm run lint`         | ESLint (with auto-fix)                                             |
+| `npm run format`       | Prettier on `src/` and `test/`                                     |
+| `npm run test`         | Unit tests                                                         |
+| `npm run test:e2e`     | End-to-end tests (needs MySQL)                                     |
+| `npm run db:up`        | Start MySQL in Docker                                              |
+| `npm run db:down`      | Stop MySQL in Docker                                               |
+| `npx prisma studio`    | Browse and edit data in the browser                                |
+| `npm run admin:create` | Create/promote an admin (`ADMIN_EMAIL`, `ADMIN_PASSWORD` env vars) |
+| `npm run db:seed`      | Load the starter catalog (idempotent)                              |
 
 ## Production build
 

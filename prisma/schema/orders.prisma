@@ -1,0 +1,164 @@
+// Orders. An order is never deleted (it is cancelled) and never recalculated: lines and addresses are snapshots.
+
+enum OrderStatus {
+  /// Created, stock reserved, waiting for the payment.
+  PENDING_PAYMENT
+  /// A transfer receipt was uploaded and waits for an admin review.
+  PAYMENT_UNDER_REVIEW
+  /// Paid, or charged to the current account.
+  CONFIRMED
+  PREPARING
+  READY_FOR_PICKUP
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  /// The reservation expired without payment.
+  EXPIRED
+}
+
+enum PaymentMethod {
+  MERCADO_PAGO
+  BANK_TRANSFER
+  /// Approved wholesale companies only.
+  CURRENT_ACCOUNT
+}
+
+enum DeliveryMethod {
+  STORE_PICKUP
+  /// Rosario delivery with flat rate and free-shipping threshold.
+  LOCAL_DELIVERY
+  /// Rest of the country, quoted by an external provider.
+  CARRIER
+}
+
+/// No deletedAt: orders are cancelled, never deleted (see database.md).
+model Order {
+  id             Int            @id @default(autoincrement())
+  /// Human-readable number shown to customers, e.g. "CG-000123".
+  number         String         @unique @db.VarChar(20)
+  userId         Int
+  /// Set for wholesale purchases.
+  companyId      Int?
+  buyerType      BuyerType
+  /// Price list used to price this order.
+  priceListId    Int
+  status         OrderStatus    @default(PENDING_PAYMENT)
+  paymentMethod  PaymentMethod
+  deliveryMethod DeliveryMethod
+  /// Currency of every amount on this order.
+  currency       Currency       @default(ARS)
+  /// USD → ARS rate used to convert USD-priced items. Null if no item was priced in USD.
+  exchangeRate   Decimal?       @db.Decimal(12, 4)
+  subtotal       Decimal        @db.Decimal(12, 2)
+  discountTotal  Decimal        @default(0) @db.Decimal(12, 2)
+  shippingTotal  Decimal        @default(0) @db.Decimal(12, 2)
+  total          Decimal        @db.Decimal(12, 2)
+  couponId       Int?
+  contactEmail   String         @db.VarChar(191)
+  contactPhone   String?        @db.VarChar(30)
+  customerNote   String?        @db.VarChar(500)
+  internalNote   String?        @db.Text
+  placedAt       DateTime       @default(now())
+  /// Reservation deadline while PENDING_PAYMENT.
+  expiresAt      DateTime?
+  confirmedAt    DateTime?
+  cancelledAt    DateTime?
+  cancelReason   String?        @db.VarChar(255)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id])
+  company   Company?  @relation(fields: [companyId], references: [id])
+  priceList PriceList @relation(fields: [priceListId], references: [id])
+  coupon    Coupon?   @relation(fields: [couponId], references: [id])
+
+  items              OrderItem[]
+  addresses          OrderAddress[]
+  statusHistory      OrderStatusHistory[]
+  payments           Payment[]
+  reservations       StockReservation[]
+  stockMovements     StockMovement[]
+  shipments          Shipment[]
+  invoices           Invoice[]
+  accountMovements   AccountMovement[]
+  withdrawalRequests WithdrawalRequest[]
+  cart               Cart?
+  couponRedemption   CouponRedemption?
+
+  @@index([userId])
+  @@index([companyId])
+  @@index([priceListId])
+  @@index([couponId])
+  @@index([status, placedAt])
+}
+
+/// Snapshot of what was bought, at the price paid. No deletedAt (see database.md).
+model OrderItem {
+  id             Int      @id @default(autoincrement())
+  orderId        Int
+  variantId      Int
+  productName    String   @db.VarChar(200)
+  variantName    String?  @db.VarChar(150)
+  sku            String   @db.VarChar(60)
+  quantity       Int
+  /// In the order currency.
+  unitPrice      Decimal  @db.Decimal(12, 2)
+  /// Price as listed before conversion, when the list price was in another currency.
+  listUnitPrice  Decimal  @db.Decimal(12, 2)
+  listCurrency   Currency
+  discountAmount Decimal  @default(0) @db.Decimal(12, 2)
+  lineTotal      Decimal  @db.Decimal(12, 2)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  order   Order          @relation(fields: [orderId], references: [id])
+  variant ProductVariant @relation(fields: [variantId], references: [id])
+
+  @@index([orderId])
+  @@index([variantId])
+}
+
+/// Shipping and billing data copied at purchase time. Editing a saved Address never changes past orders.
+model OrderAddress {
+  id           Int           @id @default(autoincrement())
+  orderId      Int
+  type         AddressType
+  /// Person or legal name.
+  name         String        @db.VarChar(200)
+  /// DNI or CUIT (billing).
+  taxId        String?       @db.VarChar(20)
+  taxCondition TaxCondition?
+  phone        String?       @db.VarChar(30)
+  street       String?       @db.VarChar(150)
+  streetNumber String?       @db.VarChar(20)
+  floor        String?       @db.VarChar(10)
+  apartment    String?       @db.VarChar(10)
+  city         String?       @db.VarChar(100)
+  province     String?       @db.VarChar(100)
+  postalCode   String?       @db.VarChar(10)
+  notes        String?       @db.VarChar(255)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@unique([orderId, type])
+}
+
+/// Every status transition. Append-only (see database.md).
+model OrderStatusHistory {
+  id          Int          @id @default(autoincrement())
+  orderId     Int
+  fromStatus  OrderStatus?
+  toStatus    OrderStatus
+  /// Null when changed by the system (webhook, scheduled job).
+  changedById Int?
+  note        String?      @db.VarChar(500)
+  createdAt   DateTime     @default(now())
+
+  order     Order @relation(fields: [orderId], references: [id])
+  changedBy User? @relation(fields: [changedById], references: [id])
+
+  @@index([orderId])
+  @@index([changedById])
+}
