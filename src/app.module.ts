@@ -17,7 +17,8 @@ import { TagsModule } from './tags/tags.module'
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    // Default rate limit for every route: 100 requests per minute per IP. Sensitive routes use @Throttle.
+    // Default rate limit for every route: 100 requests per minute per IP. Sensitive routes use @Throttle; routes the
+    // front renders on its server use @SkipThrottle (docs/rules/security.md).
     ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 100 }]),
     PrismaModule,
     MailModule,
