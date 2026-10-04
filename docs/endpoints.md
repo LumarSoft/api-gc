@@ -294,6 +294,26 @@ Active brands, for filters.
 [{ "id": 1, "name": "Epson", "slug": "epson", "logoUrl": null }]
 ```
 
+### GET /tags
+
+Tags for catalog filters (e.g. the "uso" filter). Filter a product list with `GET /products?tag=<slug>,<slug>`.
+
+**Auth required:** No
+
+**Query**
+
+| Param   | Type   | Required | Constraints              |
+| ------- | ------ | -------- | ------------------------ |
+| `group` | string | No       | Lowercase slug, e.g. uso |
+
+**Responses**
+
+`200 OK` — ordered by group and name
+
+```json
+[{ "id": 1, "name": "Hogar", "slug": "uso-hogar", "group": "uso" }]
+```
+
 ### GET /products
 
 Paginated catalog. Only published products; products set to hide when out of stock are left out while they have no
@@ -468,3 +488,268 @@ the file already stored (same `id`) instead of a copy.
 ```json
 { "message": "File too large", "error": "Payload Too Large", "statusCode": 413 }
 ```
+
+### Taxonomy (categories, brands, tags)
+
+Common rules for the three resources below:
+
+- **Slugs** are generated from the name when not sent (`"Papeles fotográficos"` → `papeles-fotograficos`; tags
+  prefix their group: `uso-hogar`). Changing a slug changes public URLs. A slug in use answers `409`. Creating a
+  record whose slug belongs to an **archived** one restores that row (same `id`) with the new data.
+- **`DELETE` archives** (soft delete) and answers `204`. Lists never include archived rows.
+- **Images** (`imageFileId`, `logoFileId`) are ids from `POST /admin/files/images`; `null` removes the image; an unknown
+  id answers `400`.
+- **Order**: `PUT …/order` with `{ "ids": [3, 1, 2] }` sets `sortOrder` by position. It must contain **every** sibling
+  (all brands; all top-level categories or all subcategories of one parent), otherwise `400`.
+- `productCount` counts products in any status (draft, published, hidden), not archived.
+- Validation errors answer `400` with the class-validator messages. Unknown ids answer `404`.
+
+### GET /admin/categories
+
+Every category (active or not) as a two-level tree, ordered by `sortOrder`.
+
+**Auth required:** Yes (ADMIN)
+
+**Responses**
+
+`200 OK`
+
+```json
+[
+  {
+    "id": 1,
+    "parentId": null,
+    "name": "Impresoras",
+    "slug": "impresoras",
+    "description": null,
+    "imageFileId": null,
+    "imageUrl": null,
+    "sortOrder": 0,
+    "isActive": true,
+    "productCount": 0,
+    "children": [
+      {
+        "id": 2,
+        "parentId": 1,
+        "name": "Para el hogar",
+        "slug": "impresoras-hogar",
+        "description": null,
+        "imageFileId": null,
+        "imageUrl": null,
+        "sortOrder": 0,
+        "isActive": true,
+        "productCount": 7,
+        "children": []
+      }
+    ]
+  }
+]
+```
+
+### GET /admin/categories/:id
+
+One category with its subcategories. Same shape as an item above. `404` when unknown or archived.
+
+**Auth required:** Yes (ADMIN)
+
+### POST /admin/categories
+
+Creates a category, or a subcategory when `parentId` is sent. It is added at the end of its level.
+
+**Auth required:** Yes (ADMIN)
+
+**Request body**
+
+| Field         | Type           | Required | Constraints                                      |
+| ------------- | -------------- | -------- | ------------------------------------------------ |
+| `name`        | string         | Yes      | 2–100 chars                                      |
+| `slug`        | string         | No       | Lowercase slug, ≤120 chars. Default: from `name` |
+| `parentId`    | number \| null | No       | A top-level category (two levels only)           |
+| `description` | string \| null | No       | ≤2000 chars                                      |
+| `imageFileId` | number \| null | No       | Uploaded image id                                |
+| `isActive`    | boolean        | No       | Default `true`. Inactive = hidden from the menu  |
+
+```json
+{ "name": "Repuestos y accesorios", "parentId": 1 }
+```
+
+**Responses**
+
+`201 Created` — the category (shape of `GET /admin/categories/:id`)
+
+`400 Bad Request` — e.g. parent is a subcategory
+
+```json
+{ "message": "Subcategories cannot have subcategories (two levels only)", "error": "Bad Request", "statusCode": 400 }
+```
+
+`409 Conflict`
+
+```json
+{ "message": "The slug \"impresoras\" is already in use", "error": "Conflict", "statusCode": 409 }
+```
+
+### PATCH /admin/categories/:id
+
+Updates any field of `POST /admin/categories` (all optional). A category with subcategories cannot become a
+subcategory (`400`).
+
+**Auth required:** Yes (ADMIN)
+
+**Responses**
+
+`200 OK` — the updated category
+
+### PUT /admin/categories/order
+
+Orders the categories of one level. Body: `{ "ids": [2, 3, 4] }`.
+
+**Auth required:** Yes (ADMIN)
+
+**Responses**
+
+`200 OK` — the whole tree, like `GET /admin/categories`
+
+`400 Bad Request`
+
+```json
+{ "message": "Send every category of the same level, in the new order", "error": "Bad Request", "statusCode": 400 }
+```
+
+### DELETE /admin/categories/:id
+
+Archives an **empty** category.
+
+**Auth required:** Yes (ADMIN)
+
+**Responses**
+
+`204 No Content`
+
+`422 Unprocessable Entity` — it still has subcategories or products
+
+```json
+{ "message": "Move its products to another category first", "error": "Unprocessable Entity", "statusCode": 422 }
+```
+
+### GET /admin/brands
+
+Every brand (active or not), ordered by `sortOrder`.
+
+**Auth required:** Yes (ADMIN)
+
+**Responses**
+
+`200 OK`
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Epson",
+    "slug": "epson",
+    "logoFileId": null,
+    "logoUrl": null,
+    "sortOrder": 0,
+    "isActive": true,
+    "productCount": 39
+  }
+]
+```
+
+### GET /admin/brands/:id
+
+One brand, same shape. **Auth required:** Yes (ADMIN)
+
+### POST /admin/brands
+
+Creates a brand at the end of the list.
+
+**Auth required:** Yes (ADMIN)
+
+**Request body**
+
+| Field        | Type           | Required | Constraints                                      |
+| ------------ | -------------- | -------- | ------------------------------------------------ |
+| `name`       | string         | Yes      | 1–100 chars                                      |
+| `slug`       | string         | No       | Lowercase slug, ≤120 chars. Default: from `name` |
+| `logoFileId` | number \| null | No       | Uploaded image id                                |
+| `isActive`   | boolean        | No       | Default `true`                                   |
+
+**Responses**
+
+`201 Created` — the brand. `400` / `409` as in the common rules.
+
+### PATCH /admin/brands/:id
+
+Updates any field of `POST /admin/brands` (all optional). **Auth required:** Yes (ADMIN). `200 OK` — the brand.
+
+### PUT /admin/brands/order
+
+Orders **every** brand. Body: `{ "ids": [1, 2] }`. **Auth required:** Yes (ADMIN). `200 OK` — the list.
+
+### DELETE /admin/brands/:id
+
+Archives a brand without products. **Auth required:** Yes (ADMIN)
+
+**Responses**
+
+`204 No Content`
+
+`422 Unprocessable Entity`
+
+```json
+{
+  "message": "Move its products to another brand first, or deactivate it",
+  "error": "Unprocessable Entity",
+  "statusCode": 422
+}
+```
+
+### GET /admin/tags
+
+Every tag with its product count, ordered by group and name.
+
+**Auth required:** Yes (ADMIN)
+
+**Responses**
+
+`200 OK`
+
+```json
+[{ "id": 1, "name": "Hogar", "slug": "uso-hogar", "group": "uso", "productCount": 17 }]
+```
+
+### GET /admin/tags/:id
+
+One tag, same shape. **Auth required:** Yes (ADMIN)
+
+### POST /admin/tags
+
+**Auth required:** Yes (ADMIN)
+
+**Request body**
+
+| Field   | Type           | Required | Constraints                                                     |
+| ------- | -------------- | -------- | --------------------------------------------------------------- |
+| `name`  | string         | Yes      | 1–100 chars                                                     |
+| `slug`  | string         | No       | Lowercase slug, ≤120 chars. Default: group + name (`uso-hogar`) |
+| `group` | string \| null | No       | Lowercase slug, ≤50 chars, e.g. `uso`                           |
+
+**Responses**
+
+`201 Created` — the tag. `400` / `409` as in the common rules.
+
+### PATCH /admin/tags/:id
+
+Updates any field of `POST /admin/tags` (all optional). **Auth required:** Yes (ADMIN). `200 OK` — the tag.
+
+### DELETE /admin/tags/:id
+
+Archives the tag **and removes it from every product** that had it.
+
+**Auth required:** Yes (ADMIN)
+
+**Responses**
+
+`204 No Content`

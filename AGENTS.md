@@ -85,7 +85,8 @@ Current state: the **full database schema** is defined (`prisma/schema/`, one fi
 `OptionalJwtAuthGuard` + `@OptionalUser()` on public routes whose answer depends on the buyer), `MailModule`,
 `FilesModule` (storage + admin image upload), `AuditLogsModule` (record every admin change — see "Admin routes" in
 @docs/rules/architecture.md), `PricingModule` (always resolve prices through `PricingService`, never by hand) and the public
-catalog (`CategoriesModule`, `BrandsModule`, `ProductsModule`). `npm run db:seed` loads a starter catalog. See
+catalog (`CategoriesModule`, `BrandsModule`, `TagsModule`, `ProductsModule`; categories, brands and tags also
+have `/admin/*` routes). `npm run db:seed` loads a starter catalog. See
 `STRUCTURE.md`.
 
 ## Rules

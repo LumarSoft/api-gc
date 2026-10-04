@@ -18,10 +18,11 @@ api-gc/
 ├── src/
 │   ├── audit-logs/                # AuditLogsService: records every admin change (who, what, from where)
 │   ├── auth/                      # Register, login, refresh, logout, password reset, email verification
-│   ├── brands/                    # GET /brands
-│   ├── categories/                # GET /categories (tree), GET /categories/:slug
+│   ├── brands/                    # GET /brands + /admin/brands
+│   ├── categories/                # GET /categories (tree), GET /categories/:slug + /admin/categories
 │   ├── files/                     # Local file storage, public URLs (/files), admin image upload
 │   ├── pricing/                   # Price resolution: price lists per buyer, USD → ARS conversion
+│   ├── tags/                      # GET /tags (catalog filters) + /admin/tags
 │   ├── products/                  # Public catalog: list with filters/sort/pagination, product page
 │   ├── common/                    # Shared guards (JwtAuthGuard, RolesGuard), decorators, auth types, helpers
 │   ├── mail/                      # Transactional email (logged in development until a provider is set)
@@ -59,6 +60,7 @@ api-gc/
 | AuditLogsModule  | `src/audit-logs/` | Global audit log of admin changes  |
 | FilesModule      | `src/files/`      | Global file storage + image upload |
 | PricingModule    | `src/pricing/`    | Price list per buyer, USD → ARS    |
-| CategoriesModule | `src/categories/` | Category tree                      |
-| BrandsModule     | `src/brands/`     | Brands                             |
+| CategoriesModule | `src/categories/` | Category tree (public + admin)     |
+| BrandsModule     | `src/brands/`     | Brands (public + admin)            |
 | ProductsModule   | `src/products/`   | Public catalog                     |
+| TagsModule       | `src/tags/`       | Tags for filters (public + admin)  |
