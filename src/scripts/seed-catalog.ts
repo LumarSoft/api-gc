@@ -12,7 +12,6 @@ import { ConfigModule } from '@nestjs/config'
 import { NestFactory } from '@nestjs/core'
 import { readFile, stat } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
-import { FilesModule } from '../files/files.module'
 import { FilesService } from '../files/files.service'
 import { Prisma } from '../generated/prisma/client'
 import {
@@ -64,7 +63,9 @@ interface SeedCatalog {
   products: SeedProduct[]
 }
 
-@Module({ imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, FilesModule] })
+// Provide FilesService on its own: importing FilesModule would also register AdminFilesController, whose guards
+// need JwtService and AuditLogsService — modules that a CLI script does not load.
+@Module({ imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule], providers: [FilesService] })
 class SeedModule {}
 
 const logger = new Logger('SeedCatalog')
