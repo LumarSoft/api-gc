@@ -1,10 +1,11 @@
 import { Logger, ValidationPipe } from '@nestjs/common'
-import { NestFactory } from '@nestjs/core'
+import { HttpAdapterHost, NestFactory } from '@nestjs/core'
 import type { NestExpressApplication } from '@nestjs/platform-express'
 import cookieParser from 'cookie-parser'
 import type { Response } from 'express'
 import { join, resolve } from 'node:path'
 import { AppModule } from './app.module'
+import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter'
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule)
@@ -43,6 +44,8 @@ async function bootstrap() {
       transform: true,
     }),
   )
+
+  app.useGlobalFilters(new PrismaExceptionFilter(app.get(HttpAdapterHost).httpAdapter))
 
   app.enableShutdownHooks()
 

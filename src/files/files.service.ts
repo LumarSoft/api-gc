@@ -88,6 +88,15 @@ export class FilesService {
     }
   }
 
+  /** Checks that an id sent by the admin points to an uploaded public image, before linking it to a record. */
+  async assertPublicImage(fileId: number): Promise<void> {
+    const file = await this.prisma.storedFile.findFirst({
+      where: { id: fileId, visibility: FileVisibility.PUBLIC, deletedAt: null, mimeType: { startsWith: 'image/' } },
+      select: { id: true },
+    })
+    if (!file) throw new BadRequestException(`Image ${fileId} does not exist`)
+  }
+
   private publicPath(storageKey: string): string {
     return join(this.storageRoot(), PUBLIC_FILES_FOLDER, storageKey)
   }
