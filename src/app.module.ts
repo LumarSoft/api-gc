@@ -4,6 +4,7 @@ import { APP_GUARD } from '@nestjs/core'
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
+import { AuditLogsModule } from './audit-logs/audit-logs.module'
 import { AuthModule } from './auth/auth.module'
 import { BrandsModule } from './brands/brands.module'
 import { CategoriesModule } from './categories/categories.module'
@@ -19,6 +20,7 @@ import { ProductsModule } from './products/products.module'
     ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 100 }]),
     PrismaModule,
     MailModule,
+    AuditLogsModule,
     FilesModule,
     AuthModule,
     CategoriesModule,
