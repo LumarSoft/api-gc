@@ -133,4 +133,7 @@ have `/admin/*` routes). `npm run db:seed` loads a starter catalog. See
    explaining why.
 6. **Verify before finishing**: `npm run lint`, `npm run test` and `npm run build` pass. Schema changed → the
    migration exists. New endpoint → documented in `docs/endpoints.md`. Structure changed → `STRUCTURE.md` updated.
-7. **Final summary**: what you changed, what you could not verify, and any decision you made on your own.
+7. **Only model what is used now**: add tables or columns only together with the code that uses them in the same
+   change. Existing models without code are provisional — review them before building on them. See
+   `docs/rules/database.md`.
+8. **Final summary**: what you changed, what you could not verify, and any decision you made on your own.
