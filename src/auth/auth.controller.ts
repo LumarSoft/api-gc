@@ -1,6 +1,6 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { Throttle } from '@nestjs/throttler'
+import { SkipThrottle, Throttle } from '@nestjs/throttler'
 import type { Request, Response } from 'express'
 import { REFRESH_TOKEN_COOKIE } from '../common/constants/auth-cookies'
 import { CurrentUser } from '../common/decorators/current-user.decorator'
@@ -67,7 +67,9 @@ export class AuthController {
     clearAuthCookies(response, this.config)
   }
 
+  // The front also calls this from its server (admin and account pages), where every visitor shares one IP.
   @Get('me')
+  @SkipThrottle()
   @UseGuards(JwtAuthGuard)
   me(@CurrentUser() user: AuthenticatedUser): Promise<AuthUserResponseDto> {
     return this.authService.getProfile(user.id)

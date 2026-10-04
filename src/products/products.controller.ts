@@ -1,4 +1,5 @@
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common'
+import { SkipThrottle } from '@nestjs/throttler'
 import { OptionalUser } from '../common/decorators/optional-user.decorator'
 import { OptionalJwtAuthGuard } from '../common/guards/optional-jwt-auth.guard'
 import type { AuthenticatedUser } from '../common/types/authenticated-user'
@@ -7,7 +8,11 @@ import { PaginatedProductsDto, ProductDetailDto } from './dto/product-response.d
 import { ProductSlugParamDto } from './dto/product-slug-param.dto'
 import { ProductsService } from './products.service'
 
-/** Public catalog. Prices depend on the buyer, so a session is read when present but never required. */
+/**
+ * Public catalog. Prices depend on the buyer, so a session is read when present but never required.
+ * Not rate limited: the front renders it on its server, where every visitor shares one IP (docs/rules/security.md).
+ */
+@SkipThrottle()
 @Controller('products')
 @UseGuards(OptionalJwtAuthGuard)
 export class ProductsController {

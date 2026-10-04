@@ -22,6 +22,17 @@
   (see `business-rules.md`); everything else is `RETAIL`. A user can only read and modify their own
   orders, addresses and account statement.
 
+## Rate limits
+
+- A global limit applies to every route (100 requests/min per IP, `app.module.ts`). Login, registration and password
+  flows use a stricter `@Throttle`.
+- **Routes the front calls from its server (Server Components) must use `@SkipThrottle()`.** Those requests all come
+  from the front server's IP, so a per-IP limit would be shared by every visitor and take the store down under normal
+  traffic. Today: `products`, `categories`, `tags`, `brands` and `GET /auth/me`.
+- Never skip throttling on routes that change data or check credentials — the browser calls those directly, with the
+  visitor's own IP.
+- Per-visitor limits for public reads belong in the reverse proxy / CDN in front of the API.
+
 ## Payments and money
 
 - Never trust prices, totals, discounts, roles or payment status sent by the client.
