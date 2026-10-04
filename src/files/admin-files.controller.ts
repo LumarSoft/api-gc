@@ -20,9 +20,14 @@ export class AdminFilesController {
     private readonly auditLogs: AuditLogsService,
   ) {}
 
-  /** Multer keeps the file in memory (max 5 MB) so its bytes can be checked before anything touches the disk. */
+  /**
+   * Multer keeps the file in memory (max 5 MB) so its bytes can be checked before anything touches the disk.
+   * Browsers send file names in UTF-8; Multer's latin1 default would turn "Impresión" into "ImpresiÃ³n".
+   */
   @Post('images')
-  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_IMAGE_BYTES, files: 1 } }))
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: MAX_IMAGE_BYTES, files: 1 }, defParamCharset: 'utf8' }),
+  )
   async uploadImage(
     @UploadedFile() file: UploadedFileInput | undefined,
     @CurrentAuditActor() actor: AuditActor,
