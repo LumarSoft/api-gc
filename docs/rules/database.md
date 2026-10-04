@@ -53,6 +53,16 @@ npx prisma migrate dev --name add-wholesale-application
 - The schema is split by domain in `prisma/schema/` (one `.prisma` file per domain, see `docs/database.md`). Put a
   new model in the file of its domain; create a new file only for a new domain and list it in `schema.prisma`.
 
+## Only model what is used now
+
+- **A new table or column is added only in the same PR as the code that uses it** (a service, endpoint or job that
+  reads or writes it). No tables, columns or enum values "for later" or "just in case".
+- If a feature is planned but not being built, it stays in the proposal or an issue — not in the schema.
+- The schema created on 2026-10-03 includes models that no code uses yet (cart, orders, payments, shipping, current
+  account, assistant, configurator, CRM…). Treat them as **provisional**: before building on one, check it against
+  the real requirement and change, rename or drop it in the same PR. Do not add new models next to them in advance.
+- How to tell if a model is used: search for `prisma.<model>` / `tx.<model>` in `src/` (excluding `src/generated/`).
+
 ## Soft deletes
 
 - Never use `delete` or `deleteMany` in Prisma — always set `deletedAt` to the current timestamp.
