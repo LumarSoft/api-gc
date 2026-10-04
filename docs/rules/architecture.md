@@ -32,6 +32,15 @@
   - `<thing>.mapper.ts` — an `@Injectable()` that turns rows into response DTOs (prices, URLs, labels).
 - Reference: `src/products/` (service + `product.mapper.ts` + `lib/`).
 
+## Admin routes
+
+- The admin panel uses `/admin/<resource>` routes. They live in the module of their resource, in a separate
+  `admin-<resource>.controller.ts` (and `admin-<resource>.service.ts` when the logic is not trivial), so the public
+  service does not grow. Reference: `src/files/admin-files.controller.ts`.
+- Guard every admin controller at class level: `@UseGuards(JwtAuthGuard, RolesGuard)` + `@Roles(UserRole.ADMIN)`.
+- Every admin write is recorded with `AuditLogsService.record()` (actor from `@CurrentAuditActor()`, changes from
+  `diffForAudit()`). When the write runs in a transaction, pass the transaction client so the log is atomic with it.
+
 ## PrismaService
 
 - `PrismaService` is the single point of access to the database across the entire app.

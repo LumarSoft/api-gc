@@ -420,3 +420,51 @@ Product page. Everything in the list item plus:
 Serves public files (product images, logos) from `STORAGE_DIR/public`. Cached for 7 days.
 
 **Auth required:** No
+
+## Admin
+
+Every `/admin/*` route requires a session with role `ADMIN` (`401` without a session, `403` for customers). Admin
+users are created with `npm run admin:create`. Every change made through these routes is recorded in `AuditLog`
+(who, what, when, from which IP).
+
+### POST /admin/files/images
+
+Uploads an image for the catalog (product photos, brand logos, category images) and returns its id, to be attached
+later to a product, brand or category. Send it as `multipart/form-data`.
+
+The type is read from the file's bytes, not from its name or `Content-Type`. Uploading the same image again returns
+the file already stored (same `id`) instead of a copy.
+
+**Auth required:** Yes (ADMIN)
+
+**Request body** (`multipart/form-data`)
+
+| Field  | Type | Required | Constraints                   |
+| ------ | ---- | -------- | ----------------------------- |
+| `file` | file | Yes      | JPG, PNG, WebP or AVIF; ≤5 MB |
+
+**Responses**
+
+`201 Created`
+
+```json
+{
+  "id": 82,
+  "url": "http://localhost:3001/files/uploads/2026/10/2eddb1b7-6d1e-4148-bcb0-c05e13a490ae.png",
+  "originalName": "l3250-frente.png",
+  "mimeType": "image/png",
+  "sizeBytes": 245112
+}
+```
+
+`400 Bad Request` — no file, or not an accepted image
+
+```json
+{ "message": "The file must be a JPG, PNG, WebP or AVIF image", "error": "Bad Request", "statusCode": 400 }
+```
+
+`413 Payload Too Large`
+
+```json
+{ "message": "File too large", "error": "Payload Too Large", "statusCode": 413 }
+```

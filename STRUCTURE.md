@@ -16,10 +16,11 @@ api-gc/
 │   └── schema/                    # Single source of truth for the DB schema, one file per domain (docs/database.md)
 │
 ├── src/
+│   ├── audit-logs/                # AuditLogsService: records every admin change (who, what, from where)
 │   ├── auth/                      # Register, login, refresh, logout, password reset, email verification
 │   ├── brands/                    # GET /brands
 │   ├── categories/                # GET /categories (tree), GET /categories/:slug
-│   ├── files/                     # Local file storage + public URLs (served at /files)
+│   ├── files/                     # Local file storage, public URLs (/files), admin image upload
 │   ├── pricing/                   # Price resolution: price lists per buyer, USD → ARS conversion
 │   ├── products/                  # Public catalog: list with filters/sort/pagination, product page
 │   ├── common/                    # Shared guards (JwtAuthGuard, RolesGuard), decorators, auth types, helpers
@@ -49,14 +50,15 @@ api-gc/
 
 ## Module overview
 
-| Module           | Path              | Responsibility                    |
-| ---------------- | ----------------- | --------------------------------- |
-| AppModule        | `src/`            | Root module, health check         |
-| PrismaModule     | `src/prisma/`     | Global DB access (PrismaService)  |
-| MailModule       | `src/mail/`       | Global transactional email        |
-| AuthModule       | `src/auth/`       | Sessions, passwords, email check  |
-| FilesModule      | `src/files/`      | Global file storage + public URLs |
-| PricingModule    | `src/pricing/`    | Price list per buyer, USD → ARS   |
-| CategoriesModule | `src/categories/` | Category tree                     |
-| BrandsModule     | `src/brands/`     | Brands                            |
-| ProductsModule   | `src/products/`   | Public catalog                    |
+| Module           | Path              | Responsibility                     |
+| ---------------- | ----------------- | ---------------------------------- |
+| AppModule        | `src/`            | Root module, health check          |
+| PrismaModule     | `src/prisma/`     | Global DB access (PrismaService)   |
+| MailModule       | `src/mail/`       | Global transactional email         |
+| AuthModule       | `src/auth/`       | Sessions, passwords, email check   |
+| AuditLogsModule  | `src/audit-logs/` | Global audit log of admin changes  |
+| FilesModule      | `src/files/`      | Global file storage + image upload |
+| PricingModule    | `src/pricing/`    | Price list per buyer, USD → ARS    |
+| CategoriesModule | `src/categories/` | Category tree                      |
+| BrandsModule     | `src/brands/`     | Brands                             |
+| ProductsModule   | `src/products/`   | Public catalog                     |

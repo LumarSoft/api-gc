@@ -2,6 +2,7 @@ import { Logger, ValidationPipe } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
 import type { NestExpressApplication } from '@nestjs/platform-express'
 import cookieParser from 'cookie-parser'
+import type { Response } from 'express'
 import { join, resolve } from 'node:path'
 import { AppModule } from './app.module'
 
@@ -28,6 +29,10 @@ async function bootstrap() {
     index: false,
     dotfiles: 'deny',
     maxAge: '7d',
+    // Uploaded files are served with the type of their extension; never let the browser guess another one.
+    setHeaders: (res: Response) => {
+      res.setHeader('X-Content-Type-Options', 'nosniff')
+    },
   })
   app.enableCors({ origin: corsOrigin, credentials: true })
 
