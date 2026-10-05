@@ -8,6 +8,8 @@
 - Prefer explicit field selection over `omit` for clarity.
 - Operations that write to more than one table go in `prisma.$transaction`.
 - Paginate every list endpoint — never return an unbounded `findMany` to the client.
+  `GET /cart` returns one owned aggregate with its complete lines, rather than a collection of carts; its lines are
+  intentionally not paginated so the subtotal and issue flags describe the whole selection.
 
 ## Example — excluding sensitive fields
 

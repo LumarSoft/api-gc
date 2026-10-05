@@ -18,6 +18,7 @@ api-gc/
 ├── src/
 │   ├── audit-logs/                # AuditLogsService: records every admin change (who, what, from where)
 │   ├── auth/                      # Register, login, refresh, logout, password reset, email verification
+│   ├── cart/                      # Guest/user carts, login merge, current prices and stock validation
 │   ├── brands/                    # GET /brands + /admin/brands
 │   ├── categories/                # GET /categories (tree), GET /categories/:slug + /admin/categories
 │   ├── files/                     # Local file storage, public URLs (/files), admin image upload
@@ -58,6 +59,7 @@ api-gc/
 | PrismaModule     | `src/prisma/`     | Global DB access (PrismaService)             |
 | MailModule       | `src/mail/`       | Global transactional email                   |
 | AuthModule       | `src/auth/`       | Sessions, passwords, email check             |
+| CartModule       | `src/cart/`       | Cookie-owned carts, merge, prices and stock  |
 | AuditLogsModule  | `src/audit-logs/` | Global audit log of admin changes            |
 | FilesModule      | `src/files/`      | Global file storage + image upload           |
 | PricingModule    | `src/pricing/`    | Price list per buyer, USD → ARS, admin rates |

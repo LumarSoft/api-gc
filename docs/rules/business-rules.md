@@ -21,6 +21,22 @@ Domain rules that apply across modules. When a request contradicts one of these,
   company's `wholesaleStatus` is `APPROVED`. Never store the profile on the user.
 - Wholesalers buy directly with the wholesale price list — individual orders do not need approval.
 
+## Cart
+
+- Guests may use a cart without registering. An opaque httpOnly cookie identifies it; only the token hash is stored.
+  The cookie lasts 30 days. User carts are loaded by authenticated user id and survive logout and other devices.
+- On the first browser cart request after login, the guest cart is claimed or merged with the user's active cart.
+  Quantities of the same variant are added, and prices are recalculated for the current buyer. The guest token is
+  invalidated; a merge happens once. Cart and owner locks serialize concurrent changes.
+- Request quantities are positive integers, at most 1,000,000 (technical input bound). A merge is capped at that
+  quantity per variant. This is not a client purchase-limit policy.
+- Adding/increasing a line requires a published active variant, an ARS-resolvable price and sufficient available
+  stock. Adding to a cart does **not** reserve stock; reservation belongs to checkout.
+- Existing lines that lose price, publication or stock remain visible with an issue so the buyer can reduce or remove
+  them. A merge preserves lines even when their combined quantity exceeds current stock and reports the issue.
+- Cart subtotals use current prices through `PricingService`, exclude shipping, and are not order snapshots. If any
+  line cannot be priced in ARS, subtotal is null (never a partial sum). Coupons and checkout are not implemented yet.
+
 ## Orders
 
 - An order line stores a **snapshot** of product name, unit price and currency at purchase time. An order is never

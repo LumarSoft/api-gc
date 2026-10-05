@@ -44,6 +44,10 @@ erDiagram
 
 ## Key decisions
 
+- **Cart now implemented.** `Cart` and `CartItem` use the existing schema, without a migration. `guestToken` stores
+  the SHA-256 hash of a random cookie token. Guest tokens are invalidated when a cart is claimed or merged; owned carts
+  are selected exclusively by the authenticated user. Cart lines store quantities only, with prices resolved on every
+  request. Other planned domains remain provisional.
 - **Product vs. variant.** `Product` is what the customer sees; `ProductVariant` is the SKU that is priced, stocked,
   sold and mapped to a Tango article (`tangoCode`). Every product has at least one variant, so ink colors,
   capacities or units of sale never need a schema change.

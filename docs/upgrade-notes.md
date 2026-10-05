@@ -16,6 +16,11 @@ npm run doctor             # tells you if anything else is missing
 
 ---
 
+## 2026-10-05 — Guest and user cart
+
+Restart the API after pulling so `/cart` is available. No new dependencies, environment variables or migrations:
+the cart uses the existing `Cart` and `CartItem` models. See `docs/endpoints.md` for the browser-only contract.
+
 ## 2026-10-03 — Public catalog (LumarSoft/api-gc#3)
 
 1. Add to `.env` (values in `.env.example`):

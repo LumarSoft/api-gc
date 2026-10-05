@@ -1126,3 +1126,142 @@ Loads a new rate (append-only history). Body: `{ "rate": "1475.50", "effectiveFr
 decimals, > 0; `effectiveFrom` defaults to now and may be in the future (scheduled), never in the past (`400`).
 
 **Auth required:** Yes (ADMIN). `201 Created` — same shape as `GET /admin/exchange-rates`.
+
+## Cart
+
+Browser-only endpoints. **Auth required:** No; an optional valid session selects the authenticated user's cart and
+price list. An invalid/expired session returns `401` so the browser refreshes it. Anonymous carts use a 30-day
+`cg_cart` cookie (`HttpOnly`, `SameSite=Lax`, `Path=/cart`, existing `COOKIE_SECURE`/`COOKIE_DOMAIN` settings).
+The API stores only the token hash. Neither user ids, cart ids nor prices are accepted from the browser.
+
+The first cart request after login claims or merges the guest cart with the user's cart and clears the guest cookie.
+Duplicate variants have their quantities added, capped at the technical limit of 1,000,000 per line; merging preserves
+lines with stock/price issues. It is transactional and happens once. User carts persist across sessions/devices.
+
+Every successful endpoint returns the complete **Cart response** below, with `Cache-Control: private, no-store`.
+These browser routes retain the global per-IP rate limit. They must not be called from Server Components.
+Cart lines are one aggregate, not a paginated collection. Stock is checked but not reserved until checkout.
+
+**Cart response (example data)**
+
+```json
+{
+  "items": [
+    {
+      "variantId": 12,
+      "sku": "SAMPLE-SKU",
+      "name": "Producto de ejemplo",
+      "variantName": "Negro",
+      "productSlug": "producto-ejemplo",
+      "imageUrl": "http://localhost:3001/files/products/example.jpg",
+      "quantity": 2,
+      "availableQuantity": 8,
+      "unitPrice": { "amount": "1234.50", "currency": "ARS" },
+      "total": { "amount": "2469.00", "currency": "ARS" },
+      "issue": null
+    }
+  ],
+  "itemCount": 2,
+  "subtotal": { "amount": "2469.00", "currency": "ARS" },
+  "hasIssues": false
+}
+```
+
+Amounts are decimal strings from `PricingService`, recomputed on every request (including USD conversion).
+Subtotal excludes shipping; coupons/checkout are not implemented. If any line cannot be priced in ARS, `total` and
+`subtotal` are null; an unknown line is never silently excluded from a partial subtotal. Known prices of lines with
+insufficient stock remain in the subtotal, with `hasIssues: true`. `itemCount` sums requested quantities, including
+lines with issues. `availableQuantity` is physical stock minus reservations, never negative.
+
+`issue`: `UNAVAILABLE` (archived/unpublished/inactive), `NO_PRICE`, `NO_EXCHANGE_RATE` (USD without a current rate),
+`INSUFFICIENT_STOCK`, or null. Existing lines stay visible with their issue so the buyer can fix/remove them.
+
+**Shared errors**
+
+- `401 Unauthorized`: `{ "statusCode": 401, "message": "Unauthorized" }` — expired/invalid session.
+- `409 Conflict`: `{ "statusCode": 409, "message": "Another change was saved at the same time. Try again", "error": "Conflict" }` — write conflict; retry.
+- `429 Too Many Requests`: `{ "statusCode": 429, "message": "ThrottlerException: Too Many Requests" }` — wait before retrying.
+
+### GET /cart
+
+Reads the current cart; recomputes prices and availability. **Auth required:** No (optional session).
+No body. Does not create a cart/cookie just because a visitor opens the store. A stale guest token is cleared.
+
+`200 OK` — Cart response above, or empty:
+
+```json
+{ "items": [], "itemCount": 0, "subtotal": { "amount": "0.00", "currency": "ARS" }, "hasIssues": false }
+```
+
+Errors: shared `401`, `409`, `429` above.
+
+### POST /cart/items
+
+Adds a variant; repeated adds increase its quantity. Creates a cart on first add. **Auth required:** No (optional session).
+
+| Field       | Type    | Required | Constraints                                            |
+| ----------- | ------- | -------- | ------------------------------------------------------ |
+| `variantId` | integer | yes      | 1–2,147,483,647                                        |
+| `quantity`  | integer | yes      | 1–1,000,000; resulting quantity must fit current stock |
+
+```json
+{ "variantId": 12, "quantity": 2 }
+```
+
+`200 OK` — Cart response above. Adding a draft, inactive variant, missing price/rate or quantity exceeding available
+stock is rejected; no reservation is created. Failure rolls back cart creation/merge and the item change together.
+
+- `400 Bad Request`: `{ "statusCode": 400, "message": ["quantity must not be less than 1"], "error": "Bad Request" }` — invalid input or unknown properties.
+- `404 Not Found`: `{ "statusCode": 404, "message": "Product variant not found", "error": "Not Found" }`.
+- `422 Unprocessable Entity`: `{ "statusCode": 422, "message": "No hay stock suficiente para esa cantidad. Actualizá el carrito.", "error": "Unprocessable Entity" }`. Other reasons: unavailable product, missing price/rate or technical quantity limit.
+- Shared `401`, `409`, `429` above.
+
+### PATCH /cart/items/:variantId
+
+Sets an existing line's absolute quantity. **Auth required:** No (optional session).
+`variantId`: integer 1–2,147,483,647, scoped to the caller's cart.
+
+| Field      | Type    | Required | Constraints |
+| ---------- | ------- | -------- | ----------- |
+| `quantity` | integer | yes      | 1–1,000,000 |
+
+```json
+{ "quantity": 3 }
+```
+
+`200 OK` — Cart response above with the updated line. Increasing requires a valid purchasable line and stock.
+Reducing is allowed even if the line is currently unavailable or still exceeds stock; its issue remains visible.
+To remove a line, use DELETE (zero is not an update quantity).
+
+- `400 Bad Request`: `{ "statusCode": 400, "message": ["quantity must be an integer number"], "error": "Bad Request" }`.
+- `404 Not Found`: `{ "statusCode": 404, "message": "Cart item not found", "error": "Not Found" }` — line is not in the caller's cart.
+- `422 Unprocessable Entity`: same stock/price/availability errors as POST above.
+- Shared `401`, `409`, `429` above.
+
+### DELETE /cart/items/:variantId
+
+Soft-removes a line. **Auth required:** No (optional session).
+`variantId`: integer 1–2,147,483,647, scoped to the caller's cart. No body.
+
+`200 OK` — Cart response above without the line; if it was the last line:
+
+```json
+{ "items": [], "itemCount": 0, "subtotal": { "amount": "0.00", "currency": "ARS" }, "hasIssues": false }
+```
+
+- `400 Bad Request`: `{ "statusCode": 400, "message": ["variantId must be an integer number"], "error": "Bad Request" }`.
+- `404 Not Found`: `{ "statusCode": 404, "message": "Cart item not found", "error": "Not Found" }`.
+- Shared `401`, `409`, `429` above.
+
+### DELETE /cart
+
+Soft-removes all lines from the caller's cart. **Auth required:** No (optional session). No body.
+Already empty/missing carts also succeed without creating a cart.
+
+`200 OK`:
+
+```json
+{ "items": [], "itemCount": 0, "subtotal": { "amount": "0.00", "currency": "ARS" }, "hasIssues": false }
+```
+
+Errors: shared `401`, `409`, `429` above.

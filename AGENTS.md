@@ -100,7 +100,8 @@ see @docs/rules/integrations.md.
 Current state: the **full database schema** is defined (`prisma/schema/`, one file per domain — see
 @docs/database.md) and migrated. Implemented modules: `AuthModule` (cookie sessions, roles — protect routes with
 `@UseGuards(JwtAuthGuard)` / `@UseGuards(JwtAuthGuard, RolesGuard)` + `@Roles(UserRole.ADMIN)`; use
-`OptionalJwtAuthGuard` + `@OptionalUser()` on public routes whose answer depends on the buyer), `MailModule`,
+`OptionalJwtAuthGuard` + `@OptionalUser()` on public routes whose answer depends on the buyer), `CartModule`
+(guest/user carts, merged on the first cart request after login; browser-only `/cart` routes), `MailModule`,
 `FilesModule` (storage + admin image upload), `AuditLogsModule` (record every admin change — see "Admin routes" in
 @docs/rules/architecture.md), `PricingModule` (always resolve prices through `PricingService`, never by hand) and the public
 catalog (`CategoriesModule`, `BrandsModule`, `TagsModule`, `ProductsModule`; categories, brands and tags also

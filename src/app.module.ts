@@ -13,6 +13,7 @@ import { MailModule } from './mail/mail.module'
 import { PrismaModule } from './prisma/prisma.module'
 import { ProductsModule } from './products/products.module'
 import { TagsModule } from './tags/tags.module'
+import { CartModule } from './cart/cart.module'
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { TagsModule } from './tags/tags.module'
     BrandsModule,
     ProductsModule,
     TagsModule,
+    CartModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
