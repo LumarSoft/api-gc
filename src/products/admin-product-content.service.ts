@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common'
 import { AuditLogsService } from '../audit-logs/audit-logs.service'
 import type { AuditActor } from '../common/types/audit-actor'
 import { hasRepeatedIds, planListSync } from '../common/utils/list-sync'
+import { Prisma } from '../generated/prisma/client'
 import { FileVisibility } from '../generated/prisma/enums'
 import { PrismaService } from '../prisma/prisma.service'
 import { AdminProductReader } from './admin-product.reader'
@@ -51,6 +52,7 @@ export class AdminProductContentService {
         if (image.id) await tx.productImage.update({ where: { id: image.id }, data })
         else await tx.productImage.create({ data: { ...data, productId } })
       }
+      await this.touch(tx, productId)
       await this.auditLogs.record(
         actor,
         {
@@ -92,6 +94,7 @@ export class AdminProductContentService {
         if (spec.id) await tx.productSpecification.update({ where: { id: spec.id }, data })
         else await tx.productSpecification.create({ data: { ...data, productId } })
       }
+      await this.touch(tx, productId)
       await this.auditLogs.record(
         actor,
         {
@@ -116,6 +119,7 @@ export class AdminProductContentService {
       // ProductTag is a pure join table: unlinking is a real delete (docs/rules/database.md).
       await tx.productTag.deleteMany({ where: { productId, tagId: { notIn: tagIds } } })
       await tx.productTag.createMany({ data: tagIds.map(tagId => ({ productId, tagId })), skipDuplicates: true })
+      await this.touch(tx, productId)
       await this.auditLogs.record(
         actor,
         {
@@ -128,6 +132,11 @@ export class AdminProductContentService {
       )
     })
     return this.reader.detail(productId)
+  }
+
+  /** Content edits count as editing the product: they move it to the top of "last edited". */
+  private async touch(tx: Prisma.TransactionClient, productId: number): Promise<void> {
+    await tx.product.update({ where: { id: productId }, data: { updatedAt: new Date() } })
   }
 
   /** Rows the client kept must be this product's own rows, each at most once. */

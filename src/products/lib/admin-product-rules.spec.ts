@@ -1,4 +1,10 @@
-import { copyCandidates, copyName, productIssues, publishBlockerMessage } from './admin-product-rules'
+import {
+  copyCandidates,
+  copyName,
+  numberedCandidates,
+  productIssues,
+  publishBlockerMessage,
+} from './admin-product-rules'
 
 describe('admin product rules', () => {
   it('lists what a product still needs', () => {
@@ -21,5 +27,10 @@ describe('admin product rules', () => {
     expect(copyCandidates('l3250', 'copia', 220, 3)).toEqual(['l3250-copia', 'l3250-copia-2', 'l3250-copia-3'])
     expect(copyCandidates('C13T544', 'COPIA', 60, 1)).toEqual(['C13T544-COPIA'])
     expect(copyCandidates('A'.repeat(60), 'COPIA', 60, 2).every(sku => sku.length <= 60)).toBe(true)
+  })
+
+  it('numbers slugs of new products named like existing ones', () => {
+    expect(numberedCandidates('epson-l3250', 220, 3)).toEqual(['epson-l3250', 'epson-l3250-2', 'epson-l3250-3'])
+    expect(numberedCandidates('a'.repeat(220), 220, 2).every(slug => slug.length <= 220)).toBe(true)
   })
 })

@@ -105,3 +105,7 @@ These models have **no `deletedAt`** on purpose (and append-only ones have no `u
 When creating a record whose unique value already belongs to a soft-deleted row, **restore and update that row**
 (`deletedAt: null`) instead of inserting a new one. This keeps the history linked (orders, movements) and never breaks
 the constraint.
+
+Exception: **products** are not restored this way, because the archived row still owns its variants, photos and
+specifications. A new product gets a numbered slug (`epson-l3250-2`) and a slug or SKU typed by the admin must be free
+(`409` otherwise).

@@ -894,8 +894,10 @@ Creates a **draft** with its default variant (every product has at least one sel
 
 **Responses**
 
-`201 Created` — the product. `400` unknown category/brand. `409` slug or SKU in use (an archived product's slug is
-restored as a new draft, see Taxonomy rules).
+`201 Created` — the product. `400` unknown category/brand. `409` SKU in use (also by an archived product), or a
+`slug` sent explicitly that is in use. Without `slug`, it is generated from the name and numbered when taken
+(`epson-l3250-2`). Unlike categories, brands and tags, **archived products are never restored** by reusing their
+slug: that would bring back their old variants, photos and specifications.
 
 ### PATCH /admin/products/:id
 

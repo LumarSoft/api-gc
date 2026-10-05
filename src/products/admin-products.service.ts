@@ -8,7 +8,7 @@ import {
 import { AuditLogsService } from '../audit-logs/audit-logs.service'
 import { diffForAudit } from '../audit-logs/lib/audit-diff'
 import type { AuditActor } from '../common/types/audit-actor'
-import { claimSlug, slugify } from '../common/utils/slug'
+import { slugify } from '../common/utils/slug'
 import { Prisma } from '../generated/prisma/client'
 import { DataSource, ProductStatus } from '../generated/prisma/enums'
 import { PrismaService } from '../prisma/prisma.service'
@@ -20,7 +20,9 @@ import { ListAdminProductsQueryDto } from './dto/admin/list-admin-products-query
 import { UpdateProductDto } from './dto/admin/update-product.dto'
 import { adminListSelect } from './lib/admin-product-selects'
 import { adminProductsOrderBy, adminProductsWhere } from './lib/admin-product-filters'
-import { publishBlockerMessage } from './lib/admin-product-rules'
+import { numberedCandidates, publishBlockerMessage } from './lib/admin-product-rules'
+
+const SLUG_MAX_LENGTH = 220
 
 /** Admin catalog: list, create, edit, publish/hide and archive products. */
 @Injectable()
@@ -58,14 +60,12 @@ export class AdminProductsService {
   }
 
   async create(dto: CreateProductDto, actor: AuditActor): Promise<AdminProductDetailDto> {
-    const slug = dto.slug ?? slugify(dto.name)
-    if (!slug) throw new BadRequestException('The name must contain letters or numbers')
     await this.assertCategory(dto.categoryId)
     if (dto.brandId) await this.assertBrand(dto.brandId)
-    if (await this.prisma.productVariant.count({ where: { sku: dto.sku } })) {
-      throw new ConflictException(`The SKU "${dto.sku}" is already in use`)
-    }
-    const restoreId = await claimSlug(slug, this.findSlugHolder, null)
+    await this.assertSkuFree(dto.sku)
+    // Unlike categories, an archived product is never restored by reusing its slug: it would bring back its old
+    // variants, photos and specifications. A slug typed by the admin must be free; one made from the name is numbered.
+    const slug = dto.slug ? await this.assertSlugFree(dto.slug, null) : await this.freeSlugFromName(dto.name)
 
     const data = {
       name: dto.name,
@@ -76,14 +76,7 @@ export class AdminProductsService {
       status: ProductStatus.DRAFT,
     }
     const id = await this.prisma.$transaction(async tx => {
-      // An archived product holding this slug is restored as a fresh draft instead of breaking the unique index.
-      const product = restoreId
-        ? await tx.product.update({
-            where: { id: restoreId },
-            data: { ...data, deletedAt: null, publishedAt: null },
-            select: { id: true },
-          })
-        : await tx.product.create({ data, select: { id: true } })
+      const product = await tx.product.create({ data, select: { id: true } })
       await tx.productVariant.create({
         data: { productId: product.id, sku: dto.sku, isDefault: true, isActive: true, source: DataSource.MANUAL },
       })
@@ -107,7 +100,7 @@ export class AdminProductsService {
     if (!current) throw new NotFoundException(`Product ${id} not found`)
     if (dto.categoryId && dto.categoryId !== current.categoryId) await this.assertCategory(dto.categoryId)
     if (dto.brandId && dto.brandId !== current.brandId) await this.assertBrand(dto.brandId)
-    if (dto.slug && dto.slug !== current.slug) await claimSlug(dto.slug, this.findSlugHolder, id)
+    if (dto.slug && dto.slug !== current.slug) await this.assertSlugFree(dto.slug, id)
 
     // Required columns only accept a value or "unchanged" (undefined), never null.
     const data: Prisma.ProductUncheckedUpdateInput = {
@@ -173,8 +166,37 @@ export class AdminProductsService {
     })
   }
 
-  private readonly findSlugHolder = (slug: string) =>
-    this.prisma.product.findUnique({ where: { slug }, select: { id: true, deletedAt: true } })
+  private async assertSlugFree(slug: string, editingId: number | null): Promise<string> {
+    const holder = await this.prisma.product.findUnique({ where: { slug }, select: { id: true, deletedAt: true } })
+    if (holder && holder.id !== editingId) {
+      throw new ConflictException(
+        holder.deletedAt ? `The slug "${slug}" belongs to an archived record` : `The slug "${slug}" is already in use`,
+      )
+    }
+    return slug
+  }
+
+  private async freeSlugFromName(name: string): Promise<string> {
+    const base = slugify(name)
+    if (!base) throw new BadRequestException('The name must contain letters or numbers')
+    const candidates = numberedCandidates(base, SLUG_MAX_LENGTH)
+    const taken = await this.prisma.product.findMany({ where: { slug: { in: candidates } }, select: { slug: true } })
+    const free = candidates.find(candidate => !taken.some(row => row.slug === candidate))
+    if (!free) throw new ConflictException(`The slug "${base}" is already in use`)
+    return free
+  }
+
+  private async assertSkuFree(sku: string): Promise<void> {
+    const holder = await this.prisma.productVariant.findUnique({
+      where: { sku },
+      select: { deletedAt: true, product: { select: { deletedAt: true } } },
+    })
+    if (!holder) return
+    const archived = holder.deletedAt !== null || holder.product.deletedAt !== null
+    throw new ConflictException(
+      archived ? `The SKU "${sku}" belongs to an archived record` : `The SKU "${sku}" is already in use`,
+    )
+  }
 
   private async assertCategory(id: number): Promise<void> {
     const found = await this.prisma.category.count({ where: { id, deletedAt: null } })

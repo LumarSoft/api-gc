@@ -46,3 +46,11 @@ export function copyCandidates(base: string, marker: string, maxLength: number, 
     return `${base.slice(0, maxLength - suffix.length)}${suffix}`
   })
 }
+
+/** "epson-l3250", "epson-l3250-2", "epson-l3250-3"…: free slugs for a new product named like an existing one. */
+export function numberedCandidates(base: string, maxLength: number, count = 20): string[] {
+  return Array.from({ length: count }, (_, index) => {
+    const suffix = index === 0 ? '' : `-${index + 1}`
+    return `${base.slice(0, maxLength - suffix.length)}${suffix}`
+  })
+}
