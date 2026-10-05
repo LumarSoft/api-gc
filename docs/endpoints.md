@@ -753,3 +753,230 @@ Archives the tag **and removes it from every product** that had it.
 **Responses**
 
 `204 No Content`
+
+### Products (admin)
+
+`/admin/products/*` manage the catalog. Prices are shown **as stored** (amount + currency, never converted) in the
+default retail list. Every write answers the full `AdminProduct` (shape of `GET /admin/products/:id`) and is audited.
+
+`issues` (what a product still needs): `NO_ACTIVE_VARIANT`, `NO_RETAIL_PRICE` (no active variant has a retail price)
+— both block publishing — and `NO_IMAGE` (warning only).
+
+### GET /admin/products
+
+Paginated list, any status, archived products excluded.
+
+**Auth required:** Yes (ADMIN)
+
+**Query**
+
+| Param        | Type   | Required | Constraints                                                  |
+| ------------ | ------ | -------- | ------------------------------------------------------------ |
+| `page`       | number | No       | ≥1, default 1                                                |
+| `pageSize`   | number | No       | 1–100, default 25                                            |
+| `q`          | string | No       | Name or SKU, ≤100 chars                                      |
+| `status`     | enum   | No       | `DRAFT` \| `PUBLISHED` \| `HIDDEN`                           |
+| `categoryId` | number | No       | Includes its subcategories                                   |
+| `brandId`    | number | No       |                                                              |
+| `stock`      | `out`  | No       | Only products without available stock in any active variant  |
+| `sort`       | enum   | No       | `updated` (default, last edited first) \| `name` \| `newest` |
+
+**Responses**
+
+`200 OK`
+
+```json
+{
+  "items": [
+    {
+      "id": 39,
+      "name": "Botella de tinta original Epson T544",
+      "slug": "botella-de-tinta-original-epson-t544",
+      "status": "PUBLISHED",
+      "imageUrl": null,
+      "category": { "id": 5, "name": "Tintas y consumibles" },
+      "brand": { "id": 1, "name": "Epson" },
+      "sku": "T544120-AL",
+      "variantCount": 4,
+      "retailPrice": { "amount": "18999.00", "currency": "ARS" },
+      "available": 115,
+      "availability": "IN_STOCK",
+      "isFeatured": true,
+      "outOfStockBehavior": "SHOW_UNAVAILABLE",
+      "issues": ["NO_IMAGE"],
+      "publishedAt": "2026-06-11T18:00:49.772Z",
+      "updatedAt": "2026-10-03T18:00:49.773Z"
+    }
+  ],
+  "page": 1,
+  "pageSize": 25,
+  "total": 39,
+  "totalPages": 2
+}
+```
+
+`sku` and `retailPrice` come from the default variant; `available` sums active variants (on hand − reserved).
+
+### GET /admin/products/:id
+
+The product editor's data.
+
+**Auth required:** Yes (ADMIN)
+
+**Responses**
+
+`200 OK`
+
+```json
+{
+  "id": 40,
+  "type": "STANDARD",
+  "status": "DRAFT",
+  "name": "Epson EcoTank L3250",
+  "slug": "epson-ecotank-l3250",
+  "categoryId": 2,
+  "brandId": 1,
+  "shortDescription": "Multifuncional con Wi-Fi.",
+  "description": "…",
+  "isFeatured": false,
+  "outOfStockBehavior": "SHOW_UNAVAILABLE",
+  "warrantyMonths": 12,
+  "seoTitle": null,
+  "seoDescription": null,
+  "images": [
+    {
+      "id": 81,
+      "fileId": 82,
+      "url": "http://localhost:3001/files/uploads/…png",
+      "altText": "Frente",
+      "variantId": null
+    }
+  ],
+  "specifications": [{ "id": 648, "groupName": "Impresión", "name": "Velocidad", "value": "33 ppm" }],
+  "tags": [{ "id": 1, "name": "Hogar", "slug": "uso-hogar", "group": "uso" }],
+  "variants": [
+    {
+      "id": 47,
+      "sku": "L3250-AR",
+      "name": null,
+      "isDefault": true,
+      "isActive": true,
+      "retailPrice": null,
+      "available": null,
+      "availability": "OUT_OF_STOCK"
+    }
+  ],
+  "issues": ["NO_RETAIL_PRICE"],
+  "publishedAt": null,
+  "createdAt": "2026-10-04T18:00:00.000Z",
+  "updatedAt": "2026-10-04T18:05:00.000Z"
+}
+```
+
+`404 Not Found` — unknown or archived.
+
+### POST /admin/products
+
+Creates a **draft** with its default variant (every product has at least one sellable SKU).
+
+**Auth required:** Yes (ADMIN)
+
+**Request body**
+
+| Field              | Type           | Required | Constraints                                  |
+| ------------------ | -------------- | -------- | -------------------------------------------- |
+| `name`             | string         | Yes      | 2–200 chars                                  |
+| `slug`             | string         | No       | Lowercase slug ≤220. Default: from `name`    |
+| `categoryId`       | number         | Yes      | Existing category (top-level or subcategory) |
+| `brandId`          | number \| null | No       | Existing brand                               |
+| `sku`              | string         | Yes      | ≤60, letters, numbers, `.`, `-`, `_`; unique |
+| `shortDescription` | string \| null | No       | ≤500                                         |
+
+**Responses**
+
+`201 Created` — the product. `400` unknown category/brand. `409` SKU in use (also by an archived product), or a
+`slug` sent explicitly that is in use. Without `slug`, it is generated from the name and numbered when taken
+(`epson-l3250-2`). Unlike categories, brands and tags, **archived products are never restored** by reusing their
+slug: that would bring back their old variants, photos and specifications.
+
+### PATCH /admin/products/:id
+
+General data, all optional: `name`, `slug`, `categoryId`, `brandId` (null removes it), `shortDescription` (≤500),
+`description` (≤20000), `isFeatured`, `outOfStockBehavior` (`SHOW_UNAVAILABLE` \| `HIDE` \| `ALLOW_INQUIRY`),
+`warrantyMonths` (0–240), `seoTitle` (≤70), `seoDescription` (≤160).
+
+**Auth required:** Yes (ADMIN). `200 OK` — the product.
+
+### PUT /admin/products/:id/status
+
+Body `{ "status": "DRAFT" | "PUBLISHED" | "HIDDEN" }`. The first publication date is kept when it is published again.
+
+**Auth required:** Yes (ADMIN)
+
+**Responses**
+
+`200 OK` — the product.
+
+`422 Unprocessable Entity`
+
+```json
+{
+  "message": "Cannot publish: no active variant has a retail price",
+  "error": "Unprocessable Entity",
+  "statusCode": 422
+}
+```
+
+### PUT /admin/products/:id/images
+
+The whole gallery, in order (the first image is the main one). Rows left out are removed; kept rows send their `id`.
+
+**Auth required:** Yes (ADMIN)
+
+**Request body**
+
+| Field                | Type           | Required | Constraints                                   |
+| -------------------- | -------------- | -------- | --------------------------------------------- |
+| `images`             | array          | Yes      | ≤30 items                                     |
+| `images[].id`        | number         | No       | An image of this product (omit for a new one) |
+| `images[].fileId`    | number         | Yes      | From `POST /admin/files/images`               |
+| `images[].altText`   | string \| null | No       | ≤200                                          |
+| `images[].variantId` | number \| null | No       | A variant of this product                     |
+
+```json
+{
+  "images": [
+    { "id": 82, "fileId": 81 },
+    { "fileId": 90, "altText": "Vista lateral" }
+  ]
+}
+```
+
+`200 OK` — the product. `400` unknown file, foreign variant, or an `id` that is not one of this product's images.
+
+### PUT /admin/products/:id/specifications
+
+The whole technical sheet, in order: `{ "specifications": [{ "id"?, "groupName"?, "name", "value" }] }` (≤200 rows;
+`name` ≤100, `value` ≤500, `groupName` ≤100). Same rules as images.
+
+**Auth required:** Yes (ADMIN). `200 OK` — the product.
+
+### PUT /admin/products/:id/tags
+
+Every tag of the product: `{ "tagIds": [1, 2] }` (≤50, unique). Tags left out are unlinked.
+
+**Auth required:** Yes (ADMIN). `200 OK` — the product. `400` unknown tag.
+
+### POST /admin/products/:id/duplicate
+
+Creates a **draft** copy: name `"<name> (copia)"`, slug `<slug>-copia` (`-copia-2`, …), every variant with SKU
+`<sku>-COPIA` (`-COPIA-2`, …) and the same prices, images (same files, variant photos re-linked), specifications and
+tags. Not copied: Tango codes, stock, featured flag and publication date.
+
+**Auth required:** Yes (ADMIN). `201 Created` — the new product.
+
+### DELETE /admin/products/:id
+
+Archives the product (soft delete): it leaves the store and the admin list. Orders keep their own snapshot.
+
+**Auth required:** Yes (ADMIN). `204 No Content`.

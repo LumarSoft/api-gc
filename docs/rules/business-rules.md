@@ -56,3 +56,8 @@ Domain rules that apply across modules. When a request contradicts one of these,
 - Products can come from Tango or be created manually. Price can come from Tango or be set manually.
 - Out-of-stock behavior is configurable per product: show, hide, or allow inquiry.
 - Weight and dimensions may be missing in Tango and completed from the admin panel.
+- A product is created as a **draft** with one default variant. It can be **published** only when at least one active
+  variant has a price in the default retail list; a product without images can be published (the admin sees a
+  warning). Agreed on 2026-10-04 as a starting point; revisit with the client.
+- **Duplicating** a product creates a draft copy with new slug and SKUs (`-copia` / `-COPIA`). Tango codes and stock
+  are never copied: they belong to the original articles.
