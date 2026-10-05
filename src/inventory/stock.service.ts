@@ -27,7 +27,12 @@ export class StockService {
   ) {}
 
   async adjust(variantId: number, adjustment: StockAdjustment, actor: AuditActor): Promise<void> {
+    // The level row must exist before it can be locked: locking a missing row locks an index gap instead, and two
+    // first-time adjustments would deadlock. INSERT IGNORE is safe to run concurrently.
+    await this.prisma.inventoryLevel.createMany({ data: [{ variantId }], skipDuplicates: true })
     await this.prisma.$transaction(async tx => {
+      // Lock the row: two adjustments at once must not both compute their movement from the same old quantity.
+      await tx.$queryRaw`SELECT id FROM InventoryLevel WHERE variantId = ${variantId} FOR UPDATE`
       const level = await tx.inventoryLevel.findUnique({
         where: { variantId },
         select: { onHand: true, reserved: true, lowStockThreshold: true },
