@@ -1,4 +1,11 @@
-import { Currency, OutOfStockBehavior, ProductStatus, ProductType } from '../../../generated/prisma/enums'
+import {
+  Currency,
+  DataSource,
+  OutOfStockBehavior,
+  ProductStatus,
+  ProductType,
+  SaleUnit,
+} from '../../../generated/prisma/enums'
 import type { ProductIssue } from '../../lib/admin-product-rules'
 import type { Availability } from '../product-response.dto'
 
@@ -24,6 +31,42 @@ export class AdminVariantSummaryDto {
   /** On hand minus reserved. Null when stock was never loaded. */
   available: number | null
   availability: Availability
+}
+
+export class VariantPriceDto {
+  priceListId: number
+  amount: string
+  currency: Currency
+  /** Previous price shown crossed out, same currency. */
+  compareAtAmount: string | null
+  /** TANGO prices are overwritten by the sync; MANUAL ones are set here. */
+  source: DataSource
+}
+
+export class VariantStockDto {
+  onHand: number
+  reserved: number
+  /** Null = the store default (3). */
+  lowStockThreshold: number | null
+}
+
+/** A variant with everything the admin can edit. */
+export class AdminVariantDto extends AdminVariantSummaryDto {
+  /** e.g. { "Color": "Cyan", "Capacidad": "70 ml" }. */
+  optionValues: Record<string, string> | null
+  barcode: string | null
+  source: DataSource
+  tangoCode: string | null
+  saleUnit: SaleUnit
+  unitsPerSaleUnit: number
+  weightGrams: number | null
+  lengthMm: number | null
+  widthMm: number | null
+  heightMm: number | null
+  isBulky: boolean
+  prices: VariantPriceDto[]
+  /** Null when stock was never loaded for this variant. */
+  stock: VariantStockDto | null
 }
 
 export class AdminProductListItemDto {
@@ -97,7 +140,7 @@ export class AdminProductDetailDto {
   images: AdminProductImageDto[]
   specifications: AdminSpecificationDto[]
   tags: AdminProductTagDto[]
-  variants: AdminVariantSummaryDto[]
+  variants: AdminVariantDto[]
   issues: ProductIssue[]
   publishedAt: Date | null
   createdAt: Date

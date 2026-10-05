@@ -20,12 +20,13 @@ export class AdminProductReader {
   }
 
   async detail(id: number): Promise<AdminProductDetailDto> {
+    const retailListId = await this.retailListId()
     const row = await this.prisma.product.findFirst({
       where: { id, deletedAt: null },
-      select: adminDetailSelect(await this.retailListId()),
+      select: adminDetailSelect(retailListId),
     })
     if (!row) throw new NotFoundException(`Product ${id} not found`)
-    return this.mapper.toDetail(row)
+    return this.mapper.toDetail(row, retailListId)
   }
 
   /** Throws 404 unless the product exists and is not archived. */

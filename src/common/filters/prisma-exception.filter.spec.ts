@@ -18,6 +18,8 @@ describe('PrismaExceptionFilter', () => {
     expect(parentCatch.mock.calls[0][0]).toBeInstanceOf(ConflictException)
     filter.catch(prismaError('P2025'), host)
     expect(parentCatch.mock.calls[1][0]).toBeInstanceOf(NotFoundException)
+    filter.catch(prismaError('P2034'), host)
+    expect(parentCatch.mock.calls[2][0]).toBeInstanceOf(ConflictException)
   })
 
   it('leaves any other database error to the default 500 handling', () => {

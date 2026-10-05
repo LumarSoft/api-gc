@@ -35,6 +35,9 @@ Domain rules that apply across modules. When a request contradicts one of these,
 - Expired or cancelled orders release their reservation automatically (scheduled job).
 - Every stock change is a row in a movements table (product, quantity, reason, reference). Never overwrite a stock
   number without recording the movement.
+- **Provisional (agreed 2026-10-04):** until the Tango integration exists, admins can set the counted stock of a
+  variant from the panel (`ADJUSTMENT` movement, `StockService`, `TODO(tango)`). This is a stopgap: the real source of
+  stock is Tango, and the sync still has to be built. The panel shows a notice saying so.
 - Reserving stock and creating the order happen in the same `prisma.$transaction`.
 
 ## Wholesale current account
@@ -59,5 +62,9 @@ Domain rules that apply across modules. When a request contradicts one of these,
 - A product is created as a **draft** with one default variant. It can be **published** only when at least one active
   variant has a price in the default retail list; a product without images can be published (the admin sees a
   warning). Agreed on 2026-10-04 as a starting point; revisit with the client.
+- Prices are set per variant and price list (retail, "clientes frecuentes"), each in ARS or USD. A price edited in the
+  panel becomes `MANUAL`. USD prices are shown and charged in ARS at the exchange rate in effect.
+- The USD exchange rate history is append-only: a new rate can start now or later, never in the past.
+- A product keeps at least one variant; the default variant is always an active one.
 - **Duplicating** a product creates a draft copy with new slug and SKUs (`-copia` / `-COPIA`). Tango codes and stock
   are never copied: they belong to the original articles.

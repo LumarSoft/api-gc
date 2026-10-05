@@ -6,6 +6,7 @@ import { Prisma } from '../../generated/prisma/client'
  * Turns the database errors a client can cause into proper HTTP answers instead of a 500:
  * - P2002 unique constraint (two admins saving the same slug/SKU at once, after the service already checked) → 409.
  * - P2025 record to update not found (archived meanwhile) → 404.
+ * - P2034 write conflict or deadlock between two transactions → 409, the client can simply retry.
  * Everything else keeps Nest's default handling (500 without internal details).
  */
 @Catch(Prisma.PrismaClientKnownRequestError)
@@ -17,6 +18,7 @@ export class PrismaExceptionFilter extends BaseExceptionFilter {
   private toHttp(error: Prisma.PrismaClientKnownRequestError): HttpException | null {
     if (error.code === 'P2002') return new ConflictException('A record with the same unique value already exists')
     if (error.code === 'P2025') return new NotFoundException('The record no longer exists')
+    if (error.code === 'P2034') return new ConflictException('Another change was saved at the same time. Try again')
     return null
   }
 }

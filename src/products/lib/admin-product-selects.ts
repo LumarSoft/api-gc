@@ -43,10 +43,36 @@ export function adminListSelect(retailListId: number | null) {
   } satisfies Prisma.ProductSelect
 }
 
+/** Everything the variant editor needs: every price list, options, logistics and the raw stock numbers. */
+const VARIANT_DETAIL_SELECT = {
+  id: true,
+  sku: true,
+  name: true,
+  optionValues: true,
+  barcode: true,
+  source: true,
+  tangoCode: true,
+  isDefault: true,
+  isActive: true,
+  saleUnit: true,
+  unitsPerSaleUnit: true,
+  weightGrams: true,
+  lengthMm: true,
+  widthMm: true,
+  heightMm: true,
+  isBulky: true,
+  prices: {
+    where: { deletedAt: null },
+    select: { priceListId: true, amount: true, currency: true, compareAtAmount: true, source: true },
+  },
+  inventory: { select: { onHand: true, reserved: true, lowStockThreshold: true } },
+} satisfies Prisma.ProductVariantSelect
+
 /** Everything the admin product editor shows. */
 export function adminDetailSelect(retailListId: number | null) {
   return {
     ...adminListSelect(retailListId),
+    variants: { where: { deletedAt: null }, orderBy: VARIANT_ORDER, select: VARIANT_DETAIL_SELECT },
     type: true,
     shortDescription: true,
     description: true,
@@ -75,3 +101,4 @@ export function adminDetailSelect(retailListId: number | null) {
 export type AdminListRow = Prisma.ProductGetPayload<{ select: ReturnType<typeof adminListSelect> }>
 export type AdminDetailRow = Prisma.ProductGetPayload<{ select: ReturnType<typeof adminDetailSelect> }>
 export type AdminVariantRow = AdminListRow['variants'][number]
+export type AdminVariantDetailRow = AdminDetailRow['variants'][number]
