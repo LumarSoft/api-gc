@@ -23,7 +23,7 @@ api-gc/
 │   ├── files/                     # Local file storage, public URLs (/files), admin image upload
 │   ├── pricing/                   # Price resolution: price lists per buyer, USD → ARS conversion
 │   ├── tags/                      # GET /tags (catalog filters) + /admin/tags
-│   ├── products/                  # Public catalog: list with filters/sort/pagination, product page
+│   ├── products/                  # Public catalog + /admin/products (admin-* services, reader, mapper, duplicator)
 │   ├── common/                    # Shared guards (JwtAuthGuard, RolesGuard), decorators, auth types, helpers
 │   ├── mail/                      # Transactional email (logged in development until a provider is set)
 │   ├── scripts/                   # create-admin.ts (`npm run admin:create`), seed-catalog.ts (`npm run db:seed`)
@@ -62,5 +62,5 @@ api-gc/
 | PricingModule    | `src/pricing/`    | Price list per buyer, USD → ARS    |
 | CategoriesModule | `src/categories/` | Category tree (public + admin)     |
 | BrandsModule     | `src/brands/`     | Brands (public + admin)            |
-| ProductsModule   | `src/products/`   | Public catalog                     |
+| ProductsModule   | `src/products/`   | Public catalog + admin products    |
 | TagsModule       | `src/tags/`       | Tags for filters (public + admin)  |

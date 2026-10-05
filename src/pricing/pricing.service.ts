@@ -61,6 +61,15 @@ export class PricingService {
     return { priceListIds, usdRate: rate?.rate ?? null }
   }
 
+  /** Id of the default price list of an audience (the retail list, the frequent-customer list), or null if missing. */
+  async defaultListId(audience: BuyerType): Promise<number | null> {
+    const list = await this.prisma.priceList.findFirst({
+      where: { audience, isDefault: true, deletedAt: null },
+      select: { id: true },
+    })
+    return list?.id ?? null
+  }
+
   /** Picks the price from the first applicable list and shows it in ARS. Returns null when the variant has no price. */
   resolve(prices: VariantPriceRow[], context: PriceContext): ResolvedPrice | null {
     for (const listId of context.priceListIds) {
