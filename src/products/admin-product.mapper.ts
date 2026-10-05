@@ -3,10 +3,11 @@ import { FilesService } from '../files/files.service'
 import type {
   AdminProductDetailDto,
   AdminProductListItemDto,
+  AdminVariantDto,
   AdminVariantSummaryDto,
 } from './dto/admin/admin-product-response.dto'
 import { productIssues } from './lib/admin-product-rules'
-import type { AdminDetailRow, AdminListRow, AdminVariantRow } from './lib/admin-product-selects'
+import type { AdminDetailRow, AdminListRow, AdminVariantDetailRow, AdminVariantRow } from './lib/admin-product-selects'
 import { availabilityOf, bestAvailability } from './lib/product-rules'
 
 /** Admin view of products: stored prices (never converted), stock numbers and what each product still needs. */
@@ -39,8 +40,8 @@ export class AdminProductMapper {
     }
   }
 
-  toDetail(row: AdminDetailRow): AdminProductDetailDto {
-    const variants = row.variants.map(variant => this.toVariant(variant))
+  toDetail(row: AdminDetailRow, retailListId: number | null): AdminProductDetailDto {
+    const variants = row.variants.map(variant => this.toVariantDetail(variant, retailListId))
     return {
       id: row.id,
       type: row.type,
@@ -70,6 +71,32 @@ export class AdminProductMapper {
       publishedAt: row.publishedAt,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
+    }
+  }
+
+  private toVariantDetail(variant: AdminVariantDetailRow, retailListId: number | null): AdminVariantDto {
+    const retail = variant.prices.find(price => price.priceListId === retailListId)
+    return {
+      ...this.toVariant({ ...variant, prices: retail ? [retail] : [] }),
+      optionValues: (variant.optionValues as Record<string, string> | null) ?? null,
+      barcode: variant.barcode,
+      source: variant.source,
+      tangoCode: variant.tangoCode,
+      saleUnit: variant.saleUnit,
+      unitsPerSaleUnit: variant.unitsPerSaleUnit,
+      weightGrams: variant.weightGrams,
+      lengthMm: variant.lengthMm,
+      widthMm: variant.widthMm,
+      heightMm: variant.heightMm,
+      isBulky: variant.isBulky,
+      prices: variant.prices.map(price => ({
+        priceListId: price.priceListId,
+        amount: price.amount.toFixed(2),
+        currency: price.currency,
+        compareAtAmount: price.compareAtAmount?.toFixed(2) ?? null,
+        source: price.source,
+      })),
+      stock: variant.inventory,
     }
   }
 

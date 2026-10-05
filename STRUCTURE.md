@@ -21,7 +21,8 @@ api-gc/
 │   ├── brands/                    # GET /brands + /admin/brands
 │   ├── categories/                # GET /categories (tree), GET /categories/:slug + /admin/categories
 │   ├── files/                     # Local file storage, public URLs (/files), admin image upload
-│   ├── pricing/                   # Price resolution: price lists per buyer, USD → ARS conversion
+│   ├── inventory/                 # StockService: stock levels + movement ledger (manual adjustment, TODO(tango))
+│   ├── pricing/                   # Price resolution + /admin/price-lists and /admin/exchange-rates
 │   ├── tags/                      # GET /tags (catalog filters) + /admin/tags
 │   ├── products/                  # Public catalog + /admin/products (admin-* services, reader, mapper, duplicator)
 │   ├── common/                    # Shared guards (JwtAuthGuard, RolesGuard), decorators, auth types, helpers
@@ -51,16 +52,17 @@ api-gc/
 
 ## Module overview
 
-| Module           | Path              | Responsibility                     |
-| ---------------- | ----------------- | ---------------------------------- |
-| AppModule        | `src/`            | Root module, health check          |
-| PrismaModule     | `src/prisma/`     | Global DB access (PrismaService)   |
-| MailModule       | `src/mail/`       | Global transactional email         |
-| AuthModule       | `src/auth/`       | Sessions, passwords, email check   |
-| AuditLogsModule  | `src/audit-logs/` | Global audit log of admin changes  |
-| FilesModule      | `src/files/`      | Global file storage + image upload |
-| PricingModule    | `src/pricing/`    | Price list per buyer, USD → ARS    |
-| CategoriesModule | `src/categories/` | Category tree (public + admin)     |
-| BrandsModule     | `src/brands/`     | Brands (public + admin)            |
-| ProductsModule   | `src/products/`   | Public catalog + admin products    |
-| TagsModule       | `src/tags/`       | Tags for filters (public + admin)  |
+| Module           | Path              | Responsibility                               |
+| ---------------- | ----------------- | -------------------------------------------- |
+| AppModule        | `src/`            | Root module, health check                    |
+| PrismaModule     | `src/prisma/`     | Global DB access (PrismaService)             |
+| MailModule       | `src/mail/`       | Global transactional email                   |
+| AuthModule       | `src/auth/`       | Sessions, passwords, email check             |
+| AuditLogsModule  | `src/audit-logs/` | Global audit log of admin changes            |
+| FilesModule      | `src/files/`      | Global file storage + image upload           |
+| PricingModule    | `src/pricing/`    | Price list per buyer, USD → ARS, admin rates |
+| InventoryModule  | `src/inventory/`  | Stock levels and movements                   |
+| CategoriesModule | `src/categories/` | Category tree (public + admin)               |
+| BrandsModule     | `src/brands/`     | Brands (public + admin)                      |
+| ProductsModule   | `src/products/`   | Public catalog + admin products              |
+| TagsModule       | `src/tags/`       | Tags for filters (public + admin)            |

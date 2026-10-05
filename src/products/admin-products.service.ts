@@ -14,6 +14,7 @@ import { DataSource, ProductStatus } from '../generated/prisma/enums'
 import { PrismaService } from '../prisma/prisma.service'
 import { AdminProductMapper } from './admin-product.mapper'
 import { AdminProductReader } from './admin-product.reader'
+import { CatalogReferences } from './catalog-references'
 import type { AdminProductDetailDto, PaginatedAdminProductsDto } from './dto/admin/admin-product-response.dto'
 import { CreateProductDto } from './dto/admin/create-product.dto'
 import { ListAdminProductsQueryDto } from './dto/admin/list-admin-products-query.dto'
@@ -32,6 +33,7 @@ export class AdminProductsService {
     private readonly reader: AdminProductReader,
     private readonly mapper: AdminProductMapper,
     private readonly auditLogs: AuditLogsService,
+    private readonly references: CatalogReferences,
   ) {}
 
   async findAll(query: ListAdminProductsQueryDto): Promise<PaginatedAdminProductsDto> {
@@ -60,9 +62,9 @@ export class AdminProductsService {
   }
 
   async create(dto: CreateProductDto, actor: AuditActor): Promise<AdminProductDetailDto> {
-    await this.assertCategory(dto.categoryId)
-    if (dto.brandId) await this.assertBrand(dto.brandId)
-    await this.assertSkuFree(dto.sku)
+    await this.references.assertCategory(dto.categoryId)
+    if (dto.brandId) await this.references.assertBrand(dto.brandId)
+    await this.references.assertSkuFree(dto.sku)
     // Unlike categories, an archived product is never restored by reusing its slug: it would bring back its old
     // variants, photos and specifications. A slug typed by the admin must be free; one made from the name is numbered.
     const slug = dto.slug ? await this.assertSlugFree(dto.slug, null) : await this.freeSlugFromName(dto.name)
@@ -98,8 +100,8 @@ export class AdminProductsService {
   async update(id: number, dto: UpdateProductDto, actor: AuditActor): Promise<AdminProductDetailDto> {
     const current = await this.prisma.product.findFirst({ where: { id, deletedAt: null } })
     if (!current) throw new NotFoundException(`Product ${id} not found`)
-    if (dto.categoryId && dto.categoryId !== current.categoryId) await this.assertCategory(dto.categoryId)
-    if (dto.brandId && dto.brandId !== current.brandId) await this.assertBrand(dto.brandId)
+    if (dto.categoryId && dto.categoryId !== current.categoryId) await this.references.assertCategory(dto.categoryId)
+    if (dto.brandId && dto.brandId !== current.brandId) await this.references.assertBrand(dto.brandId)
     if (dto.slug && dto.slug !== current.slug) await this.assertSlugFree(dto.slug, id)
 
     // Required columns only accept a value or "unchanged" (undefined), never null.
@@ -184,27 +186,5 @@ export class AdminProductsService {
     const free = candidates.find(candidate => !taken.some(row => row.slug === candidate))
     if (!free) throw new ConflictException(`The slug "${base}" is already in use`)
     return free
-  }
-
-  private async assertSkuFree(sku: string): Promise<void> {
-    const holder = await this.prisma.productVariant.findUnique({
-      where: { sku },
-      select: { deletedAt: true, product: { select: { deletedAt: true } } },
-    })
-    if (!holder) return
-    const archived = holder.deletedAt !== null || holder.product.deletedAt !== null
-    throw new ConflictException(
-      archived ? `The SKU "${sku}" belongs to an archived record` : `The SKU "${sku}" is already in use`,
-    )
-  }
-
-  private async assertCategory(id: number): Promise<void> {
-    const found = await this.prisma.category.count({ where: { id, deletedAt: null } })
-    if (!found) throw new BadRequestException(`Category ${id} does not exist`)
-  }
-
-  private async assertBrand(id: number): Promise<void> {
-    const found = await this.prisma.brand.count({ where: { id, deletedAt: null } })
-    if (!found) throw new BadRequestException(`Brand ${id} does not exist`)
   }
 }

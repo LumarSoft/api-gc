@@ -975,8 +975,154 @@ tags. Not copied: Tango codes, stock, featured flag and publication date.
 
 **Auth required:** Yes (ADMIN). `201 Created` — the new product.
 
+`variants[]` in `AdminProduct` also carry everything the variant editor needs:
+
+```json
+{
+  "id": 47,
+  "sku": "L3250-AR",
+  "name": "Negro",
+  "isDefault": true,
+  "isActive": true,
+  "retailPrice": { "amount": "419999.00", "currency": "ARS" },
+  "available": 12,
+  "availability": "IN_STOCK",
+  "optionValues": { "Color": "Negro" },
+  "barcode": null,
+  "source": "MANUAL",
+  "tangoCode": null,
+  "saleUnit": "UNIT",
+  "unitsPerSaleUnit": 1,
+  "weightGrams": 4500,
+  "lengthMm": 375,
+  "widthMm": 347,
+  "heightMm": 179,
+  "isBulky": false,
+  "prices": [
+    { "priceListId": 1, "amount": "419999.00", "currency": "ARS", "compareAtAmount": "459999.00", "source": "MANUAL" },
+    { "priceListId": 2, "amount": "289.00", "currency": "USD", "compareAtAmount": null, "source": "MANUAL" }
+  ],
+  "stock": { "onHand": 12, "reserved": 0, "lowStockThreshold": 2 }
+}
+```
+
 ### DELETE /admin/products/:id
 
 Archives the product (soft delete): it leaves the store and the admin list. Orders keep their own snapshot.
 
 **Auth required:** Yes (ADMIN). `204 No Content`.
+
+### Variants (admin)
+
+`/admin/products/:id/variants/*`. Every answer is the updated `AdminProduct`. `404` when the variant is not one of
+the product's (or is archived).
+
+#### POST /admin/products/:id/variants
+
+**Auth required:** Yes (ADMIN)
+
+**Request body** (also the fields of `PATCH`, all optional there)
+
+| Field                             | Type           | Required | Constraints                                                     |
+| --------------------------------- | -------------- | -------- | --------------------------------------------------------------- |
+| `sku`                             | string         | Yes      | ≤60, letters, numbers, `.`, `-`, `_`; unique forever (`409`)    |
+| `name`                            | string \| null | No       | ≤150, e.g. "Cyan 70 ml"                                         |
+| `optionValues`                    | object \| null | No       | ≤5 entries, name ≤50 / value ≤100: `{ "Color": "Cyan" }`        |
+| `barcode`                         | string \| null | No       | ≤50                                                             |
+| `isActive`                        | boolean        | No       | Default `true`                                                  |
+| `saleUnit`                        | enum           | No       | `UNIT` `BOX` `PACK` `ROLL` `METER` `SQUARE_METER` `LITER` `KIT` |
+| `unitsPerSaleUnit`                | number         | No       | 1–10000                                                         |
+| `weightGrams`                     | number \| null | No       | Shipping data                                                   |
+| `lengthMm`, `widthMm`, `heightMm` | number \| null | No       | Shipping data                                                   |
+| `isBulky`                         | boolean        | No       | Machines and oversized items                                    |
+
+`201 Created`. A new variant is never the default one.
+
+#### PATCH /admin/products/:id/variants/:variantId
+
+Same fields, all optional. `422` when deactivating the default variant (choose another default first).
+
+#### PUT /admin/products/:id/variants/:variantId/default
+
+Makes it the variant preselected on the product page. `422` if it is inactive.
+
+#### DELETE /admin/products/:id/variants/:variantId
+
+Archives the variant; its photos stay as general photos. `422` for the last variant of the product, or for the
+default one when no other variant is active. Archiving the default promotes the first other active variant.
+
+#### PUT /admin/products/:id/variants/:variantId/prices
+
+Every price of the variant, one per price list (`GET /admin/price-lists`). Lists left out lose their price.
+
+| Field                      | Type           | Required | Constraints                                      |
+| -------------------------- | -------------- | -------- | ------------------------------------------------ |
+| `prices[].priceListId`     | number         | Yes      | Existing list, once                              |
+| `prices[].amount`          | string         | Yes      | Decimal, up to 2 decimals, > 0 (`"419999.90"`)   |
+| `prices[].currency`        | `ARS` \| `USD` | Yes      | USD is shown in ARS at the current exchange rate |
+| `prices[].compareAtAmount` | string \| null | No       | Crossed-out price, same currency, above `amount` |
+
+```json
+{
+  "prices": [
+    { "priceListId": 1, "amount": "419999", "currency": "ARS", "compareAtAmount": "459999" },
+    { "priceListId": 2, "amount": "289", "currency": "USD" }
+  ]
+}
+```
+
+`200 OK` — the product. `400` invalid amounts, repeated list, crossed-out price not higher, unknown list. Prices
+saved here become `MANUAL` (a future Tango sync must not overwrite them).
+
+#### PUT /admin/products/:id/variants/:variantId/stock
+
+**Provisional** manual stock count until stock comes from Tango. Body: `{ "onHand": 12, "lowStockThreshold": 2,
+"note": "Conteo del 5/10" }` (`onHand` 0–1000000; `lowStockThreshold` null = default 3; `note` ≤255). Records an
+`ADJUSTMENT` stock movement with the difference. `422` when `onHand` is below the units reserved by open orders.
+
+### Pricing (admin)
+
+#### GET /admin/price-lists
+
+**Auth required:** Yes (ADMIN)
+
+`200 OK`
+
+```json
+[
+  { "id": 1, "code": "RETAIL", "name": "Precio de lista", "audience": "RETAIL", "isDefault": true },
+  { "id": 2, "code": "WHOLESALE", "name": "Clientes frecuentes", "audience": "WHOLESALE", "isDefault": true }
+]
+```
+
+#### GET /admin/exchange-rates
+
+USD exchange rate: the one in effect, those scheduled for later, and the history (`?limit=` 1–100, default 20).
+
+**Auth required:** Yes (ADMIN)
+
+`200 OK`
+
+```json
+{
+  "current": {
+    "id": 4,
+    "currency": "USD",
+    "rate": "1475.5000",
+    "source": "MANUAL",
+    "effectiveFrom": "2026-10-05T12:00:00.000Z",
+    "createdAt": "2026-10-05T12:00:00.000Z"
+  },
+  "scheduled": [],
+  "history": [
+    { "id": 4, "currency": "USD", "rate": "1475.5000", "source": "MANUAL", "effectiveFrom": "…", "createdAt": "…" }
+  ]
+}
+```
+
+#### POST /admin/exchange-rates
+
+Loads a new rate (append-only history). Body: `{ "rate": "1475.50", "effectiveFrom"?: ISO date }` — up to 4
+decimals, > 0; `effectiveFrom` defaults to now and may be in the future (scheduled), never in the past (`400`).
+
+**Auth required:** Yes (ADMIN). `201 Created` — same shape as `GET /admin/exchange-rates`.
