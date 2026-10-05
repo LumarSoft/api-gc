@@ -39,6 +39,13 @@ Domain rules that apply across modules. When a request contradicts one of these,
 
 ## Orders
 
+- Checkout preparation (`/cart/checkout`, `/cart/checkout/preview`) is available to the current cart owner, including
+  guests. It validates contact details and recalculates the cart plus delivery with decimal arithmetic. It does not
+  persist contact/address data, create an order, reserve stock or initiate payment. Guest order completion and payment
+  activation remain pending decisions. Current prices are checked again when order creation is implemented.
+- Pickup is free. Preview offers local delivery only with an active ARS flat rate and nonnegative threshold in
+  `ShippingMethod`; its destination must be Rosario, Santa Fe. Carrier quotes remain unavailable until an adapter exists.
+
 - An order line stores a **snapshot** of product name, unit price and currency at purchase time. An order is never
   recalculated with current prices.
 - Order state changes go through a single service method that validates the transition.

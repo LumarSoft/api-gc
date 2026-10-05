@@ -1127,6 +1127,185 @@ decimals, > 0; `effectiveFrom` defaults to now and may be in the future (schedul
 
 **Auth required:** Yes (ADMIN). `201 Created` — same shape as `GET /admin/exchange-rates`.
 
+## Checkout preparation
+
+Browser-only, optional authentication. Guest ownership uses the existing `cg_cart` cookie (path `/cart`);
+authenticated ownership and guest merges follow the cart rules. All responses are `private, no-store`.
+These endpoints prepare a review; they do not place orders, reserve stock, persist contact details or take payment.
+
+### GET /cart/checkout
+
+Read the current cart, available delivery options and initial pickup totals. No cart is created for an empty visitor.
+
+**Auth required:** No. An invalid session returns `401`; refresh the session and retry.
+
+**Responses**
+
+`200 OK` — example with an empty cart (the same shape contains real lines for an owned cart):
+
+```json
+{
+  "cart": { "items": [], "itemCount": 0, "subtotal": { "amount": "0.00", "currency": "ARS" }, "hasIssues": false },
+  "deliveryOptions": [
+    {
+      "code": "STORE_PICKUP",
+      "name": "Retiro en el local",
+      "description": "Retirá tu compra en Rosario, sin costo de envío.",
+      "enabled": true,
+      "cost": { "amount": "0.00", "currency": "ARS" },
+      "unavailableReason": null
+    },
+    {
+      "code": "LOCAL_DELIVERY",
+      "name": "Entrega en Rosario",
+      "description": "Entrega a domicilio dentro de Rosario.",
+      "enabled": false,
+      "cost": null,
+      "unavailableReason": "La entrega a domicilio todavía no está disponible."
+    },
+    {
+      "code": "CARRIER",
+      "name": "Envío al resto del país",
+      "description": "El costo depende del destino y de los productos.",
+      "enabled": false,
+      "cost": null,
+      "unavailableReason": "La cotización de envíos todavía no está disponible."
+    }
+  ],
+  "deliveryMethod": "STORE_PICKUP",
+  "shippingTotal": { "amount": "0.00", "currency": "ARS" },
+  "total": { "amount": "0.00", "currency": "ARS" },
+  "customer": null,
+  "shippingAddress": null,
+  "canReview": false
+}
+```
+
+Local delivery costs come from the active ARS `ShippingMethod` rate and free-shipping threshold. Missing/negative
+rates, negative thresholds, inactive methods and USD rates are unavailable. Carrier quotes are not implemented.
+`canReview` requires a nonempty cart without price/stock issues. `total` is null when it cannot be fully priced in ARS.
+
+`401 Unauthorized`
+
+```json
+{ "message": "Unauthorized", "statusCode": 401 }
+```
+
+`429 Too Many Requests` — browser rate limit.
+
+```json
+{ "message": "ThrottlerException: Too Many Requests", "statusCode": 429 }
+```
+
+### POST /cart/checkout/preview
+
+Validate contact and delivery, reprice the owner's current cart and return the review. Contact/address values are
+echoed for this response only; later GET requests return `customer: null` and `shippingAddress: null`.
+
+**Auth required:** No. Same optional-session and cookie rules as GET.
+
+**Request body**
+
+| Field                          | Type   | Required              | Constraints                                                           |
+| ------------------------------ | ------ | --------------------- | --------------------------------------------------------------------- |
+| `name`                         | string | Yes                   | Trimmed, nonempty, max 200                                            |
+| `email`                        | string | Yes                   | Valid email, trimmed, max 191                                         |
+| `phone`                        | string | No                    | Trimmed, max 30                                                       |
+| `deliveryMethod`               | enum   | Yes                   | `STORE_PICKUP`, `LOCAL_DELIVERY`, `CARRIER`; method must be available |
+| `shippingAddress`              | object | For local delivery    | Validated nested object; city Rosario, province Santa Fe              |
+| `shippingAddress.street`       | string | When address supplied | Trimmed, nonempty, max 150                                            |
+| `shippingAddress.streetNumber` | string | When address supplied | Trimmed, nonempty, max 20                                             |
+| `shippingAddress.city`         | string | When address supplied | Trimmed, nonempty, max 100                                            |
+| `shippingAddress.province`     | string | When address supplied | Trimmed, nonempty, max 100                                            |
+| `shippingAddress.postalCode`   | string | When address supplied | Trimmed, nonempty, max 10                                             |
+
+```json
+{ "name": "Cliente de prueba", "email": "cliente@example.test", "deliveryMethod": "STORE_PICKUP" }
+```
+
+**Responses**
+
+`200 OK` — same complete shape as GET, with freshly priced real cart lines, `canReview: true`, the selected method,
+its shipping cost and the exact full total. `customer` contains `{ "name": "Cliente de prueba", "email":
+"cliente@example.test", "phone": null }`; local delivery returns the validated address, pickup returns null.
+
+Example for a cart containing one unit of a test product (sample data):
+
+```json
+{
+  "cart": {
+    "items": [
+      {
+        "variantId": 1,
+        "sku": "CHECKOUT-TEST",
+        "name": "Checkout test product",
+        "variantName": null,
+        "productSlug": "checkout-test-product",
+        "imageUrl": null,
+        "quantity": 1,
+        "availableQuantity": 18,
+        "unitPrice": { "amount": "12.35", "currency": "ARS" },
+        "total": { "amount": "12.35", "currency": "ARS" },
+        "issue": null
+      }
+    ],
+    "itemCount": 1,
+    "subtotal": { "amount": "12.35", "currency": "ARS" },
+    "hasIssues": false
+  },
+  "deliveryOptions": [
+    {
+      "code": "STORE_PICKUP",
+      "name": "Retiro en el local",
+      "description": "Retirá tu compra en Rosario, sin costo de envío.",
+      "enabled": true,
+      "cost": { "amount": "0.00", "currency": "ARS" },
+      "unavailableReason": null
+    },
+    {
+      "code": "LOCAL_DELIVERY",
+      "name": "Entrega en Rosario",
+      "description": "Entrega a domicilio dentro de Rosario.",
+      "enabled": false,
+      "cost": null,
+      "unavailableReason": "La entrega a domicilio todavía no está disponible."
+    },
+    {
+      "code": "CARRIER",
+      "name": "Envío al resto del país",
+      "description": "El costo depende del destino y de los productos.",
+      "enabled": false,
+      "cost": null,
+      "unavailableReason": "La cotización de envíos todavía no está disponible."
+    }
+  ],
+  "deliveryMethod": "STORE_PICKUP",
+  "shippingTotal": { "amount": "0.00", "currency": "ARS" },
+  "total": { "amount": "12.35", "currency": "ARS" },
+  "customer": { "name": "Cliente de prueba", "email": "cliente@example.test", "phone": null },
+  "shippingAddress": null,
+  "canReview": true
+}
+```
+
+`400 Bad Request` — invalid contact/address/enum or unknown fields (including client-supplied totals/ownership).
+
+```json
+{ "message": ["email must be an email"], "error": "Bad Request", "statusCode": 400 }
+```
+
+`422 Unprocessable Entity` — empty cart, cart price/stock issue, unavailable delivery or local address outside Rosario.
+
+```json
+{
+  "message": "Tu carrito está vacío. Agregá productos antes de continuar.",
+  "error": "Unprocessable Entity",
+  "statusCode": 422
+}
+```
+
+`401` and `429` have the same format as GET.
+
 ## Cart
 
 Browser-only endpoints. **Auth required:** No; an optional valid session selects the authenticated user's cart and

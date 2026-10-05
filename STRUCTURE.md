@@ -19,6 +19,7 @@ api-gc/
 │   ├── audit-logs/                # AuditLogsService: records every admin change (who, what, from where)
 │   ├── auth/                      # Register, login, refresh, logout, password reset, email verification
 │   ├── cart/                      # Guest/user carts, login merge, current prices and stock validation
+│   ├── checkout/                  # Contact validation, configured delivery and current-price preview (no order yet)
 │   ├── brands/                    # GET /brands + /admin/brands
 │   ├── categories/                # GET /categories (tree), GET /categories/:slug + /admin/categories
 │   ├── files/                     # Local file storage, public URLs (/files), admin image upload

@@ -9,6 +9,7 @@ import request from 'supertest'
 import type { App } from 'supertest/types'
 import { AppModule } from '../src/app.module'
 import type { CartResponseDto } from '../src/cart/dto/cart-response.dto'
+import type { CheckoutResponseDto } from '../src/checkout/dto/checkout-response.dto'
 import { PrismaExceptionFilter } from '../src/common/filters/prisma-exception.filter'
 import { generateSecureToken, hashToken } from '../src/common/utils/secure-token'
 import {
@@ -179,6 +180,51 @@ describe('Cart (e2e)', () => {
     expect(response.headers['set-cookie']).toBeUndefined()
     expect(response.headers['cache-control']).toBe('private, no-store')
     expect(await prisma.cart.count()).toBe(before)
+  })
+
+  it('previews the owned cart with current prices without placing an order or reserving stock', async () => {
+    await post(guestCookie, 2).expect(200)
+    const beforeOrders = await prisma.order.count()
+    const preview = await request(app.getHttpServer())
+      .post('/cart/checkout/preview')
+      .set('Cookie', guestCookie)
+      .send({ name: 'Checkout Test', email: 'checkout@example.test', deliveryMethod: 'STORE_PICKUP' })
+      .expect(200)
+    const checkout = preview.body as CheckoutResponseDto
+    expect(checkout.cart.itemCount).toBe(2)
+    expect(checkout.total).toEqual({ amount: '24.70', currency: 'ARS' })
+    expect(checkout.shippingTotal?.amount).toBe('0.00')
+    expect(checkout.customer?.name).toBe('Checkout Test')
+    expect(preview.headers['cache-control']).toBe('private, no-store')
+    expect(await prisma.order.count()).toBe(beforeOrders)
+    expect(await prisma.stockReservation.count({ where: { variantId } })).toBe(0)
+    const stranger = await request(app.getHttpServer()).get('/cart/checkout').expect(200)
+    expect((stranger.body as CheckoutResponseDto).cart.items).toEqual([])
+    expect((stranger.body as CheckoutResponseDto).customer).toBeNull()
+  })
+
+  it('rejects empty checkout, forged amounts, invalid contact data and unavailable shipping', async () => {
+    const input = { name: 'Checkout Test', email: 'checkout@example.test', deliveryMethod: 'STORE_PICKUP' }
+    const preview = () => request(app.getHttpServer()).post('/cart/checkout/preview').set('Cookie', guestCookie)
+    await preview().send(input).expect(422)
+    await post(guestCookie).expect(200)
+    await preview()
+      .send({ ...input, total: '0.01' })
+      .expect(400)
+    await preview()
+      .send({ ...input, email: 'bad' })
+      .expect(400)
+    await preview()
+      .send({ ...input, name: '   ' })
+      .expect(400)
+    await preview()
+      .send({ ...input, shippingAddress: [] })
+      .expect(400)
+    await preview()
+      .send({ ...input, deliveryMethod: 'CARRIER' })
+      .expect(422)
+    await prisma.inventoryLevel.update({ where: { variantId }, data: { onHand: 2 } })
+    await preview().send(input).expect(422)
   })
 
   it('creates a private guest cookie and stores only its hash on the first add', async () => {

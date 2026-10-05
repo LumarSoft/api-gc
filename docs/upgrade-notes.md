@@ -16,6 +16,14 @@ npm run doctor             # tells you if anything else is missing
 
 ---
 
+## 2026-10-05 — Checkout preparation
+
+Restart the API after pulling so `/cart/checkout` and `/cart/checkout/preview` are available. No new dependencies,
+environment variables or migrations. The frontend doctor probes `/cart/checkout`.
+
+This stage validates contact details and delivery and calculates a review. It does not create orders, reserve stock
+or initiate payment. Missing local-delivery tariffs and carrier integration are explicitly unavailable.
+
 ## 2026-10-05 — Guest and user cart
 
 Restart the API after pulling so `/cart` is available. No new dependencies, environment variables or migrations:
