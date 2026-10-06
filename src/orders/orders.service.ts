@@ -1,4 +1,4 @@
-import { reservationHours } from './lib/reservation-hours'
+import { randomBytes } from 'node:crypto'
 import { ConflictException, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common'
 import { CartOwnerService } from '../cart/cart-owner.service'
 import { CartMapper } from '../cart/cart.mapper'
@@ -14,6 +14,7 @@ import { PrismaService } from '../prisma/prisma.service'
 import type { PlaceOrderDto } from './dto/order-input.dto'
 import type { OrderResponseDto } from './dto/order-response.dto'
 import { orderSelect } from './lib/order-selects'
+import { reservationHours } from './lib/reservation-hours'
 import { OrderMapper } from './order.mapper'
 import { OrderStockService } from './order-stock.service'
 
@@ -88,7 +89,8 @@ export class OrdersService {
         const expiresAt = new Date(Date.now() + hours * 3_600_000)
         const order = await tx.order.create({
           data: {
-            number: `TMP-${input.accessToken.slice(0, 16)}`,
+            // Placeholder replaced below once the id exists; never derived from the private access token.
+            number: `TMP-${randomBytes(8).toString('hex')}`,
             accessTokenHash,
             userId: user?.id,
             buyerType: user?.buyerType ?? BuyerType.RETAIL,
