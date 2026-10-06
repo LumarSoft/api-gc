@@ -31,6 +31,7 @@ export class WholesaleApplicationMapper {
       reviewedBy: row.reviewedBy
         ? { id: row.reviewedBy.id, name: `${row.reviewedBy.firstName} ${row.reviewedBy.lastName}`.trim() }
         : null,
+      latest,
       allowedDecisions: latest
         ? DECISIONS.filter(decision => decisionTarget(decision, row.company.wholesaleStatus) !== null)
         : [],

@@ -127,6 +127,7 @@ describe('Wholesale applications (local MySQL e2e)', () => {
     ).body as WholesaleApplicationsPageDto
     const listed = page.items.find(item => item.id === first)!
     expect(listed.allowedDecisions).toEqual(['approve', 'reject'])
+    expect(listed.latest).toBe(true)
     expect(listed.submittedBy.email).toMatch(/^wholesale-customer-/)
 
     await decide(first, 'reject').expect(422)

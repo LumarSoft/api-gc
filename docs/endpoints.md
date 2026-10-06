@@ -1770,7 +1770,8 @@ sumarte."` — the existing company is never revealed).
 `REJECTED`, `PAUSED`). Newest first.
 
 `200 OK` — `{ items, page, pageSize, total, totalPages }`; each item is the application shape above plus
-`submittedBy: { id, name, email }`, `reviewedBy: { id, name } | null` and `allowedDecisions` (subset of `approve`,
+`submittedBy: { id, name, email }`, `reviewedBy: { id, name } | null`, `latest` (false when the company sent a newer
+application) and `allowedDecisions` (subset of `approve`,
 `reject`, `pause`, `resume`; empty for an application that is not the company's latest).
 
 ### GET /admin/wholesale-applications/:id

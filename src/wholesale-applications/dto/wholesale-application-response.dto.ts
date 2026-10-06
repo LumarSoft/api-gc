@@ -34,6 +34,8 @@ export class MyWholesaleApplicationDto {
 export class AdminWholesaleApplicationDto extends WholesaleApplicationDto {
   submittedBy: { id: number; name: string; email: string }
   reviewedBy: { id: number; name: string } | null
+  /** False when the company sent a newer application; only the latest accepts decisions. */
+  latest: boolean
   /** Decisions allowed now: approve/reject for a pending company, pause/resume for an approved/paused one. */
   allowedDecisions: ('approve' | 'reject' | 'pause' | 'resume')[]
 }
