@@ -14,7 +14,9 @@ describe('AppController (e2e)', () => {
     }).compile()
 
     app = moduleFixture.createNestApplication()
-    await app.init()
+    // Bind 127.0.0.1 explicitly: supertest connects there, and an unbound app would get a port that another local
+    // process may already hold on 127.0.0.1 (random 401s from that process on macOS).
+    await app.listen(0, '127.0.0.1')
   })
 
   it('/health (GET)', () => {

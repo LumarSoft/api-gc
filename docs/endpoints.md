@@ -1126,3 +1126,524 @@ Loads a new rate (append-only history). Body: `{ "rate": "1475.50", "effectiveFr
 decimals, > 0; `effectiveFrom` defaults to now and may be in the future (scheduled), never in the past (`400`).
 
 **Auth required:** Yes (ADMIN). `201 Created` — same shape as `GET /admin/exchange-rates`.
+
+## Checkout preparation
+
+Browser-only, optional authentication. Guest ownership uses the existing `cg_cart` cookie (path `/cart`);
+authenticated ownership and guest merges follow the cart rules. All responses are `private, no-store`.
+GET and preview prepare a review without persisting contact details or reserving stock. POST orders below confirms
+the purchase and reserves stock; no endpoint initiates an external payment.
+
+### GET /cart/checkout
+
+Read the current cart, available delivery options and initial pickup totals. No cart is created for an empty visitor.
+
+**Auth required:** No. An invalid session returns `401`; refresh the session and retry.
+
+**Responses**
+
+`200 OK` — example with an empty cart (the same shape contains real lines for an owned cart):
+
+```json
+{
+  "cart": { "items": [], "itemCount": 0, "subtotal": { "amount": "0.00", "currency": "ARS" }, "hasIssues": false },
+  "deliveryOptions": [
+    {
+      "code": "STORE_PICKUP",
+      "name": "Retiro en el local",
+      "description": "Retirá tu compra en Rosario, sin costo de envío.",
+      "enabled": true,
+      "cost": { "amount": "0.00", "currency": "ARS" },
+      "unavailableReason": null
+    },
+    {
+      "code": "LOCAL_DELIVERY",
+      "name": "Entrega en Rosario",
+      "description": "Entrega a domicilio dentro de Rosario.",
+      "enabled": false,
+      "cost": null,
+      "unavailableReason": "La entrega a domicilio todavía no está disponible."
+    },
+    {
+      "code": "CARRIER",
+      "name": "Envío al resto del país",
+      "description": "El costo depende del destino y de los productos.",
+      "enabled": false,
+      "cost": null,
+      "unavailableReason": "La cotización de envíos todavía no está disponible."
+    }
+  ],
+  "deliveryMethod": "STORE_PICKUP",
+  "shippingTotal": { "amount": "0.00", "currency": "ARS" },
+  "total": { "amount": "0.00", "currency": "ARS" },
+  "customer": null,
+  "shippingAddress": null,
+  "canReview": false,
+  "reviewToken": null,
+  "reservationHours": 24
+}
+```
+
+Local delivery costs come from the active ARS `ShippingMethod` rate and free-shipping threshold. Missing/negative
+rates, negative thresholds, inactive methods and USD rates are unavailable. Carrier quotes are not implemented.
+`canReview` requires a nonempty cart without price/stock issues. `total` is null when it cannot be fully priced in ARS.
+
+`401 Unauthorized`
+
+```json
+{ "message": "Unauthorized", "statusCode": 401 }
+```
+
+`429 Too Many Requests` — browser rate limit.
+
+```json
+{ "message": "ThrottlerException: Too Many Requests", "statusCode": 429 }
+```
+
+### POST /cart/checkout/preview
+
+Validate contact and delivery, reprice the owner's current cart and return the review. Contact/address values are
+echoed for this response only; later GET requests return `customer: null` and `shippingAddress: null`.
+
+**Auth required:** No. Same optional-session and cookie rules as GET.
+
+**Request body**
+
+| Field                          | Type   | Required              | Constraints                                                           |
+| ------------------------------ | ------ | --------------------- | --------------------------------------------------------------------- |
+| `name`                         | string | Yes                   | Trimmed, nonempty, max 200                                            |
+| `email`                        | string | Yes                   | Valid email, trimmed, max 191                                         |
+| `phone`                        | string | No                    | Trimmed, max 30                                                       |
+| `deliveryMethod`               | enum   | Yes                   | `STORE_PICKUP`, `LOCAL_DELIVERY`, `CARRIER`; method must be available |
+| `shippingAddress`              | object | For local delivery    | Validated nested object; city Rosario, province Santa Fe              |
+| `shippingAddress.street`       | string | When address supplied | Trimmed, nonempty, max 150                                            |
+| `shippingAddress.streetNumber` | string | When address supplied | Trimmed, nonempty, max 20                                             |
+| `shippingAddress.city`         | string | When address supplied | Trimmed, nonempty, max 100                                            |
+| `shippingAddress.province`     | string | When address supplied | Trimmed, nonempty, max 100                                            |
+| `shippingAddress.postalCode`   | string | When address supplied | Trimmed, nonempty, max 10                                             |
+
+```json
+{ "name": "Cliente de prueba", "email": "cliente@example.test", "deliveryMethod": "STORE_PICKUP" }
+```
+
+**Responses**
+
+`200 OK` — same complete shape as GET, with freshly priced real cart lines, `canReview: true`, the selected method,
+its shipping cost and the exact full total. `customer` contains `{ "name": "Cliente de prueba", "email":
+"cliente@example.test", "phone": null }`; local delivery returns the validated address, pickup returns null.
+
+Example for a cart containing one unit of a test product (sample data):
+
+```json
+{
+  "cart": {
+    "items": [
+      {
+        "variantId": 1,
+        "sku": "CHECKOUT-TEST",
+        "name": "Checkout test product",
+        "variantName": null,
+        "productSlug": "checkout-test-product",
+        "imageUrl": null,
+        "quantity": 1,
+        "availableQuantity": 18,
+        "unitPrice": { "amount": "12.35", "currency": "ARS" },
+        "total": { "amount": "12.35", "currency": "ARS" },
+        "issue": null
+      }
+    ],
+    "itemCount": 1,
+    "subtotal": { "amount": "12.35", "currency": "ARS" },
+    "hasIssues": false
+  },
+  "deliveryOptions": [
+    {
+      "code": "STORE_PICKUP",
+      "name": "Retiro en el local",
+      "description": "Retirá tu compra en Rosario, sin costo de envío.",
+      "enabled": true,
+      "cost": { "amount": "0.00", "currency": "ARS" },
+      "unavailableReason": null
+    },
+    {
+      "code": "LOCAL_DELIVERY",
+      "name": "Entrega en Rosario",
+      "description": "Entrega a domicilio dentro de Rosario.",
+      "enabled": false,
+      "cost": null,
+      "unavailableReason": "La entrega a domicilio todavía no está disponible."
+    },
+    {
+      "code": "CARRIER",
+      "name": "Envío al resto del país",
+      "description": "El costo depende del destino y de los productos.",
+      "enabled": false,
+      "cost": null,
+      "unavailableReason": "La cotización de envíos todavía no está disponible."
+    }
+  ],
+  "deliveryMethod": "STORE_PICKUP",
+  "shippingTotal": { "amount": "0.00", "currency": "ARS" },
+  "total": { "amount": "12.35", "currency": "ARS" },
+  "customer": { "name": "Cliente de prueba", "email": "cliente@example.test", "phone": null },
+  "shippingAddress": null,
+  "canReview": true,
+  "reviewToken": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "reservationHours": 24
+}
+```
+
+`400 Bad Request` — invalid contact/address/enum or unknown fields (including client-supplied totals/ownership).
+
+```json
+{ "message": ["email must be an email"], "error": "Bad Request", "statusCode": 400 }
+```
+
+`422 Unprocessable Entity` — empty cart, cart price/stock issue, unavailable delivery or local address outside Rosario.
+
+```json
+{
+  "message": "Tu carrito está vacío. Agregá productos antes de continuar.",
+  "error": "Unprocessable Entity",
+  "statusCode": 422
+}
+```
+
+`401` and `429` have the same format as GET.
+
+## Cart
+
+Browser-only endpoints. **Auth required:** No; an optional valid session selects the authenticated user's cart and
+price list. An invalid/expired session returns `401` so the browser refreshes it. Anonymous carts use a 30-day
+`cg_cart` cookie (`HttpOnly`, `SameSite=Lax`, `Path=/cart`, existing `COOKIE_SECURE`/`COOKIE_DOMAIN` settings).
+The API stores only the token hash. Neither user ids, cart ids nor prices are accepted from the browser.
+
+The first cart request after login claims or merges the guest cart with the user's cart and clears the guest cookie.
+Duplicate variants have their quantities added, capped at the technical limit of 1,000,000 per line; merging preserves
+lines with stock/price issues. It is transactional and happens once. User carts persist across sessions/devices.
+
+Every successful endpoint returns the complete **Cart response** below, with `Cache-Control: private, no-store`.
+These browser routes retain the global per-IP rate limit. They must not be called from Server Components.
+Cart lines are one aggregate, not a paginated collection. Stock is checked but not reserved until checkout.
+
+**Cart response (example data)**
+
+```json
+{
+  "items": [
+    {
+      "variantId": 12,
+      "sku": "SAMPLE-SKU",
+      "name": "Producto de ejemplo",
+      "variantName": "Negro",
+      "productSlug": "producto-ejemplo",
+      "imageUrl": "http://localhost:3001/files/products/example.jpg",
+      "quantity": 2,
+      "availableQuantity": 8,
+      "unitPrice": { "amount": "1234.50", "currency": "ARS" },
+      "total": { "amount": "2469.00", "currency": "ARS" },
+      "issue": null
+    }
+  ],
+  "itemCount": 2,
+  "subtotal": { "amount": "2469.00", "currency": "ARS" },
+  "hasIssues": false
+}
+```
+
+Amounts are decimal strings from `PricingService`, recomputed on every request (including USD conversion).
+Subtotal excludes shipping; coupons are not implemented. If any line cannot be priced in ARS, `total` and
+`subtotal` are null; an unknown line is never silently excluded from a partial subtotal. Known prices of lines with
+insufficient stock remain in the subtotal, with `hasIssues: true`. `itemCount` sums requested quantities, including
+lines with issues. `availableQuantity` is physical stock minus reservations, never negative.
+
+`issue`: `UNAVAILABLE` (archived/unpublished/inactive), `NO_PRICE`, `NO_EXCHANGE_RATE` (USD without a current rate),
+`INSUFFICIENT_STOCK`, or null. Existing lines stay visible with their issue so the buyer can fix/remove them.
+
+**Shared errors**
+
+- `401 Unauthorized`: `{ "statusCode": 401, "message": "Unauthorized" }` — expired/invalid session.
+- `409 Conflict`: `{ "statusCode": 409, "message": "Another change was saved at the same time. Try again", "error": "Conflict" }` — write conflict; retry.
+- `429 Too Many Requests`: `{ "statusCode": 429, "message": "ThrottlerException: Too Many Requests" }` — wait before retrying.
+
+### GET /cart
+
+Reads the current cart; recomputes prices and availability. **Auth required:** No (optional session).
+No body. Does not create a cart/cookie just because a visitor opens the store. A stale guest token is cleared.
+
+`200 OK` — Cart response above, or empty:
+
+```json
+{ "items": [], "itemCount": 0, "subtotal": { "amount": "0.00", "currency": "ARS" }, "hasIssues": false }
+```
+
+Errors: shared `401`, `409`, `429` above.
+
+### POST /cart/items
+
+Adds a variant; repeated adds increase its quantity. Creates a cart on first add. **Auth required:** No (optional session).
+
+| Field       | Type    | Required | Constraints                                            |
+| ----------- | ------- | -------- | ------------------------------------------------------ |
+| `variantId` | integer | yes      | 1–2,147,483,647                                        |
+| `quantity`  | integer | yes      | 1–1,000,000; resulting quantity must fit current stock |
+
+```json
+{ "variantId": 12, "quantity": 2 }
+```
+
+`200 OK` — Cart response above. Adding a draft, inactive variant, missing price/rate or quantity exceeding available
+stock is rejected; no reservation is created. Failure rolls back cart creation/merge and the item change together.
+
+- `400 Bad Request`: `{ "statusCode": 400, "message": ["quantity must not be less than 1"], "error": "Bad Request" }` — invalid input or unknown properties.
+- `404 Not Found`: `{ "statusCode": 404, "message": "Product variant not found", "error": "Not Found" }`.
+- `422 Unprocessable Entity`: `{ "statusCode": 422, "message": "No hay stock suficiente para esa cantidad. Actualizá el carrito.", "error": "Unprocessable Entity" }`. Other reasons: unavailable product, missing price/rate or technical quantity limit.
+- Shared `401`, `409`, `429` above.
+
+### PATCH /cart/items/:variantId
+
+Sets an existing line's absolute quantity. **Auth required:** No (optional session).
+`variantId`: integer 1–2,147,483,647, scoped to the caller's cart.
+
+| Field      | Type    | Required | Constraints |
+| ---------- | ------- | -------- | ----------- |
+| `quantity` | integer | yes      | 1–1,000,000 |
+
+```json
+{ "quantity": 3 }
+```
+
+`200 OK` — Cart response above with the updated line. Increasing requires a valid purchasable line and stock.
+Reducing is allowed even if the line is currently unavailable or still exceeds stock; its issue remains visible.
+To remove a line, use DELETE (zero is not an update quantity).
+
+- `400 Bad Request`: `{ "statusCode": 400, "message": ["quantity must be an integer number"], "error": "Bad Request" }`.
+- `404 Not Found`: `{ "statusCode": 404, "message": "Cart item not found", "error": "Not Found" }` — line is not in the caller's cart.
+- `422 Unprocessable Entity`: same stock/price/availability errors as POST above.
+- Shared `401`, `409`, `429` above.
+
+### DELETE /cart/items/:variantId
+
+Soft-removes a line. **Auth required:** No (optional session).
+`variantId`: integer 1–2,147,483,647, scoped to the caller's cart. No body.
+
+`200 OK` — Cart response above without the line; if it was the last line:
+
+```json
+{ "items": [], "itemCount": 0, "subtotal": { "amount": "0.00", "currency": "ARS" }, "hasIssues": false }
+```
+
+- `400 Bad Request`: `{ "statusCode": 400, "message": ["variantId must be an integer number"], "error": "Bad Request" }`.
+- `404 Not Found`: `{ "statusCode": 404, "message": "Cart item not found", "error": "Not Found" }`.
+- Shared `401`, `409`, `429` above.
+
+### DELETE /cart
+
+Soft-removes all lines from the caller's cart. **Auth required:** No (optional session). No body.
+Already empty/missing carts also succeed without creating a cart.
+
+`200 OK`:
+
+```json
+{ "items": [], "itemCount": 0, "subtotal": { "amount": "0.00", "currency": "ARS" }, "hasIssues": false }
+```
+
+Errors: shared `401`, `409`, `429` above.
+
+
+## Guest orders and manual management
+
+All responses below use `Cache-Control: private, no-store`. The API makes no outbound payment/email/shipping calls.
+Money is in immutable ARS snapshots. Tracking returns full order lines as one aggregate, not a collection.
+The private token is a bearer capability; redact request bodies containing `accessToken` in every proxy/logger.
+
+### POST /cart/checkout/orders
+
+Confirm the owner's reviewed cart in one transaction: reprice, lock stock, create snapshots/reservations/history,
+convert the cart and assign `CG-` plus a padded numeric id. Status starts `PENDING_PAYMENT`, method `MANUAL`.
+
+**Auth required:** No; same optional session and guest-cookie ownership as preview. Invalid sessions return 401.
+
+**Request body**
+
+| Field | Type | Required | Constraints |
+| ----- | ---- | -------- | ----------- |
+| `name` | string | Yes | Trimmed/nonempty, max 200 |
+| `email` | string | Yes | Valid email, trimmed, max 191 |
+| `phone` | string | No | Trimmed, max 30 |
+| `deliveryMethod` | enum | Yes | Available `STORE_PICKUP` or configured `LOCAL_DELIVERY`; carrier unavailable |
+| `shippingAddress` | object | For local delivery | Same nested fields/limits as preview; Rosario, Santa Fe |
+| `reviewToken` | string | Yes | 64 lowercase hex characters from the exact preview being confirmed |
+| `accessToken` | string | Yes | 64 lowercase hex characters, generated from 32 secure random bytes before first POST; reused on retries |
+
+Amounts, ownership, payment method and status cannot be supplied. An existing token returns its original order,
+without another stock/payment operation and without requiring the now-converted cart cookie. Token possession grants
+access; generate it cryptographically, never from an order number, email or timestamp.
+
+```json
+{
+  "name": "Cliente de prueba", "email": "cliente@example.test", "deliveryMethod": "STORE_PICKUP",
+  "reviewToken": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "accessToken": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+}
+```
+
+Tokens above are placeholders, not usable checkout credentials. `reviewToken` in preview changes when the reviewed
+lines, names, prices, contact, address or shipping changes. `reservationHours` is the configured window (default 24).
+
+**Responses**
+
+`200 OK` — newly placed order or idempotent recovery (sample product/data):
+
+```json
+{
+  "id": 123, "number": "CG-000123", "status": "PENDING_PAYMENT",
+  "deliveryMethod": "STORE_PICKUP", "paymentMethod": "MANUAL",
+  "subtotal": { "amount": "12.35", "currency": "ARS" },
+  "shippingTotal": { "amount": "0.00", "currency": "ARS" },
+  "total": { "amount": "12.35", "currency": "ARS" },
+  "placedAt": "2026-10-05T18:00:00.000Z", "expiresAt": "2026-10-06T18:00:00.000Z",
+  "customer": { "name": "Cliente de prueba", "email": "cliente@example.test", "phone": null },
+  "shippingAddress": null,
+  "items": [{ "name": "Producto de prueba", "variantName": null, "sku": "TEST", "quantity": 1,
+    "unitPrice": { "amount": "12.35", "currency": "ARS" }, "total": { "amount": "12.35", "currency": "ARS" } }],
+  "history": [{ "status": "PENDING_PAYMENT", "at": "2026-10-05T18:00:00.000Z" }]
+}
+```
+
+For local delivery, `shippingAddress` contains `street`, `streetNumber`, `city`, `province`, `postalCode`. Pickup
+returns null. No secrets, actor ids, internal/staff notes or live catalog prices are returned.
+
+`400 Bad Request` — invalid DTO/unknown fields: `{ "message": ["property total should not exist"], "statusCode": 400 }`.
+`401 Unauthorized` — invalid optional session: `{ "message": "Unauthorized", "statusCode": 401 }`.
+`409 Conflict` — stale review: `{ "message": "Tu compra cambió desde la revisión. Revisá los datos y el total de nuevo.", "statusCode": 409 }`.
+`422 Unprocessable Entity` — empty cart, stock/price issue, unavailable delivery/invalid local destination or amount
+outside Decimal(12,2) capacity: `{ "message": "El precio o el stock cambió. Revisá tu carrito.", "statusCode": 422 }`.
+`429 Too Many Requests` — global browser limit: `{ "message": "ThrottlerException: Too Many Requests", "statusCode": 429 }`.
+
+### POST /orders/:number/track
+
+Read the immutable order and its current status/history with a private capability. Number must match `CG-` followed
+by 6–10 digits. Number or email alone never grants access. Intended link: `/pedidos/CG-000123#acceso=<token>`.
+The browser reads the fragment and sends the token in the body; servers never receive it as part of the page URL.
+
+**Auth required:** No. Rate limit: 30/min/IP.
+
+**Request body**
+
+| Field | Type | Required | Constraints |
+| ----- | ---- | -------- | ----------- |
+| `accessToken` | string | Yes | 64 lowercase hexadecimal characters from the private link |
+
+```json
+{ "accessToken": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" }
+```
+
+**Responses**
+
+`200 OK` — same complete order example above, with current status/history.
+`400 Bad Request` — malformed number/token or unknown fields: `{ "message": ["accessToken must match /^[a-f0-9]{64}$/ regular expression"], "statusCode": 400 }`.
+`404 Not Found` — missing order or wrong token, indistinguishable: `{ "message": "No encontramos un pedido con este enlace privado.", "statusCode": 404 }`.
+`429 Too Many Requests`: `{ "message": "ThrottlerException: Too Many Requests", "statusCode": 429 }`.
+
+### POST /orders/recover
+
+Recover a lost confirmation response using the original pending attempt token, even without a cart cookie/number.
+This is capability-based retry recovery, not public recovery by email. No new order/payment/reservation is created.
+
+**Auth required:** No. Rate limit: 10/min/IP.
+
+**Request body**
+
+| Field | Type | Required | Constraints |
+| ----- | ---- | -------- | ----------- |
+| `accessToken` | string | Yes | Same 64-character lowercase hexadecimal token from the original attempt |
+
+```json
+{ "accessToken": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" }
+```
+
+**Responses**
+
+`200 OK` — complete original order, same example as placement.
+`400 Bad Request` — malformed/missing token: `{ "message": ["accessToken must match /^[a-f0-9]{64}$/ regular expression"], "statusCode": 400 }`.
+`404 Not Found` — no completed attempt: `{ "message": "Todavía no encontramos una confirmación para este intento.", "statusCode": 404 }`.
+`429 Too Many Requests`: `{ "message": "ThrottlerException: Too Many Requests", "statusCode": 429 }`.
+
+### GET /admin/orders
+
+Paged orders, latest id first, optionally filtered by status. Manual lifecycle only; all original records are retained.
+
+**Auth required:** Yes (ADMIN).
+
+**Query**
+
+| Field | Type | Required | Constraints |
+| ----- | ---- | -------- | ----------- |
+| `page` | integer | No | >=1, default 1 |
+| `pageSize` | integer | No | 1–100, default 25 |
+| `status` | OrderStatus | No | One schema enum value |
+
+**Responses**
+
+`200 OK` — each `items` entry has the complete order shape shown above plus `allowedStatuses` (e.g.
+`["CONFIRMED", "CANCELLED"]` for an unexpired pending order). Example of an empty page:
+
+```json
+{ "items": [], "page": 1, "pageSize": 25, "total": 0, "totalPages": 0, "expiryJobFailed": false }
+```
+
+`expiryJobFailed` flags a persisted expiration failure or pending reservations overdue by over two minutes.
+`400 Bad Request` — invalid query: `{ "message": ["page must not be less than 1"], "statusCode": 400 }`.
+`401 Unauthorized`: `{ "message": "Unauthorized", "statusCode": 401 }`.
+`403 Forbidden`: `{ "message": "Forbidden resource", "statusCode": 403 }`.
+`429 Too Many Requests`: `{ "message": "ThrottlerException: Too Many Requests", "statusCode": 429 }`.
+
+### GET /admin/orders/:id
+
+Read one order with backend-derived `allowedStatuses` for the admin interface. Id is a positive integer.
+
+**Auth required:** Yes (ADMIN).
+
+**Responses**
+
+`200 OK` — complete order example above plus `"allowedStatuses": ["CONFIRMED", "CANCELLED"]` for an unexpired
+pending order. After expiry only cancellation is available until the job marks it expired; terminal states return [].
+`400 Bad Request` — invalid id: `{ "message": ["id must not be less than 1"], "statusCode": 400 }`.
+`401 Unauthorized`: `{ "message": "Unauthorized", "statusCode": 401 }`.
+`403 Forbidden`: `{ "message": "Forbidden resource", "statusCode": 403 }`.
+`404 Not Found`: `{ "message": "Pedido no encontrado.", "statusCode": 404 }`.
+`429 Too Many Requests`: `{ "message": "ThrottlerException: Too Many Requests", "statusCode": 429 }`.
+
+### PUT /admin/orders/:id/status
+
+All existing-order state changes use `OrderStatusService.change`, with an order lock, validated transition, history,
+stock movements and an atomic admin audit. Full payment confirmation creates one approved MANUAL Payment and consumes
+reserved stock once. Cancellation is available only before payment confirmation; paid refunds remain out of scope.
+
+**Auth required:** Yes (ADMIN).
+
+**Request body**
+
+| Field | Type | Required | Constraints |
+| ----- | ---- | -------- | ----------- |
+| `status` | OrderStatus | Yes | Must be in server-derived allowedStatuses |
+| `paymentReceived` | boolean | For CONFIRMED | Must be true; staff explicitly verified full payment |
+| `note` | string | No | Max 255; internal history note, never returned to guests |
+
+```json
+{ "status": "CONFIRMED", "paymentReceived": true }
+```
+
+**Responses**
+
+`200 OK` — complete order example above, now `"status": "CONFIRMED"`, with the new history event and
+`"allowedStatuses": ["PREPARING"]`. Routes are pending→confirmed/cancelled→preparing→ready-for-pickup/shipped→delivered.
+`EXPIRED` is job-only and cannot be requested by staff. A late payment cannot be confirmed even before the job runs.
+`400 Bad Request` — malformed id/body: `{ "message": ["paymentReceived must be equal to true"], "statusCode": 400 }`.
+`401 Unauthorized`: `{ "message": "Unauthorized", "statusCode": 401 }`.
+`403 Forbidden`: `{ "message": "Forbidden resource", "statusCode": 403 }`.
+`404 Not Found`: `{ "message": "Pedido no encontrado.", "statusCode": 404 }`.
+`422 Unprocessable Entity` — invalid/repeated transition, missing payment verification, expired payment window or
+inconsistent stock: `{ "message": "Verificá el pago antes de confirmar el pedido.", "statusCode": 422 }`.
+`429 Too Many Requests`: `{ "message": "ThrottlerException: Too Many Requests", "statusCode": 429 }`.

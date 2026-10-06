@@ -13,6 +13,9 @@ import { MailModule } from './mail/mail.module'
 import { PrismaModule } from './prisma/prisma.module'
 import { ProductsModule } from './products/products.module'
 import { TagsModule } from './tags/tags.module'
+import { CartModule } from './cart/cart.module'
+import { CheckoutModule } from './checkout/checkout.module'
+import { OrdersModule } from './orders/orders.module'
 
 @Module({
   imports: [
@@ -29,6 +32,9 @@ import { TagsModule } from './tags/tags.module'
     BrandsModule,
     ProductsModule,
     TagsModule,
+    CartModule,
+    CheckoutModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
