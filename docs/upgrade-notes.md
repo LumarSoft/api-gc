@@ -16,6 +16,11 @@ npm run doctor             # tells you if anything else is missing
 
 ---
 
+## 2026-10-06 — Frequent-customer applications
+
+Restart the API after pulling so `/wholesale-applications` and `/admin/wholesale-applications` are available. No new
+dependencies, environment variables or migrations (uses the existing `Company` and `WholesaleApplication` tables).
+
 ## 2026-10-06 — Offers filter and favorites
 
 Restart the API after pulling so `GET /products?onSale=true` and `/favorites` are available. No new dependencies,

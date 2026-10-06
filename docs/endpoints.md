@@ -1704,3 +1704,91 @@ encontrado."`); `422` when the account already has 200 favorites.
 Remove a product. Idempotent: removing one that is not saved also answers `204 No Content`.
 
 **Auth required:** Yes.
+
+## Frequent-customer applications
+
+"Clientes frecuentes" in the UI; `wholesale` in code. A signed-in customer applies with their business data; staff
+approve or reject it. While the company is `APPROVED` its members buy as `WHOLESALE` (prices from the company's list
+or the default wholesale list). No documents yet: they need private storage (see business rules).
+
+### GET /wholesale-applications/mine
+
+**Auth required:** Yes. `private, no-store`.
+
+`200 OK`
+
+```json
+{
+  "application": {
+    "id": 12,
+    "status": "REJECTED",
+    "message": "Compramos tintas todos los meses.",
+    "reviewNote": "Falta la constancia de inscripción.",
+    "createdAt": "2026-10-06T22:30:00.000Z",
+    "reviewedAt": "2026-10-06T23:00:00.000Z",
+    "company": {
+      "id": 4,
+      "legalName": "Imprenta de Prueba SRL",
+      "tradeName": null,
+      "cuit": "30712345671",
+      "taxCondition": "RESPONSABLE_INSCRIPTO",
+      "email": "compras@example.test",
+      "phone": null,
+      "wholesaleStatus": "REJECTED"
+    }
+  },
+  "canApply": true,
+  "blockReason": null
+}
+```
+
+`application` is the latest one (null if the customer never applied). `canApply` is true without a company or after a
+rejection; otherwise `blockReason` explains why (pending, approved, paused) in Spanish.
+
+### POST /wholesale-applications
+
+**Auth required:** Yes. Rate limit 10/min.
+
+| Field          | Type   | Required | Constraints                                                          |
+| -------------- | ------ | -------- | -------------------------------------------------------------------- |
+| `legalName`    | string | Yes      | Trimmed, 2–200                                                       |
+| `tradeName`    | string | No       | Max 200                                                              |
+| `cuit`         | string | Yes      | 11 digits, dashes/spaces allowed; known prefix and valid check digit |
+| `taxCondition` | enum   | Yes      | `RESPONSABLE_INSCRIPTO`, `MONOTRIBUTISTA`, `EXENTO`                  |
+| `email`        | string | Yes      | Company contact email, max 191                                       |
+| `phone`        | string | No       | Max 30                                                               |
+| `message`      | string | No       | Max 1000; what the business does and buys                            |
+
+`201 Created` — same shape as `GET /wholesale-applications/mine` (status `PENDING`). `400` invalid fields (e.g.
+`CONSUMIDOR_FINAL`); `422` invalid CUIT check digit; `409` the customer cannot apply now (`blockReason`) or the CUIT
+already belongs to another account (`"Ese CUIT ya tiene una cuenta. Si es tu empresa, consultá al local para
+sumarte."` — the existing company is never revealed).
+
+### GET /admin/wholesale-applications
+
+**Auth required:** Yes (ADMIN). Query `page`, `pageSize` (1–100, default 25), `status` (`PENDING`, `APPROVED`,
+`REJECTED`, `PAUSED`). Newest first.
+
+`200 OK` — `{ items, page, pageSize, total, totalPages }`; each item is the application shape above plus
+`submittedBy: { id, name, email }`, `reviewedBy: { id, name } | null` and `allowedDecisions` (subset of `approve`,
+`reject`, `pause`, `resume`; empty for an application that is not the company's latest).
+
+### GET /admin/wholesale-applications/:id
+
+**Auth required:** Yes (ADMIN). `200 OK` — one item as in the list; `404` unknown id.
+
+### POST /admin/wholesale-applications/:id/approve · /reject · /pause · /resume
+
+**Auth required:** Yes (ADMIN, audited as `wholesale-application.<decision>`). Body `{ "note": "…" }` (max 500, shown
+to the customer) — **required** for `reject` and `pause`.
+
+| Decision  | From company status | To         |
+| --------- | ------------------- | ---------- |
+| `approve` | `PENDING`           | `APPROVED` |
+| `reject`  | `PENDING`           | `REJECTED` |
+| `pause`   | `APPROVED`          | `PAUSED`   |
+| `resume`  | `PAUSED`            | `APPROVED` |
+
+`200 OK` — the updated application (admin shape). `422` missing note, decision not allowed now, or not the company's
+latest application. Approve/reject record an email to the applicant (`wholesale-approved` / `wholesale-rejected`;
+logged until a mail provider exists).

@@ -20,6 +20,15 @@ Domain rules that apply across modules. When a request contradicts one of these,
 - The buyer profile is **derived**: `User.role` is only `CUSTOMER` or `ADMIN`; a customer is `WHOLESALE` when their
   company's `wholesaleStatus` is `APPROVED`. Never store the profile on the user.
 - Wholesalers buy directly with the wholesale price list — individual orders do not need approval.
+- **Applying** (implemented 2026-10-06): a signed-in customer sends legal name, CUIT (check digit validated), tax
+  condition (responsable inscripto, monotributista or exento — a final consumer buys as retail), company email and
+  phone, plus an optional message. One company per customer; a CUIT already registered by another account is refused
+  without revealing it (the store adds members by hand for now). A rejected customer can correct the data and apply
+  again; pending, approved or paused customers cannot.
+- **Review**: staff approve or reject a pending application, and pause or resume an approved account. Rejecting and
+  pausing require a reason, which the customer sees. Every decision is audited and takes effect on the next request
+  (prices are re-resolved per request). Approve/reject emails are recorded (no provider yet).
+- **Documents** (AFIP certificate, etc.) are not requested yet: they need private storage, not the public `/files`.
 
 ## Cart
 
