@@ -20,19 +20,19 @@ export class ProductsService {
 
   async findAll(query: ListProductsQueryDto, user: AuthenticatedUser | undefined): Promise<PaginatedProductsDto> {
     const context = await this.pricing.getContext(user)
-    const where = await this.buildWhere(query)
+    const where = await this.buildWhere(query, context.priceListIds)
     const select = summarySelect(context.priceListIds)
+    const priceSort = query.sort === 'price-asc' || query.sort === 'price-desc'
 
-    // Price depends on the buyer and the exchange rate, so price sorting happens after pricing.
+    // Price and offers depend on the buyer and the exchange rate, so they are resolved after pricing.
     // TODO(catalog): move to a denormalized sort price if the catalog grows to thousands of products.
-    if (query.sort === 'price-asc' || query.sort === 'price-desc') {
-      const direction = query.sort === 'price-asc' ? 1 : -1
-      const rows = await this.prisma.product.findMany({ where, select })
-      const sorted = rows
-        .map(row => this.mapper.toSummary(row, context))
-        .sort((a, b) => compareByPrice(a, b, direction))
+    if (priceSort || query.onSale) {
+      const rows = await this.prisma.product.findMany({ where, select, orderBy: this.orderBy(query) })
+      let items = rows.map(row => this.mapper.toSummary(row, context))
+      if (query.onSale) items = items.filter(item => item.badge === 'OFFER')
+      if (priceSort) items.sort((a, b) => compareByPrice(a, b, query.sort === 'price-asc' ? 1 : -1))
       const start = (query.page - 1) * query.pageSize
-      return this.page(sorted.slice(start, start + query.pageSize), sorted.length, query)
+      return this.page(items.slice(start, start + query.pageSize), items.length, query)
     }
 
     const [rows, total] = await Promise.all([
@@ -50,6 +50,22 @@ export class ProductsService {
       total,
       query,
     )
+  }
+
+  /** Visible products among `ids`, as cards for this buyer, in the order of `ids`. Unknown or hidden ids are skipped. */
+  async findSummariesByIds(ids: number[], user: AuthenticatedUser | undefined): Promise<ProductSummaryDto[]> {
+    if (!ids.length) return []
+    const context = await this.pricing.getContext(user)
+    const rows = await this.prisma.product.findMany({
+      where: { AND: [this.visibleWhere(), { id: { in: ids } }] },
+      select: summarySelect(context.priceListIds),
+    })
+    const byId = new Map(rows.map(row => [row.id, this.mapper.toSummary(row, context)]))
+    return ids.flatMap(id => byId.get(id) ?? [])
+  }
+
+  async isVisible(id: number): Promise<boolean> {
+    return (await this.prisma.product.count({ where: { AND: [this.visibleWhere(), { id }] } })) > 0
   }
 
   async findBySlug(slug: string, user: AuthenticatedUser | undefined): Promise<ProductDetailDto> {
@@ -82,13 +98,24 @@ export class ProductsService {
     }
   }
 
-  private async buildWhere(query: ListProductsQueryDto): Promise<Prisma.ProductWhereInput> {
+  private async buildWhere(query: ListProductsQueryDto, priceListIds: number[]): Promise<Prisma.ProductWhereInput> {
     const filters: Prisma.ProductWhereInput[] = [this.visibleWhere()]
 
     if (query.category) filters.push({ categoryId: { in: await this.categoryWithChildrenIds(query.category) } })
     if (query.brand?.length) filters.push({ brand: { slug: { in: query.brand }, deletedAt: null } })
     if (query.tag?.length) filters.push({ tags: { some: { tag: { slug: { in: query.tag }, deletedAt: null } } } })
     if (query.featured) filters.push({ isFeatured: true })
+    // Narrows the candidates; the exact offer rule (cheapest price below its previous price) runs after pricing.
+    if (query.onSale)
+      filters.push({
+        variants: {
+          some: {
+            deletedAt: null,
+            isActive: true,
+            prices: { some: { deletedAt: null, priceListId: { in: priceListIds }, compareAtAmount: { not: null } } },
+          },
+        },
+      })
     if (query.q) {
       // `contains` becomes LIKE: escape % and _ so they are searched literally, not as wildcards.
       // The MySQL collation (utf8mb4_unicode_ci) already makes it case- and accent-insensitive.
