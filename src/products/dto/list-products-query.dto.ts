@@ -78,6 +78,12 @@ export class ListProductsQueryDto {
   @IsBoolean()
   featured?: boolean
 
+  /** `true` = only products shown as offers (lowest price for this buyer below its previous price). */
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) => value === 'true' || value === true)
+  @IsBoolean()
+  onSale?: boolean
+
   @IsOptional()
   @IsIn(PRODUCT_SORTS)
   sort: ProductSort = 'relevance'

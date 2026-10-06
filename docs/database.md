@@ -50,6 +50,7 @@ erDiagram
   request. Guest order completion uses nullable `Order.userId` and a unique hashed `accessTokenHash`; the migration adds
   `PaymentMethod.MANUAL`. Orders, snapshots, manual payments, reservations and status history are now used. Other
   planned domains remain provisional.
+- **Favorites now implemented.** `Favorite` (user + product, unique pair) backs `/favorites`; no migration.
 - **Product vs. variant.** `Product` is what the customer sees; `ProductVariant` is the SKU that is priced, stocked,
   sold and mapped to a Tango article (`tangoCode`). Every product has at least one variant, so ink colors,
   capacities or units of sale never need a schema change.

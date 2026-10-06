@@ -30,5 +30,6 @@ import { ProductsService } from './products.service'
     AdminVariantPricesService,
     CatalogReferences,
   ],
+  exports: [ProductsService],
 })
 export class ProductsModule {}

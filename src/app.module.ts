@@ -16,6 +16,7 @@ import { TagsModule } from './tags/tags.module'
 import { CartModule } from './cart/cart.module'
 import { CheckoutModule } from './checkout/checkout.module'
 import { OrdersModule } from './orders/orders.module'
+import { FavoritesModule } from './favorites/favorites.module'
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { OrdersModule } from './orders/orders.module'
     TagsModule,
     CartModule,
     CheckoutModule,
+    FavoritesModule,
     OrdersModule,
   ],
   controllers: [AppController],

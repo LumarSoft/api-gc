@@ -114,5 +114,15 @@ Domain rules that apply across modules. When a request contradicts one of these,
   panel becomes `MANUAL`. USD prices are shown and charged in ARS at the exchange rate in effect.
 - The USD exchange rate history is append-only: a new rate can start now or later, never in the past.
 - A product keeps at least one variant; the default variant is always an active one.
+- A product is an **offer** when its lowest price for the current buyer is below that variant's previous price
+  (`compareAtAmount`). The `OFFER` badge and `GET /products?onSale=true` ("Ofertas") use the same rule, so a
+  frequent customer may see different offers than a retail visitor.
 - **Duplicating** a product creates a draft copy with new slug and SKUs (`-copia` / `-COPIA`). Tango codes and stock
   are never copied: they belong to the original articles.
+
+## Favorites
+
+- Only signed-in customers save favorites (the `Favorite` row needs a user); guests are asked to sign in. Favorites are
+  private and survive across devices. Saving and removing are idempotent; removing is a real delete (join table).
+- The list shows each product with the buyer's current price and stock; products that stop being visible are hidden,
+  not deleted, so they return if published again. At most 200 per account (technical bound, not a client policy).
