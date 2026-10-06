@@ -16,6 +16,11 @@ npm run doctor             # tells you if anything else is missing
 
 ---
 
+## 2026-10-06 — Offers filter and favorites
+
+Restart the API after pulling so `GET /products?onSale=true` and `/favorites` are available. No new dependencies,
+environment variables or migrations: favorites use the existing `Favorite` table.
+
 ## 2026-10-05 — Guest orders and private tracking
 
 Apply migration `20261005000000_guest_orders`, regenerate Prisma and restart the API. No new dependencies, secrets
