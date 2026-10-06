@@ -229,7 +229,8 @@ describe('Cart (e2e)', () => {
 
   it('creates a private guest cookie and stores only its hash on the first add', async () => {
     const response = await request(app.getHttpServer()).post('/cart/items').send({ variantId, quantity: 1 }).expect(200)
-    const cookie = (response.headers['set-cookie'] as string[])[0]
+    const raw: unknown = response.headers['set-cookie']
+    const cookie = Array.isArray(raw) ? String(raw[0]) : String(raw)
     expect(cookie).toContain('HttpOnly')
     expect(cookie).toContain('Path=/cart')
     expect(cookie).toContain('SameSite=Lax')
