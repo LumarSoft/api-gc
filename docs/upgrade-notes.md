@@ -25,6 +25,11 @@ npm run doctor             # tells you if anything else is missing
    `storage/public/products`; do not reseed a production catalog just to restore images.
 3. The Vercel frontend proxies `/api/*` to this API. Nginx must use
    `proxy_cookie_path /auth /api/auth;` so refresh cookies reach the browser's proxied auth endpoints.
+4. This server has 1 GB RAM. Build on a machine with enough memory and copy `dist/` from the same commit;
+   install dependencies and generate Prisma on Linux. Run with PM2 on port 3005, save its process list,
+   and keep the PM2 startup service enabled. Keep `.env` and persistent storage outside the build archive.
+5. Certbot renews the certificate automatically. Its deployment hook reloads Nginx after renewal.
+   `npm run doctor` supports absolute `STORAGE_DIR` paths and checks that product images are present.
 
 ## 2026-10-03 — Public catalog (LumarSoft/api-gc#3)
 
