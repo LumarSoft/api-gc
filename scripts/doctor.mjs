@@ -81,14 +81,17 @@ if (!existsSync(generatedClass)) {
 }
 
 // 5. Database reachable and migrations applied
+let databaseReachable = false
 if (env?.DATABASE_URL) {
   try {
     // Through the shell so `npx` resolves to npx.cmd on Windows.
     execSync('npx prisma migrate status', { cwd: ROOT, stdio: 'pipe', timeout: 30_000 })
+    databaseReachable = true
     ok('Database reachable, all migrations applied')
   } catch (error) {
     const output = `${error.stdout ?? ''}${error.stderr ?? ''}`
     if (/not yet been applied|have not been applied/i.test(output)) {
+      databaseReachable = true
       fail('Pending database migrations', 'npx prisma migrate dev && npx prisma generate')
     } else if (/P1001|Can't reach database|ECONNREFUSED/i.test(output)) {
       fail('Database not reachable', 'start MySQL (npm run db:up or your local server) and check DATABASE_URL')
@@ -100,7 +103,46 @@ if (env?.DATABASE_URL) {
   }
 }
 
-// 6. Starter catalog loaded (its images are copied into storage)
+// 6. Separate database for the e2e tests (same rule as test/setup/test-database.ts: TEST_DATABASE_URL, or
+// DATABASE_URL with `_test` appended to the database name). `npm run test:e2e` creates and migrates it.
+if (env?.DATABASE_URL && databaseReachable) {
+  const name = url => decodeURIComponent(url.pathname.replace(/^\//, ''))
+  const dev = new URL(env.DATABASE_URL)
+  const test = new URL(env.TEST_DATABASE_URL || env.DATABASE_URL)
+  if (!env.TEST_DATABASE_URL) test.pathname = `${name(dev)}_test`
+  if (test.host === dev.host && name(test) === name(dev)) {
+    fail(
+      'TEST_DATABASE_URL points to the development database',
+      'set it to a separate database (e.g. cg_test) or remove it',
+    )
+  } else {
+    try {
+      execSync('npx prisma migrate status', {
+        cwd: ROOT,
+        stdio: 'pipe',
+        timeout: 30_000,
+        env: { ...process.env, DATABASE_URL: test.toString() },
+      })
+      ok(`e2e test database ${name(test)} ready`)
+    } catch (error) {
+      const output = `${error.stdout ?? ''}${error.stderr ?? ''}`
+      if (/not yet been applied|have not been applied/i.test(output)) {
+        ok(`e2e test database ${name(test)} exists (npm run test:e2e applies its pending migrations)`)
+      } else if (/P1003|does not exist/i.test(output)) {
+        warn(`e2e test database ${name(test)} does not exist yet`, 'npm run test:e2e  (creates and migrates it)')
+      } else if (/P1000|P1010|Authentication failed|Access denied|denied access/i.test(output)) {
+        warn(
+          `The database user cannot use ${name(test)} (e2e tests)`,
+          `GRANT ALL ON \`${name(test)}\`.* TO <user>, or set TEST_DATABASE_URL (see docs/upgrade-notes.md)`,
+        )
+      } else {
+        warn(`Could not check the e2e test database ${name(test)}`, 'npm run test:e2e')
+      }
+    }
+  }
+}
+
+// 7. Starter catalog loaded (its images are copied into storage)
 const productImages = join(ROOT, env?.STORAGE_DIR || 'storage', 'public', 'products')
 if (existsSync(productImages) && readdirSync(productImages).length > 0) ok('Starter catalog loaded')
 else warn('Starter catalog not loaded (the store will look empty)', 'npm run db:seed')
