@@ -43,6 +43,7 @@ api-gc/
 │
 ├── scripts/doctor.mjs             # `npm run doctor` — checks the local setup and prints fixes
 ├── test/                          # End-to-end tests
+│   └── setup/                     # Points e2e at the test database, creates and migrates it
 │
 ├── .claude/settings.json          # Claude Code: runs the doctor on session start
 ├── .husky/pre-commit              # Runs lint-staged (Prettier)
