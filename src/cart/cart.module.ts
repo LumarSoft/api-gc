@@ -9,6 +9,6 @@ import { CartMapper } from './cart.mapper'
   imports: [PricingModule],
   controllers: [CartController],
   providers: [CartService, CartOwnerService, CartMapper],
-  exports: [CartService],
+  exports: [CartService, CartOwnerService, CartMapper],
 })
 export class CartModule {}

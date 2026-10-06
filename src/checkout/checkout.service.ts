@@ -1,3 +1,4 @@
+import { reservationHours } from '../orders/lib/reservation-hours'
 import { Injectable, UnprocessableEntityException } from '@nestjs/common'
 import { CartService } from '../cart/cart.service'
 import type { CartOwner } from '../cart/cart-owner.service'
@@ -7,6 +8,7 @@ import { PrismaService } from '../prisma/prisma.service'
 import type { PreviewCheckoutDto } from './dto/checkout-input.dto'
 import type { CheckoutResponseDto } from './dto/checkout-response.dto'
 import { checkoutDeliveryOptions, checkoutTotal, isRosarioAddress } from './lib/checkout-delivery'
+import { checkoutReview } from './lib/checkout-review'
 
 export interface CheckoutResult extends CartOwner {
   checkout: CheckoutResponseDto
@@ -24,7 +26,7 @@ export class CheckoutService {
     token: string | undefined,
     input?: PreviewCheckoutDto,
   ): Promise<CheckoutResult> {
-    const [result, methods] = await Promise.all([
+    const [result, methods, reservation] = await Promise.all([
       this.carts.read(user, token),
       this.prisma.shippingMethod.findFirst({
         where: { code: DeliveryMethod.LOCAL_DELIVERY, deletedAt: null },
@@ -37,6 +39,10 @@ export class CheckoutService {
           flatRate: true,
           freeShippingThreshold: true,
         },
+      }),
+      this.prisma.setting.findUnique({
+        where: { key: 'reservation.manualHours' },
+        select: { value: true, deletedAt: true },
       }),
     ])
     const { cart, ...owner } = result
@@ -66,6 +72,8 @@ export class CheckoutService {
         customer: input ? { name: input.name, email: input.email, phone: input.phone || null } : null,
         shippingAddress: deliveryMethod === DeliveryMethod.LOCAL_DELIVERY ? (input?.shippingAddress ?? null) : null,
         canReview: Boolean(cart.items.length && !cart.hasIssues && cart.subtotal && selected.enabled),
+        reviewToken: input && selected.cost ? checkoutReview(cart, input, selected.cost) : null,
+        reservationHours: reservationHours(reservation),
       },
     }
   }

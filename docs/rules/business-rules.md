@@ -35,16 +35,37 @@ Domain rules that apply across modules. When a request contradicts one of these,
 - Existing lines that lose price, publication or stock remain visible with an issue so the buyer can reduce or remove
   them. A merge preserves lines even when their combined quantity exceeds current stock and reports the issue.
 - Cart subtotals use current prices through `PricingService`, exclude shipping, and are not order snapshots. If any
-  line cannot be priced in ARS, subtotal is null (never a partial sum). Coupons and checkout are not implemented yet.
+  line cannot be priced in ARS, subtotal is null (never a partial sum). Coupons are not implemented yet; checkout confirms immutable orders.
 
 ## Orders
 
 - Checkout preparation (`/cart/checkout`, `/cart/checkout/preview`) is available to the current cart owner, including
   guests. It validates contact details and recalculates the cart plus delivery with decimal arithmetic. It does not
-  persist contact/address data, create an order, reserve stock or initiate payment. Guest order completion and payment
-  activation remain pending decisions. Current prices are checked again when order creation is implemented.
+  persist contact/address data, create an order, reserve stock or initiate payment. Confirmation is a separate request that checks current prices/stock again and atomically creates the order and reservation.
 - Pickup is free. Preview offers local delivery only with an active ARS flat rate and nonnegative threshold in
   `ShippingMethod`; its destination must be Rosario, Santa Fe. Carrier quotes remain unavailable until an adapter exists.
+
+- **Current scope (requested 2026-10-05):** guest completion is enabled; no external payment, email, carrier or Tango
+  integrations are activated. Orders use `MANUAL` payment, pending until an admin explicitly verifies receipt of the
+  full amount. Confirmation records an approved manual `Payment`, consumes the reservation and records stock sale
+  movements and an audit entry. This does not move money, issue an invoice or charge a wholesale current account.
+- `Order.userId` is nullable. A guest never gets a synthetic account. A cryptographically random 256-bit browser token
+  identifies the checkout attempt and grants private tracking; only its SHA-256 hash is stored. Retries with the same
+  token return the existing order, even if its cart has been converted. The browser persists a pending attempt token
+  in session storage and can recover a lost response. Sharing this token shares access to the order's contact data.
+- The tracking link carries the token in the URL fragment. The front sends it in a POST body; never in query strings,
+  server-rendered pages, analytics or logs. The number/email alone cannot grant access. No automatic emails in this
+  stage: the buyer must copy/bookmark the private link shown after confirmation. Lost-link recovery by identity checks
+  and token rotation remains a future support workflow; no insecure public email/number lookup is exposed.
+- A review fingerprint detects changed product names, quantities, ARS prices, contact data, destination or delivery cost.
+  A changed review returns 409 and requires review again. The fingerprint is not authorization and no client total is trusted.
+- **Provisional implementation choice:** pending manual-payment reservations use the existing 24-hour transfer window.
+  `Setting.reservation.manualHours` can override it with an integer 1–168; absent, archived or invalid values use 24.
+  Checkout shows this window before confirmation and tracking shows the precise expiration. Revisit with the client
+  when their offline payment process is finalized.
+- Pending orders may be cancelled; confirmed orders advance to preparation, then ready for pickup (pickup) or shipped
+  (local delivery), then delivered. Paid cancellation/refunds are not enabled in this stage. Expired/cancelled/delivered
+  states are terminal. Staff notes and actor ids stay out of guest tracking.
 
 - An order line stores a **snapshot** of product name, unit price and currency at purchase time. An order is never
   recalculated with current prices.
@@ -54,8 +75,12 @@ Domain rules that apply across modules. When a request contradicts one of these,
 ## Stock
 
 - Stock is reserved when checkout starts. Reservations expire: payment window for Mercado Pago, **24 hours** for
-  pending bank transfers.
-- Expired or cancelled orders release their reservation automatically (scheduled job).
+  pending bank transfers; current manual orders use the provisional configured window above.
+- Cancellation releases stock in the transition transaction. The local expiration job runs every minute, up to 100
+  overdue orders per pass, with order locks and idempotent ledger writes. Multiple API instances may run it safely.
+  No payment may be confirmed after the deadline, even before the job runs. Job failures are logged without secrets and
+  persisted in `Setting.orders.expiryJob` (`{ failed: boolean, lastRunAt: ISO string }`); admin lists also flag reservations
+  overdue by more than two minutes, covering an unavailable job/database. No external scheduler is required.
 - Every stock change is a row in a movements table (product, quantity, reason, reference). Never overwrite a stock
   number without recording the movement.
 - **Provisional (agreed 2026-10-04):** until the Tango integration exists, admins can set the counted stock of a

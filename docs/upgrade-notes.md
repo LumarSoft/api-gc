@@ -16,6 +16,26 @@ npm run doctor             # tells you if anything else is missing
 
 ---
 
+## 2026-10-05 — Guest orders and private tracking
+
+Apply migration `20261005000000_guest_orders`, regenerate Prisma and restart the API. No new dependencies, secrets
+or external providers. The migration makes `Order.userId` nullable, adds a unique nullable tracking-token hash and
+adds `MANUAL` payment. Existing orders/relationships are retained. Doctor already checks migrations and generated types.
+
+```bash
+npx prisma migrate deploy
+npx prisma generate
+npm run doctor
+```
+
+Migration was generated with Prisma `migrate diff` and applied with `migrate deploy`, because this execution
+surface rejects interactive `migrate dev` when it warns about the new unique index. The SQL was reviewed before applying.
+
+Manual payments use a provisional 24-hour reservation window, matching existing transfer rules. Optionally configure
+`Setting` key `reservation.manualHours` with a JSON integer 1–168. No seed rerun is required. The API runs expiration every
+minute; `orders.expiryJob` records its health, visible as an admin warning. Guest tracking uses a private fragment link;
+there are no emails, carrier tracking, invoices, refunds, current-account charges or external payment calls.
+
 ## 2026-10-05 — Checkout preparation
 
 Restart the API after pulling so `/cart/checkout` and `/cart/checkout/preview` are available. No new dependencies,

@@ -8,6 +8,9 @@ import type { AuthenticatedUser } from '../common/types/authenticated-user'
 import { CheckoutService, type CheckoutResult } from './checkout.service'
 import { PreviewCheckoutDto } from './dto/checkout-input.dto'
 import type { CheckoutResponseDto } from './dto/checkout-response.dto'
+import { OrdersService } from '../orders/orders.service'
+import { PlaceOrderDto } from '../orders/dto/order-input.dto'
+import type { OrderResponseDto } from '../orders/dto/order-response.dto'
 
 /** Under /cart so the guest cookie keeps its existing scope. Browser-only and never shared-cached. */
 @Controller('cart/checkout')
@@ -16,6 +19,7 @@ export class CheckoutController {
   constructor(
     private readonly checkout: CheckoutService,
     private readonly config: ConfigService,
+    private readonly orders: OrdersService,
   ) {}
 
   @Get()
@@ -43,5 +47,16 @@ export class CheckoutController {
     response.setHeader('Cache-Control', 'private, no-store')
     writeCartCookie(response, result, this.config)
     return result.checkout
+  }
+
+  @Post('orders')
+  @HttpCode(HttpStatus.OK)
+  @Header('Cache-Control', 'private, no-store')
+  place(
+    @OptionalUser() user: AuthenticatedUser | undefined,
+    @Req() request: Request,
+    @Body() input: PlaceOrderDto,
+  ): Promise<OrderResponseDto> {
+    return this.orders.place(user, readCartToken(request), input)
   }
 }

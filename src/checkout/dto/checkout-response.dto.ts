@@ -20,6 +20,8 @@ export interface CheckoutResponseDto {
   total: MoneyDto | null
   customer: { name: string; email: string; phone: string | null } | null
   shippingAddress: CheckoutAddressDto | null
-  /** A preview does not place an order or reserve stock. Payment setup is a separate stage. */
+  /** Preview only; a separate order confirmation request reserves stock. */
   canReview: boolean
+  reviewToken: string | null
+  reservationHours: number
 }
