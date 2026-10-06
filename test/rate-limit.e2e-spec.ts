@@ -27,7 +27,9 @@ describe('Rate limits (e2e)', () => {
     // Same request handling as main.ts: query params are transformed by the global pipe, cookies are parsed.
     app.use(cookieParser())
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }))
-    await app.init()
+    // Bind 127.0.0.1 explicitly: supertest connects there, and an unbound app would get a port that another local
+    // process may already hold on 127.0.0.1 (random 401s from that process on macOS).
+    await app.listen(0, '127.0.0.1')
   })
 
   afterEach(async () => {

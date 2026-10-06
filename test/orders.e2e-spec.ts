@@ -78,7 +78,9 @@ describe('Guest orders (local MySQL e2e)', () => {
     app.use(cookieParser())
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }))
     app.useGlobalFilters(new PrismaExceptionFilter(app.get(HttpAdapterHost).httpAdapter))
-    await app.init()
+    // Bind 127.0.0.1 explicitly: supertest connects there, and an unbound app would get a port that another local
+    // process may already hold on 127.0.0.1 (random 401s from that process on macOS).
+    await app.listen(0, '127.0.0.1')
     prisma = app.get(PrismaService)
     const suffix = randomUUID().slice(0, 8)
     priceListId = (
