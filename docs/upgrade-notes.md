@@ -16,6 +16,16 @@ npm run doctor             # tells you if anything else is missing
 
 ---
 
+## 2026-10-05 — Linux deployment behind Nginx
+
+1. Add `HOST=0.0.0.0` to development environments. On the Linux server use `HOST=127.0.0.1`,
+   `PORT=3005`, `TRUST_PROXY=1`, `COOKIE_SECURE=true` and an empty `COOKIE_DOMAIN`.
+2. Keep images in persistent storage (`STORAGE_DIR=/var/lib/api-gc/storage`) and set
+   `PUBLIC_FILES_URL=https://api-cg.lumarsoft.com/files`. Copy the seed image files into
+   `storage/public/products`; do not reseed a production catalog just to restore images.
+3. The Vercel frontend proxies `/api/*` to this API. Nginx must use
+   `proxy_cookie_path /auth /api/auth;` so refresh cookies reach the browser's proxied auth endpoints.
+
 ## 2026-10-03 — Public catalog (LumarSoft/api-gc#3)
 
 1. Add to `.env` (values in `.env.example`):

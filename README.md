@@ -78,6 +78,7 @@ drift. The `cg` database itself is created automatically if it does not exist.
 | Variable                   | Default                       | Description                                                |
 | -------------------------- | ----------------------------- | ---------------------------------------------------------- |
 | `PORT`                     | `3001`                        | API port                                                   |
+| `HOST`                     | `0.0.0.0`                     | Bind address; use `127.0.0.1` behind local Nginx             |
 | `CORS_ORIGIN`              | `http://localhost:3000`       | Allowed origins, comma-separated                           |
 | `DATABASE_URL`             | —                             | MySQL connection string                                    |
 | `DB_POOL_CONNECTION_LIMIT` | `10`                          | Max DB connections                                         |

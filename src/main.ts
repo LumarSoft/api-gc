@@ -50,7 +50,7 @@ async function bootstrap() {
   app.enableShutdownHooks()
 
   const port = process.env.PORT ?? 3001
-  await app.listen(port)
+  await app.listen(port, process.env.HOST ?? '0.0.0.0')
   new Logger('Bootstrap').log(`App running on port ${port}`)
 }
 
