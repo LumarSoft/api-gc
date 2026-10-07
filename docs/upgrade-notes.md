@@ -37,6 +37,16 @@ Rows that earlier runs left in the development database are **not** removed auto
 (emails ending in `@example.test`, names like "Order Test" / "Cart test product"); clean them up by hand if you want,
 or re-create the development database from the seed.
 
+## 2026-10-06 — Frequent-customer applications
+
+Restart the API after pulling so `/wholesale-applications` and `/admin/wholesale-applications` are available. No new
+dependencies, environment variables or migrations (uses the existing `Company` and `WholesaleApplication` tables).
+
+## 2026-10-06 — Offers filter and favorites
+
+Restart the API after pulling so `GET /products?onSale=true` and `/favorites` are available. No new dependencies,
+environment variables or migrations: favorites use the existing `Favorite` table.
+
 ## 2026-10-05 — Guest orders and private tracking
 
 Apply migration `20261005000000_guest_orders`, regenerate Prisma and restart the API. No new dependencies, secrets

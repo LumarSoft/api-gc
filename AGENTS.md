@@ -113,7 +113,9 @@ Current state: the **full database schema** is defined (`prisma/schema/`, one fi
 `OptionalJwtAuthGuard` + `@OptionalUser()` on public routes whose answer depends on the buyer), `CartModule`
 (guest/user carts, merged on the first cart request after login; browser-only `/cart` routes), `CheckoutModule`
 (contact/delivery preview and guest order confirmation under `/cart/checkout`), `OrdersModule`
-(private capability-based tracking, manual admin payment/status updates and automatic reservation expiration), `MailModule`,
+(private capability-based tracking, manual admin payment/status updates and automatic reservation expiration), `FavoritesModule`
+(signed-in customers' saved products, cards built by `ProductsService`), `WholesaleApplicationsModule`
+("clientes frecuentes": customer applications and staff approve/reject/pause/resume, audited), `MailModule`,
 `FilesModule` (storage + admin image upload), `AuditLogsModule` (record every admin change — see "Admin routes" in
 @docs/rules/architecture.md), `PricingModule` (always resolve prices through `PricingService`, never by hand) and the public
 catalog (`CategoriesModule`, `BrandsModule`, `TagsModule`, `ProductsModule`; categories, brands and tags also

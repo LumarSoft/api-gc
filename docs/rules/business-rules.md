@@ -20,6 +20,15 @@ Domain rules that apply across modules. When a request contradicts one of these,
 - The buyer profile is **derived**: `User.role` is only `CUSTOMER` or `ADMIN`; a customer is `WHOLESALE` when their
   company's `wholesaleStatus` is `APPROVED`. Never store the profile on the user.
 - Wholesalers buy directly with the wholesale price list — individual orders do not need approval.
+- **Applying** (implemented 2026-10-06): a signed-in customer sends legal name, CUIT (check digit validated), tax
+  condition (responsable inscripto, monotributista or exento — a final consumer buys as retail), company email and
+  phone, plus an optional message. One company per customer; a CUIT already registered by another account is refused
+  without revealing it (the store adds members by hand for now). A rejected customer can correct the data and apply
+  again; pending, approved or paused customers cannot.
+- **Review**: staff approve or reject a pending application, and pause or resume an approved account. Rejecting and
+  pausing require a reason, which the customer sees. Every decision is audited and takes effect on the next request
+  (prices are re-resolved per request). Approve/reject emails are recorded (no provider yet).
+- **Documents** (AFIP certificate, etc.) are not requested yet: they need private storage, not the public `/files`.
 
 ## Cart
 
@@ -114,5 +123,15 @@ Domain rules that apply across modules. When a request contradicts one of these,
   panel becomes `MANUAL`. USD prices are shown and charged in ARS at the exchange rate in effect.
 - The USD exchange rate history is append-only: a new rate can start now or later, never in the past.
 - A product keeps at least one variant; the default variant is always an active one.
+- A product is an **offer** when its lowest price for the current buyer is below that variant's previous price
+  (`compareAtAmount`). The `OFFER` badge and `GET /products?onSale=true` ("Ofertas") use the same rule, so a
+  frequent customer may see different offers than a retail visitor.
 - **Duplicating** a product creates a draft copy with new slug and SKUs (`-copia` / `-COPIA`). Tango codes and stock
   are never copied: they belong to the original articles.
+
+## Favorites
+
+- Only signed-in customers save favorites (the `Favorite` row needs a user); guests are asked to sign in. Favorites are
+  private and survive across devices. Saving and removing are idempotent; removing is a real delete (join table).
+- The list shows each product with the buyer's current price and stock; products that stop being visible are hidden,
+  not deleted, so they return if published again. At most 200 per account (technical bound, not a client policy).

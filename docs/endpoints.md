@@ -332,6 +332,7 @@ stock.
 | tag      | string  | No       | Comma-separated tag slugs (any), e.g. `uso-hogar,uso-foto`                                      |
 | q        | string  | No       | Max 100. Searches name, short description and SKU (case/accent-insensitive)                     |
 | featured | boolean | No       | `true` = only featured products                                                                 |
+| onSale   | boolean | No       | `true` = only offers: the buyer's lowest price is below its previous price (same as `OFFER`)    |
 | sort     | string  | No       | `relevance` (default: featured first, then newest), `newest`, `price-asc`, `price-desc`, `name` |
 
 **Responses**
@@ -1450,7 +1451,6 @@ Already empty/missing carts also succeed without creating a cart.
 
 Errors: shared `401`, `409`, `429` above.
 
-
 ## Guest orders and manual management
 
 All responses below use `Cache-Control: private, no-store`. The API makes no outbound payment/email/shipping calls.
@@ -1466,15 +1466,15 @@ convert the cart and assign `CG-` plus a padded numeric id. Status starts `PENDI
 
 **Request body**
 
-| Field | Type | Required | Constraints |
-| ----- | ---- | -------- | ----------- |
-| `name` | string | Yes | Trimmed/nonempty, max 200 |
-| `email` | string | Yes | Valid email, trimmed, max 191 |
-| `phone` | string | No | Trimmed, max 30 |
-| `deliveryMethod` | enum | Yes | Available `STORE_PICKUP` or configured `LOCAL_DELIVERY`; carrier unavailable |
-| `shippingAddress` | object | For local delivery | Same nested fields/limits as preview; Rosario, Santa Fe |
-| `reviewToken` | string | Yes | 64 lowercase hex characters from the exact preview being confirmed |
-| `accessToken` | string | Yes | 64 lowercase hex characters, generated from 32 secure random bytes before first POST; reused on retries |
+| Field             | Type   | Required           | Constraints                                                                                             |
+| ----------------- | ------ | ------------------ | ------------------------------------------------------------------------------------------------------- |
+| `name`            | string | Yes                | Trimmed/nonempty, max 200                                                                               |
+| `email`           | string | Yes                | Valid email, trimmed, max 191                                                                           |
+| `phone`           | string | No                 | Trimmed, max 30                                                                                         |
+| `deliveryMethod`  | enum   | Yes                | Available `STORE_PICKUP` or configured `LOCAL_DELIVERY`; carrier unavailable                            |
+| `shippingAddress` | object | For local delivery | Same nested fields/limits as preview; Rosario, Santa Fe                                                 |
+| `reviewToken`     | string | Yes                | 64 lowercase hex characters from the exact preview being confirmed                                      |
+| `accessToken`     | string | Yes                | 64 lowercase hex characters, generated from 32 secure random bytes before first POST; reused on retries |
 
 Amounts, ownership, payment method and status cannot be supplied. An existing token returns its original order,
 without another stock/payment operation and without requiring the now-converted cart cookie. Token possession grants
@@ -1482,7 +1482,9 @@ access; generate it cryptographically, never from an order number, email or time
 
 ```json
 {
-  "name": "Cliente de prueba", "email": "cliente@example.test", "deliveryMethod": "STORE_PICKUP",
+  "name": "Cliente de prueba",
+  "email": "cliente@example.test",
+  "deliveryMethod": "STORE_PICKUP",
   "reviewToken": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "accessToken": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
 }
@@ -1497,16 +1499,28 @@ lines, names, prices, contact, address or shipping changes. `reservationHours` i
 
 ```json
 {
-  "id": 123, "number": "CG-000123", "status": "PENDING_PAYMENT",
-  "deliveryMethod": "STORE_PICKUP", "paymentMethod": "MANUAL",
+  "id": 123,
+  "number": "CG-000123",
+  "status": "PENDING_PAYMENT",
+  "deliveryMethod": "STORE_PICKUP",
+  "paymentMethod": "MANUAL",
   "subtotal": { "amount": "12.35", "currency": "ARS" },
   "shippingTotal": { "amount": "0.00", "currency": "ARS" },
   "total": { "amount": "12.35", "currency": "ARS" },
-  "placedAt": "2026-10-05T18:00:00.000Z", "expiresAt": "2026-10-06T18:00:00.000Z",
+  "placedAt": "2026-10-05T18:00:00.000Z",
+  "expiresAt": "2026-10-06T18:00:00.000Z",
   "customer": { "name": "Cliente de prueba", "email": "cliente@example.test", "phone": null },
   "shippingAddress": null,
-  "items": [{ "name": "Producto de prueba", "variantName": null, "sku": "TEST", "quantity": 1,
-    "unitPrice": { "amount": "12.35", "currency": "ARS" }, "total": { "amount": "12.35", "currency": "ARS" } }],
+  "items": [
+    {
+      "name": "Producto de prueba",
+      "variantName": null,
+      "sku": "TEST",
+      "quantity": 1,
+      "unitPrice": { "amount": "12.35", "currency": "ARS" },
+      "total": { "amount": "12.35", "currency": "ARS" }
+    }
+  ],
   "history": [{ "status": "PENDING_PAYMENT", "at": "2026-10-05T18:00:00.000Z" }]
 }
 ```
@@ -1531,9 +1545,9 @@ The browser reads the fragment and sends the token in the body; servers never re
 
 **Request body**
 
-| Field | Type | Required | Constraints |
-| ----- | ---- | -------- | ----------- |
-| `accessToken` | string | Yes | 64 lowercase hexadecimal characters from the private link |
+| Field         | Type   | Required | Constraints                                               |
+| ------------- | ------ | -------- | --------------------------------------------------------- |
+| `accessToken` | string | Yes      | 64 lowercase hexadecimal characters from the private link |
 
 ```json
 { "accessToken": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" }
@@ -1555,9 +1569,9 @@ This is capability-based retry recovery, not public recovery by email. No new or
 
 **Request body**
 
-| Field | Type | Required | Constraints |
-| ----- | ---- | -------- | ----------- |
-| `accessToken` | string | Yes | Same 64-character lowercase hexadecimal token from the original attempt |
+| Field         | Type   | Required | Constraints                                                             |
+| ------------- | ------ | -------- | ----------------------------------------------------------------------- |
+| `accessToken` | string | Yes      | Same 64-character lowercase hexadecimal token from the original attempt |
 
 ```json
 { "accessToken": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" }
@@ -1578,11 +1592,11 @@ Paged orders, latest id first, optionally filtered by status. Manual lifecycle o
 
 **Query**
 
-| Field | Type | Required | Constraints |
-| ----- | ---- | -------- | ----------- |
-| `page` | integer | No | >=1, default 1 |
-| `pageSize` | integer | No | 1–100, default 25 |
-| `status` | OrderStatus | No | One schema enum value |
+| Field      | Type        | Required | Constraints           |
+| ---------- | ----------- | -------- | --------------------- |
+| `page`     | integer     | No       | >=1, default 1        |
+| `pageSize` | integer     | No       | 1–100, default 25     |
+| `status`   | OrderStatus | No       | One schema enum value |
 
 **Responses**
 
@@ -1625,11 +1639,11 @@ reserved stock once. Cancellation is available only before payment confirmation;
 
 **Request body**
 
-| Field | Type | Required | Constraints |
-| ----- | ---- | -------- | ----------- |
-| `status` | OrderStatus | Yes | Must be in server-derived allowedStatuses |
-| `paymentReceived` | boolean | For CONFIRMED | Must be true; staff explicitly verified full payment |
-| `note` | string | No | Max 255; internal history note, never returned to guests |
+| Field             | Type        | Required      | Constraints                                              |
+| ----------------- | ----------- | ------------- | -------------------------------------------------------- |
+| `status`          | OrderStatus | Yes           | Must be in server-derived allowedStatuses                |
+| `paymentReceived` | boolean     | For CONFIRMED | Must be true; staff explicitly verified full payment     |
+| `note`            | string      | No            | Max 255; internal history note, never returned to guests |
 
 ```json
 { "status": "CONFIRMED", "paymentReceived": true }
@@ -1647,3 +1661,135 @@ reserved stock once. Cancellation is available only before payment confirmation;
 `422 Unprocessable Entity` — invalid/repeated transition, missing payment verification, expired payment window or
 inconsistent stock: `{ "message": "Verificá el pago antes de confirmar el pedido.", "statusCode": 422 }`.
 `429 Too Many Requests`: `{ "message": "ThrottlerException: Too Many Requests", "statusCode": 429 }`.
+
+## Favorites
+
+Saved products of the signed-in customer (any role). Guests have no favorites: the front asks them to sign in.
+Browser-only; responses are `private, no-store`. At most 200 favorites per account (technical bound).
+
+### GET /favorites
+
+**Auth required:** Yes. `401` without a valid session.
+
+`200 OK` — newest first, same card shape and buyer prices as `GET /products`. Products that are no longer visible in
+the store (draft, archived, hidden out of stock) are left out, and come back if they are published again.
+
+```json
+{
+  "items": [
+    {
+      "id": 3,
+      "slug": "impresora-multifuncional-inalambrica-ecotank-l3250",
+      "name": "Impresora Multifuncional Inalámbrica EcoTank L3250",
+      "price": { "amount": "419999.00", "currency": "ARS" },
+      "compareAtPrice": { "amount": "459999.00", "currency": "ARS" },
+      "badge": "OFFER",
+      "availability": "IN_STOCK"
+    }
+  ]
+}
+```
+
+(Card fields shortened in the example; the full shape is the one documented in `GET /products`.)
+
+### PUT /favorites/:productId
+
+Save a product. Idempotent.
+
+**Auth required:** Yes. `204 No Content`; `400` invalid id; `404` unknown or not visible product (`"Producto no
+encontrado."`); `422` when the account already has 200 favorites.
+
+### DELETE /favorites/:productId
+
+Remove a product. Idempotent: removing one that is not saved also answers `204 No Content`.
+
+**Auth required:** Yes.
+
+## Frequent-customer applications
+
+"Clientes frecuentes" in the UI; `wholesale` in code. A signed-in customer applies with their business data; staff
+approve or reject it. While the company is `APPROVED` its members buy as `WHOLESALE` (prices from the company's list
+or the default wholesale list). No documents yet: they need private storage (see business rules).
+
+### GET /wholesale-applications/mine
+
+**Auth required:** Yes. `private, no-store`.
+
+`200 OK`
+
+```json
+{
+  "application": {
+    "id": 12,
+    "status": "REJECTED",
+    "message": "Compramos tintas todos los meses.",
+    "reviewNote": "Falta la constancia de inscripción.",
+    "createdAt": "2026-10-06T22:30:00.000Z",
+    "reviewedAt": "2026-10-06T23:00:00.000Z",
+    "company": {
+      "id": 4,
+      "legalName": "Imprenta de Prueba SRL",
+      "tradeName": null,
+      "cuit": "30712345671",
+      "taxCondition": "RESPONSABLE_INSCRIPTO",
+      "email": "compras@example.test",
+      "phone": null,
+      "wholesaleStatus": "REJECTED"
+    }
+  },
+  "canApply": true,
+  "blockReason": null
+}
+```
+
+`application` is the latest one (null if the customer never applied). `canApply` is true without a company or after a
+rejection; otherwise `blockReason` explains why (pending, approved, paused) in Spanish.
+
+### POST /wholesale-applications
+
+**Auth required:** Yes. Rate limit 10/min.
+
+| Field          | Type   | Required | Constraints                                                          |
+| -------------- | ------ | -------- | -------------------------------------------------------------------- |
+| `legalName`    | string | Yes      | Trimmed, 2–200                                                       |
+| `tradeName`    | string | No       | Max 200                                                              |
+| `cuit`         | string | Yes      | 11 digits, dashes/spaces allowed; known prefix and valid check digit |
+| `taxCondition` | enum   | Yes      | `RESPONSABLE_INSCRIPTO`, `MONOTRIBUTISTA`, `EXENTO`                  |
+| `email`        | string | Yes      | Company contact email, max 191                                       |
+| `phone`        | string | No       | Max 30                                                               |
+| `message`      | string | No       | Max 1000; what the business does and buys                            |
+
+`201 Created` — same shape as `GET /wholesale-applications/mine` (status `PENDING`). `400` invalid fields (e.g.
+`CONSUMIDOR_FINAL`); `422` invalid CUIT check digit; `409` the customer cannot apply now (`blockReason`) or the CUIT
+already belongs to another account (`"Ese CUIT ya tiene una cuenta. Si es tu empresa, consultá al local para
+sumarte."` — the existing company is never revealed).
+
+### GET /admin/wholesale-applications
+
+**Auth required:** Yes (ADMIN). Query `page`, `pageSize` (1–100, default 25), `status` (`PENDING`, `APPROVED`,
+`REJECTED`, `PAUSED`). Newest first.
+
+`200 OK` — `{ items, page, pageSize, total, totalPages }`; each item is the application shape above plus
+`submittedBy: { id, name, email }`, `reviewedBy: { id, name } | null`, `latest` (false when the company sent a newer
+application) and `allowedDecisions` (subset of `approve`,
+`reject`, `pause`, `resume`; empty for an application that is not the company's latest).
+
+### GET /admin/wholesale-applications/:id
+
+**Auth required:** Yes (ADMIN). `200 OK` — one item as in the list; `404` unknown id.
+
+### POST /admin/wholesale-applications/:id/approve · /reject · /pause · /resume
+
+**Auth required:** Yes (ADMIN, audited as `wholesale-application.<decision>`). Body `{ "note": "…" }` (max 500, shown
+to the customer) — **required** for `reject` and `pause`.
+
+| Decision  | From company status | To         |
+| --------- | ------------------- | ---------- |
+| `approve` | `PENDING`           | `APPROVED` |
+| `reject`  | `PENDING`           | `REJECTED` |
+| `pause`   | `APPROVED`          | `PAUSED`   |
+| `resume`  | `PAUSED`            | `APPROVED` |
+
+`200 OK` — the updated application (admin shape). `422` missing note, decision not allowed now, or not the company's
+latest application. Approve/reject record an email to the applicant (`wholesale-approved` / `wholesale-rejected`;
+logged until a mail provider exists).
