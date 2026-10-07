@@ -53,7 +53,7 @@ npm run start:prod       # Run compiled output from dist/
 npm run lint             # ESLint with auto-fix
 npm run format           # Prettier on src/ and test/
 npm run test             # Unit tests (Jest)
-npm run test:e2e         # End-to-end tests (needs a running MySQL)
+npm run test:e2e         # End-to-end tests against a separate database (cg_test), never the dev one
 
 # Database
 npm run db:up            # Start MySQL 8.4 in Docker
@@ -76,6 +76,16 @@ When asked to set up or run the project locally, follow the **Installation** sec
    - Docker is optional; if it is not installed, do not install it — ask the user which MySQL to use.
 4. `npx prisma migrate dev`, then `npx prisma generate`.
 5. `npm run dev` and verify `curl http://localhost:3001/health` returns `{"status":"ok","database":"up"}`.
+
+### End-to-end tests
+
+`npm run test:e2e` never touches the development database. `test/setup/` points the suites at a separate database:
+`TEST_DATABASE_URL` when set, otherwise `DATABASE_URL` with `_test` appended to the name (`cg` → `cg_test`). Before
+the run it creates that database if missing (the user needs `CREATE` permission, or create it once by hand), applies
+migrations with `prisma migrate deploy` and inserts the default retail price list the suites assume. It refuses to run
+if the test URL resolves to the development database. The suites only soft-delete what they create, so the test
+database grows; it is disposable — drop it any time and the next run recreates it. New e2e suites must not depend on
+seeded catalog data beyond that price list: create their own fixtures.
 
 Never run `prisma migrate reset`, `prisma db push` or drop databases without the user's explicit confirmation. If a
 step fails, check the **Troubleshooting** table in `README.md` before trying anything else.

@@ -125,7 +125,7 @@ Optionally run the checks:
 ```bash
 npm run lint
 npm run test               # unit tests (no database needed)
-npm run test:e2e           # end-to-end tests (needs the database from step 3)
+npm run test:e2e           # end-to-end tests on a separate cg_test database (created on first run)
 ```
 
 ## Staying up to date
@@ -164,7 +164,7 @@ that is already on `main`. More in [docs/rules/database.md](docs/rules/database.
 | `npm run lint`         | ESLint (with auto-fix)                                             |
 | `npm run format`       | Prettier on `src/` and `test/`                                     |
 | `npm run test`         | Unit tests                                                         |
-| `npm run test:e2e`     | End-to-end tests (needs MySQL)                                     |
+| `npm run test:e2e`     | End-to-end tests on a separate `<db>_test` database (needs MySQL)  |
 | `npm run db:up`        | Start MySQL in Docker                                              |
 | `npm run db:down`      | Stop MySQL in Docker                                               |
 | `npx prisma studio`    | Browse and edit data in the browser                                |

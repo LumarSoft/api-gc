@@ -16,6 +16,27 @@ npm run doctor             # tells you if anything else is missing
 
 ---
 
+## 2026-10-06 — Separate database for the e2e tests
+
+`npm run test:e2e` used `DATABASE_URL`, so every run left "Order Test" orders, carts, products and users in the
+development database (they only get soft-deleted or cancelled). The suites now run against a separate database:
+`TEST_DATABASE_URL` if set, otherwise `DATABASE_URL` with `_test` appended to the name (`cg` → `cg_test`).
+
+Nothing to do if your MySQL user can create databases: the next `npm run test:e2e` creates `cg_test`, applies the
+migrations and inserts the default retail price list. Otherwise create it once with a privileged user:
+
+```sql
+CREATE DATABASE cg_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+GRANT ALL ON cg_test.* TO 'cg'@'%';
+```
+
+`npm run doctor` reports whether the test database exists and is reachable, and fails if `TEST_DATABASE_URL` points
+to the development database (the e2e setup refuses to run in that case).
+
+Rows that earlier runs left in the development database are **not** removed automatically. They are test fixtures
+(emails ending in `@example.test`, names like "Order Test" / "Cart test product"); clean them up by hand if you want,
+or re-create the development database from the seed.
+
 ## 2026-10-06 — Frequent-customer applications
 
 Restart the API after pulling so `/wholesale-applications` and `/admin/wholesale-applications` are available. No new
