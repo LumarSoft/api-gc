@@ -165,6 +165,7 @@ export class AnalyticsService {
   private async customersWhoPaidBefore(orders: { contactEmail: string }[], before: Date): Promise<Set<string>> {
     const emails = [...new Set(orders.map(order => customerKey(order.contactEmail)))]
     if (emails.length === 0) return new Set()
+    // Emails are compared lowercased; the column's default MySQL collation (utf8mb4_unicode_ci) ignores case too.
     const rows = await this.prisma.order.findMany({
       where: { status: { in: PAID_STATUSES }, confirmedAt: { lt: before }, contactEmail: { in: emails } },
       select: { contactEmail: true },
