@@ -928,6 +928,43 @@ Body `{ "status": "DRAFT" | "PUBLISHED" | "HIDDEN" }`. The first publication dat
 }
 ```
 
+### POST /admin/products/bulk
+
+Publish, hide, move to draft or archive several products at once (the admin list's selection). Runs in one
+transaction with the products locked, and records one audit entry per changed product (`product.status` or
+`product.archive`), exactly like the single-product routes. Publishing follows the same rule as
+`PUT /admin/products/:id/status`: products with a blocking issue are skipped and reported, the rest are published; the
+first publication date is kept. Archived or unknown ids are reported as `NOT_FOUND`, never fatal.
+
+**Auth required:** Yes (ADMIN).
+
+**Request body**
+
+| Field    | Type      | Required | Constraints                                  |
+| -------- | --------- | -------- | -------------------------------------------- |
+| `ids`    | integer[] | Yes      | 1–100 positive integers (duplicates ignored) |
+| `action` | string    | Yes      | `PUBLISH`, `HIDE`, `DRAFT` or `ARCHIVE`      |
+
+```json
+{ "ids": [12, 15, 18], "action": "PUBLISH" }
+```
+
+**Responses**
+
+`200 OK` — `updated` changed (or archived), `unchanged` were already in that status, `skipped` were not touched.
+
+```json
+{
+  "updated": [12],
+  "unchanged": [18],
+  "skipped": [{ "id": 15, "reason": "CANNOT_PUBLISH", "issues": ["NO_RETAIL_PRICE"] }]
+}
+```
+
+`400 Bad Request` — e.g. `{ "message": ["ids must contain no more than 100 elements"], "statusCode": 400 }`.
+`401 Unauthorized`: `{ "message": "Unauthorized", "statusCode": 401 }`.
+`403 Forbidden`: `{ "message": "Forbidden resource", "statusCode": 403 }`.
+
 ### PUT /admin/products/:id/images
 
 The whole gallery, in order (the first image is the main one). Rows left out are removed; kept rows send their `id`.

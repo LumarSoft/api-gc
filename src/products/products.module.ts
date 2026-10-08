@@ -6,6 +6,7 @@ import { AdminProductDuplicatorService } from './admin-product-duplicator.servic
 import { AdminProductMapper } from './admin-product.mapper'
 import { AdminProductReader } from './admin-product.reader'
 import { AdminProductsController } from './admin-products.controller'
+import { AdminProductBulkService } from './admin-product-bulk.service'
 import { AdminProductsService } from './admin-products.service'
 import { AdminVariantPricesService } from './admin-variant-prices.service'
 import { AdminVariantsController } from './admin-variants.controller'
@@ -22,6 +23,7 @@ import { ProductsService } from './products.service'
     ProductsService,
     ProductMapper,
     AdminProductsService,
+    AdminProductBulkService,
     AdminProductContentService,
     AdminProductDuplicatorService,
     AdminProductReader,
