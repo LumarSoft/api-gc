@@ -117,5 +117,15 @@ describe('analytics rules', () => {
       [2, 9, 900, 100],
       [1, 3, 900, 0],
     ])
+    expect(rows[0].previousUnits).toBe(1)
+  })
+
+  it('ranks by units, then sales, when asked', () => {
+    const current = sumLines([
+      { key: 1, name: 'Plotter', units: 1, sales: d(9000) },
+      { key: 2, name: 'Tinta', units: 40, sales: d(800) },
+      { key: 3, name: 'Papel', units: 40, sales: d(900) },
+    ])
+    expect(topRows(current, sumLines<number>([]), 3, 'units').map(row => row.key)).toEqual([3, 2, 1])
   })
 })

@@ -75,16 +75,24 @@ export class AnalyticsMapper {
   rankings(
     current: SoldVariantLine[],
     previous: SoldVariantLine[],
-  ): Pick<AdminAnalyticsDto, 'products' | 'categories' | 'brands'> {
+  ): Pick<AdminAnalyticsDto, 'products' | 'productsByUnits' | 'categories' | 'brands'> {
     const by = <K>(lines: SoldVariantLine[], group: (variant: SoldVariant) => { key: K; name: string }) =>
       sumLines<K>(lines.map(line => ({ ...group(line.variant), units: line.units, sales: line.sales })))
-    const top = <K>(group: (variant: SoldVariant) => { key: K; name: string }, limit: number) =>
-      topRows(by(current, group), by(previous, group), limit)
+    const top = <K>(
+      group: (variant: SoldVariant) => { key: K; name: string },
+      limit: number,
+      order: 'sales' | 'units' = 'sales',
+    ) => topRows(by(current, group), by(previous, group), limit, order)
 
     const variants = new Map(current.map(line => [line.variant.product.id, line.variant.product]))
-    const products = top(({ product }) => ({ key: product.id, name: product.name }), TOP_PRODUCTS)
+    const productRows = (order: 'sales' | 'units') =>
+      top(({ product }) => ({ key: product.id, name: product.name }), TOP_PRODUCTS, order).map(row => ({
+        ...this.rankRow(row),
+        ...this.productSummary(variants.get(row.key)!),
+      }))
     return {
-      products: products.map(row => ({ ...this.rankRow(row), ...this.productSummary(variants.get(row.key)!) })),
+      products: productRows('sales'),
+      productsByUnits: productRows('units'),
       categories: top(({ product: { category } }) => {
         const root = category.parent ?? category
         return { key: root.id, name: root.name }
@@ -103,6 +111,7 @@ export class AnalyticsMapper {
       units: row.units,
       sales: this.money(row.sales),
       previousSales: this.money(row.previousSales),
+      previousUnits: row.previousUnits,
     }
   }
 }
