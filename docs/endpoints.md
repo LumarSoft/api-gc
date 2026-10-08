@@ -1586,22 +1586,35 @@ This is capability-based retry recovery, not public recovery by email. No new or
 
 ### GET /admin/orders
 
-Paged orders, latest id first, optionally filtered by status. Manual lifecycle only; all original records are retained.
+Paged orders, latest id first, optionally filtered by status, stage and a search term. Manual lifecycle only; all
+original records are retained.
 
 **Auth required:** Yes (ADMIN).
 
 **Query**
 
-| Field      | Type        | Required | Constraints           |
-| ---------- | ----------- | -------- | --------------------- |
-| `page`     | integer     | No       | >=1, default 1        |
-| `pageSize` | integer     | No       | 1–100, default 25     |
-| `status`   | OrderStatus | No       | One schema enum value |
+| Field      | Type        | Required | Constraints                                                                                                                                                       |
+| ---------- | ----------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `page`     | integer     | No       | >=1, default 1                                                                                                                                                    |
+| `pageSize` | integer     | No       | 1–100, default 25                                                                                                                                                 |
+| `status`   | OrderStatus | No       | One schema enum value                                                                                                                                             |
+| `stage`    | string      | No       | `PENDING_PAYMENT` (pending or under review), `TO_FULFILL` (confirmed, preparing), `READY` (ready for pickup, shipped) or `CLOSED` (delivered, cancelled, expired) |
+| `q`        | string      | No       | Max 100, trimmed. Partial match on order number, contact email or customer name                                                                                   |
 
 **Responses**
 
-`200 OK` — each `items` entry has the complete order shape shown above plus `allowedStatuses` (e.g.
-`["CONFIRMED", "CANCELLED"]` for an unexpired pending order). Example of an empty page:
+`200 OK` — each `items` entry has the complete order shape shown above plus the admin fields: `allowedStatuses`
+(e.g. `["CONFIRMED", "CANCELLED"]` for an unexpired pending order), `guest` (placed without an account) and, on each
+`history` event, `note` and `by` (staff name; `null` for the system or the buyer). Tracking never includes them:
+
+```json
+{
+  "guest": true,
+  "history": [{ "status": "CANCELLED", "at": "2026-10-07T15:00:00.000Z", "note": "Pidió cancelar", "by": "Ana Pérez" }]
+}
+```
+
+Example of an empty page:
 
 ```json
 { "items": [], "page": 1, "pageSize": 25, "total": 0, "totalPages": 0, "expiryJobFailed": false }
@@ -1613,9 +1626,27 @@ Paged orders, latest id first, optionally filtered by status. Manual lifecycle o
 `403 Forbidden`: `{ "message": "Forbidden resource", "statusCode": 403 }`.
 `429 Too Many Requests`: `{ "message": "ThrottlerException: Too Many Requests", "statusCode": 429 }`.
 
+### GET /admin/orders/counts
+
+How many orders wait in each open stage, for the admin navigation badge and list views. Closed orders are not counted.
+
+**Auth required:** Yes (ADMIN).
+
+**Responses**
+
+`200 OK`
+
+```json
+{ "PENDING_PAYMENT": 3, "TO_FULFILL": 5, "READY": 1 }
+```
+
+`401 Unauthorized`: `{ "message": "Unauthorized", "statusCode": 401 }`.
+`403 Forbidden`: `{ "message": "Forbidden resource", "statusCode": 403 }`.
+`429 Too Many Requests`: `{ "message": "ThrottlerException: Too Many Requests", "statusCode": 429 }`.
+
 ### GET /admin/orders/:id
 
-Read one order with backend-derived `allowedStatuses` for the admin interface. Id is a positive integer.
+Read one order with the admin fields (`allowedStatuses`, `guest`, history `note` and `by`). Id is a positive integer.
 
 **Auth required:** Yes (ADMIN).
 

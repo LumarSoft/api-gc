@@ -7,7 +7,7 @@ import { PrismaService } from '../prisma/prisma.service'
 import type { ChangeOrderStatusDto } from './dto/order-input.dto'
 import type { OrderResponseDto } from './dto/order-response.dto'
 import { orderTransitions } from './lib/order-rules'
-import { orderSelect } from './lib/order-selects'
+import { adminOrderSelect } from './lib/order-selects'
 import { OrderMapper } from './order.mapper'
 import { OrderStockService } from './order-stock.service'
 
@@ -81,7 +81,7 @@ export class OrderStatusService {
               },
             },
           },
-          select: orderSelect,
+          select: adminOrderSelect,
         })
         if (actor)
           await this.audit.record(
@@ -94,7 +94,7 @@ export class OrderStatusService {
             },
             tx,
           )
-        return this.mapper.response(saved, true)
+        return this.mapper.adminResponse(saved)
       },
       { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted },
     )

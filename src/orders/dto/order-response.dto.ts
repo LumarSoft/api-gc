@@ -28,7 +28,10 @@ export interface OrderResponseDto {
     unitPrice: MoneyDto
     total: MoneyDto
   }[]
-  history: { status: OrderStatus; at: string }[]
+  /** `note` and `by` (staff name, null for the system) only in admin responses. */
+  history: { status: OrderStatus; at: string; note?: string | null; by?: string | null }[]
+  /** Placed without an account. Only included in admin responses. */
+  guest?: boolean
   /** Valid next states, computed by the backend. Only included in admin responses. */
   allowedStatuses?: OrderStatus[]
 }
@@ -40,4 +43,11 @@ export interface OrdersPageDto {
   total: number
   totalPages: number
   expiryJobFailed: boolean
+}
+
+/** Orders that need staff action, per open stage. */
+export interface OrderCountsDto {
+  PENDING_PAYMENT: number
+  TO_FULFILL: number
+  READY: number
 }
