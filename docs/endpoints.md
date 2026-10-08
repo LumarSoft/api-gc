@@ -1200,6 +1200,64 @@ work waiting outside orders (order stages come from `GET /admin/orders/counts`).
 `401 Unauthorized`: `{ "message": "Unauthorized", "statusCode": 401 }`.
 `403 Forbidden`: `{ "message": "Forbidden resource", "statusCode": 403 }`.
 
+## Admin settings
+
+Store settings staff change from the admin. Both writes are audited (`settings.local-delivery`, `settings.reservation`)
+and take effect on the next checkout request.
+
+### GET /admin/settings
+
+**Auth required:** Yes (ADMIN).
+
+`200 OK`
+
+```json
+{
+  "localDelivery": {
+    "isActive": true,
+    "flatRate": { "amount": "3500.00", "currency": "ARS" },
+    "freeShippingThreshold": { "amount": "80000.00", "currency": "ARS" }
+  },
+  "reservation": { "manualHours": 24, "isDefault": true }
+}
+```
+
+`flatRate` / `freeShippingThreshold` are `null` until set; `isDefault` means no stored window (24 hours apply).
+`401 Unauthorized`, `403 Forbidden` as other admin routes.
+
+### PUT /admin/settings/local-delivery
+
+Rosario delivery (`ShippingMethod` `LOCAL_DELIVERY`), created on first save. Checkout offers it only while active.
+
+**Auth required:** Yes (ADMIN).
+
+| Field                   | Type           | Required | Constraints                                                     |
+| ----------------------- | -------------- | -------- | --------------------------------------------------------------- |
+| `isActive`              | boolean        | Yes      |                                                                 |
+| `flatRate`              | string \| null | No       | ARS, `^\d{1,10}(\.\d{1,2})?$`; required when `isActive` is true |
+| `freeShippingThreshold` | string \| null | No       | ARS, same format, above zero; `null` = never free               |
+
+```json
+{ "isActive": true, "flatRate": "3500", "freeShippingThreshold": "80000" }
+```
+
+`200 OK` — the settings, as in `GET /admin/settings`.
+`400 Bad Request` — malformed amount: `{ "message": ["flatRate must match /^\\d{1,10}(\\.\\d{1,2})?$/ regular expression"], "statusCode": 400 }`.
+`422 Unprocessable Entity` — `{ "message": "Para activar la entrega en Rosario cargá la tarifa.", "statusCode": 422 }` or
+`"El monto para envío gratis tiene que ser mayor a cero."`.
+
+### PUT /admin/settings/reservation
+
+Hours a pending manual-payment order keeps its stock reserved (`Setting` `reservation.manualHours`).
+
+**Auth required:** Yes (ADMIN).
+
+| Field         | Type    | Required | Constraints |
+| ------------- | ------- | -------- | ----------- |
+| `manualHours` | integer | Yes      | 1–168       |
+
+`200 OK` — the settings. `400 Bad Request` — `{ "message": ["manualHours must not be greater than 168"], "statusCode": 400 }`.
+
 ## Checkout preparation
 
 Browser-only, optional authentication. Guest ownership uses the existing `cg_cart` cookie (path `/cart`);
