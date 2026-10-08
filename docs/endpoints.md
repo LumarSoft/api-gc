@@ -1211,6 +1211,159 @@ previous period of the same length, and the work waiting outside orders (order s
 `401 Unauthorized`: `{ "message": "Unauthorized", "statusCode": 401 }`.
 `403 Forbidden`: `{ "message": "Forbidden resource", "statusCode": 403 }`.
 
+## Admin analytics
+
+### GET /admin/analytics
+
+Stats for the admin "Estadísticas" page: a period of Argentine calendar days (by default the last 30, today included)
+against the previous period of the same length.
+
+**Auth required:** Yes (ADMIN).
+
+**Query**
+
+| Field     | Type   | Required | Constraints                                                                             |
+| --------- | ------ | -------- | --------------------------------------------------------------------------------------- |
+| `from`    | string | No       | Calendar day `YYYY-MM-DD` (Argentina), first day included. With `to`.                   |
+| `to`      | string | No       | Calendar day, last day included; not after today; at most 366 days in total             |
+| `groupBy` | string | No       | `day` \| `week` \| `month`. Default: days up to 45 days, weeks up to 182, months beyond |
+
+`400 Bad Request` for the same period errors as `GET /admin/dashboard`, or a `groupBy` outside the list
+(`"groupBy must be one of the following values: day, week, month"`).
+
+- **Sales** are paid orders (`CONFIRMED` through `DELIVERED`, ARS) by payment confirmation date. An order cancelled after
+  its payment is not a sale. `breakdown`: products (before discounts) − discounts + shipping = sales.
+- `buckets`: chart points, oldest first. Weeks run Monday to Sunday and months are calendar months, both cut at the
+  ends of the period. `previousStart`/`previousEnd` are the same offsets in the previous period; every `series` has one
+  value per bucket.
+- `outcomes`: orders **placed** in the period by their current status (`waiting` = pending payment or under review).
+- `hoursToPay`: median hours from placing an order to staff confirming its payment; `null` without paid orders.
+- `buyerTypes`, `paymentMethods`, `deliveryMethods`: paid orders and sales per value, biggest first, with the previous
+  period's sales.
+- `products` (top 10), `categories` and `brands` (top 8): units and line totals of paid orders (before order discounts,
+  without shipping). A subcategory counts for its top-level category; `brands[].id: null` = products without a brand.
+  `archived: true` = the product was archived since (no admin page).
+- `customers`: told apart by order email (guests have no account). `returning` = customers of the period who had a
+  paid order before it. `signUps`: customer accounts created. `frequentCustomerApplications.approved`: approved in the
+  period and still approved; `pending`: waiting now, whatever the period.
+
+**Responses**
+
+`200 OK`
+
+```json
+{
+  "period": {
+    "from": "2026-09-09",
+    "to": "2026-10-08",
+    "previousFrom": "2026-08-10",
+    "previousTo": "2026-09-08",
+    "groupBy": "day"
+  },
+  "buckets": [
+    { "start": "2026-09-09", "end": "2026-09-09", "previousStart": "2026-08-10", "previousEnd": "2026-08-10" },
+    "…"
+  ],
+  "sales": {
+    "current": { "amount": "2239997.00", "currency": "ARS" },
+    "previous": { "amount": "1450000.00", "currency": "ARS" },
+    "series": { "current": ["0.00", "…"], "previous": ["0.00", "…"] }
+  },
+  "breakdown": {
+    "products": {
+      "current": { "amount": "2236497.00", "currency": "ARS" },
+      "previous": { "amount": "1450000.00", "currency": "ARS" }
+    },
+    "discounts": {
+      "current": { "amount": "0.00", "currency": "ARS" },
+      "previous": { "amount": "0.00", "currency": "ARS" }
+    },
+    "shipping": {
+      "current": { "amount": "3500.00", "currency": "ARS" },
+      "previous": { "amount": "0.00", "currency": "ARS" }
+    }
+  },
+  "orders": { "current": 5, "previous": 3, "series": { "current": [0, "…"], "previous": [0, "…"] } },
+  "averageOrder": {
+    "current": { "amount": "447999.40", "currency": "ARS" },
+    "previous": { "amount": "483333.33", "currency": "ARS" }
+  },
+  "outcomes": {
+    "current": { "placed": 8, "paid": 5, "waiting": 1, "expired": 1, "cancelled": 1 },
+    "previous": { "placed": 4, "paid": 3, "waiting": 0, "expired": 1, "cancelled": 0 }
+  },
+  "hoursToPay": { "current": 5.5, "previous": 20 },
+  "buyerTypes": [
+    {
+      "key": "RETAIL",
+      "orders": 3,
+      "sales": { "amount": "1400000.00", "currency": "ARS" },
+      "previousSales": { "amount": "1450000.00", "currency": "ARS" }
+    }
+  ],
+  "paymentMethods": [
+    {
+      "key": "MANUAL",
+      "orders": 5,
+      "sales": { "amount": "2239997.00", "currency": "ARS" },
+      "previousSales": { "amount": "1450000.00", "currency": "ARS" }
+    }
+  ],
+  "deliveryMethods": [
+    {
+      "key": "STORE_PICKUP",
+      "orders": 4,
+      "sales": { "amount": "1839997.00", "currency": "ARS" },
+      "previousSales": { "amount": "1450000.00", "currency": "ARS" }
+    }
+  ],
+  "products": [
+    {
+      "id": 12,
+      "name": "Impresora Epson EcoTank L3250",
+      "units": 3,
+      "sales": { "amount": "1259997.00", "currency": "ARS" },
+      "previousSales": { "amount": "419999.00", "currency": "ARS" },
+      "imageUrl": "http://localhost:3001/files/products/l3250.webp",
+      "archived": false
+    }
+  ],
+  "categories": [
+    {
+      "id": 1,
+      "name": "Impresoras",
+      "units": 4,
+      "sales": { "amount": "1679996.00", "currency": "ARS" },
+      "previousSales": { "amount": "419999.00", "currency": "ARS" }
+    }
+  ],
+  "brands": [
+    {
+      "id": 1,
+      "name": "Epson",
+      "units": 9,
+      "sales": { "amount": "2236497.00", "currency": "ARS" },
+      "previousSales": { "amount": "1450000.00", "currency": "ARS" }
+    }
+  ],
+  "customers": {
+    "total": { "current": 4, "previous": 3 },
+    "returning": { "current": 1, "previous": 0 },
+    "newSales": { "amount": "1839997.00", "currency": "ARS" },
+    "returningSales": { "amount": "400000.00", "currency": "ARS" },
+    "signUps": { "current": 6, "previous": 2 },
+    "frequentCustomerApplications": {
+      "received": { "current": 2, "previous": 1 },
+      "approved": { "current": 1, "previous": 0 },
+      "pending": 1
+    }
+  }
+}
+```
+
+`401 Unauthorized`: `{ "message": "Unauthorized", "statusCode": 401 }`.
+`403 Forbidden`: `{ "message": "Forbidden resource", "statusCode": 403 }`.
+
 ## Admin settings
 
 Store settings staff change from the admin. Both writes are audited (`settings.local-delivery`, `settings.reservation`)

@@ -3,17 +3,10 @@ import { Prisma } from '../generated/prisma/client'
 import { Currency, OrderStatus, ProductStatus, WholesaleStatus } from '../generated/prisma/enums'
 import { PrismaService } from '../prisma/prisma.service'
 import { outOfStockWhere } from '../products/lib/admin-product-filters'
-import type { DashboardQueryDto } from './dto/dashboard-query.dto'
+import type { DateRangeQueryDto } from '../common/dto/date-range-query.dto'
+import { argentineDay, periodProblem, reportPeriod } from '../common/utils/report-period'
 import type { AdminDashboardDto } from './dto/dashboard-response.dto'
-import {
-  argentineDay,
-  averageOrder,
-  dailySeries,
-  dashboardRange,
-  rangeProblem,
-  type PaidOrder,
-  periodTotals,
-} from './lib/dashboard-rules'
+import { averageOrder, dailySeries, type PaidOrder, periodTotals } from './lib/dashboard-rules'
 
 /** Orders whose payment staff verified (the store's sales). */
 const PAID: OrderStatus[] = [
@@ -29,10 +22,10 @@ const PAID: OrderStatus[] = [
 export class DashboardService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async summary(query: DashboardQueryDto = {}, now = new Date()): Promise<AdminDashboardDto> {
-    const problem = rangeProblem(now, query.from, query.to)
+  async summary(query: DateRangeQueryDto = {}, now = new Date()): Promise<AdminDashboardDto> {
+    const problem = periodProblem(now, query.from, query.to)
     if (problem) throw new BadRequestException(problem)
-    const range = dashboardRange(now, query.from, query.to)
+    const range = reportPeriod(now, query.from, query.to)
     const [paid, placed, previousPlaced, wholesalePending, publishedOutOfStock, drafts] = await Promise.all([
       this.prisma.order.findMany({
         where: {

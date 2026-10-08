@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { APP_GUARD } from '@nestjs/core'
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
+import { AnalyticsModule } from './analytics/analytics.module'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { AuditLogsModule } from './audit-logs/audit-logs.module'
@@ -41,6 +42,7 @@ import { SettingsModule } from './settings/settings.module'
     FavoritesModule,
     WholesaleApplicationsModule,
     DashboardModule,
+    AnalyticsModule,
     SettingsModule,
     OrdersModule,
   ],

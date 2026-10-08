@@ -1,5 +1,5 @@
 import { IsOptional, Validate, ValidatorConstraint, type ValidatorConstraintInterface } from 'class-validator'
-import { isCalendarDay } from '../lib/dashboard-rules'
+import { isCalendarDay } from '../utils/report-period'
 
 @ValidatorConstraint({ name: 'calendarDay' })
 class CalendarDay implements ValidatorConstraintInterface {
@@ -11,8 +11,8 @@ class CalendarDay implements ValidatorConstraintInterface {
   }
 }
 
-/** Argentine calendar days, both included. Both or none (none = the last 30 days up to today). */
-export class DashboardQueryDto {
+/** Argentine calendar days of a report, both included. Both or none (none = the last 30 days up to today). */
+export class DateRangeQueryDto {
   @IsOptional()
   @Validate(CalendarDay)
   from?: string
