@@ -1,7 +1,8 @@
-import { Type } from 'class-transformer'
-import { Equals, IsEnum, IsInt, IsOptional, IsString, Matches, Max, MaxLength, Min } from 'class-validator'
+import { Transform, Type } from 'class-transformer'
+import { Equals, IsEnum, IsIn, IsInt, IsOptional, IsString, Matches, Max, MaxLength, Min } from 'class-validator'
 import { PreviewCheckoutDto } from '../../checkout/dto/checkout-input.dto'
 import { OrderStatus } from '../../generated/prisma/enums'
+import { ORDER_STAGE_NAMES, type OrderStage } from '../lib/order-rules'
 
 export class PlaceOrderDto extends PreviewCheckoutDto {
   /** Generated with Web Crypto before sending the first request; reused on retries. */
@@ -39,6 +40,18 @@ export class ListOrdersDto {
   @IsOptional()
   @IsEnum(OrderStatus)
   status?: OrderStatus
+
+  /** A group of states (list views); combined with `status` when both are sent. */
+  @IsOptional()
+  @IsIn(ORDER_STAGE_NAMES)
+  stage?: OrderStage
+
+  /** Order number, customer name or email (partial). */
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
+  @IsString()
+  @MaxLength(100)
+  q?: string
 }
 
 export class ChangeOrderStatusDto {

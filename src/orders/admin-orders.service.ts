@@ -1,9 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { Prisma } from '../generated/prisma/client'
+import { OrderStatus } from '../generated/prisma/enums'
 import { PrismaService } from '../prisma/prisma.service'
 import type { ListOrdersDto } from './dto/order-input.dto'
-import type { OrderResponseDto, OrdersPageDto } from './dto/order-response.dto'
-import { orderSelect } from './lib/order-selects'
+import type { OrderCountsDto, OrderResponseDto, OrdersPageDto } from './dto/order-response.dto'
+import { ORDER_STAGES, stageCounts } from './lib/order-rules'
+import { adminOrderSelect } from './lib/order-selects'
 import { OrderMapper } from './order.mapper'
 
 @Injectable()
@@ -14,11 +16,11 @@ export class AdminOrdersService {
   ) {}
 
   async list(query: ListOrdersDto): Promise<OrdersPageDto> {
-    const where: Prisma.OrderWhereInput = { ...(query.status ? { status: query.status } : {}) }
+    const where = this.listWhere(query)
     const [rows, total, job, overdue] = await Promise.all([
       this.prisma.order.findMany({
         where,
-        select: orderSelect,
+        select: adminOrderSelect,
         orderBy: { id: 'desc' },
         skip: (query.page - 1) * query.pageSize,
         take: query.pageSize,
@@ -31,7 +33,7 @@ export class AdminOrdersService {
     ])
     const value = job?.value
     return {
-      items: rows.map(row => this.mapper.response(row, true)),
+      items: rows.map(row => this.mapper.adminResponse(row)),
       page: query.page,
       pageSize: query.pageSize,
       total,
@@ -41,9 +43,42 @@ export class AdminOrdersService {
     }
   }
 
+  /** How many orders wait in each open stage (nav badge and list views). */
+  async counts(): Promise<OrderCountsDto> {
+    const groups = await this.prisma.order.groupBy({
+      by: ['status'],
+      where: { status: { notIn: ORDER_STAGES.CLOSED } },
+      _count: { _all: true },
+    })
+    return stageCounts(Object.fromEntries(groups.map(group => [group.status, group._count._all])))
+  }
+
   async read(id: number): Promise<OrderResponseDto> {
-    const row = await this.prisma.order.findUnique({ where: { id }, select: orderSelect })
+    const row = await this.prisma.order.findUnique({ where: { id }, select: adminOrderSelect })
     if (!row) throw new NotFoundException('Pedido no encontrado.')
-    return this.mapper.response(row, true)
+    return this.mapper.adminResponse(row)
+  }
+
+  private listWhere(query: ListOrdersDto): Prisma.OrderWhereInput {
+    const statuses: OrderStatus[][] = []
+    if (query.status) statuses.push([query.status])
+    if (query.stage) statuses.push(ORDER_STAGES[query.stage])
+    const q = query.q
+    return {
+      AND: [
+        ...statuses.map(group => ({ status: { in: group } })),
+        ...(q
+          ? [
+              {
+                OR: [
+                  { number: { contains: q } },
+                  { contactEmail: { contains: q } },
+                  { addresses: { some: { name: { contains: q } } } },
+                ],
+              },
+            ]
+          : []),
+      ],
+    }
   }
 }

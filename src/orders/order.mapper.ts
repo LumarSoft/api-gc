@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { AddressType } from '../generated/prisma/enums'
 import type { OrderResponseDto } from './dto/order-response.dto'
 import { orderTransitions } from './lib/order-rules'
-import type { OrderRow } from './lib/order-selects'
+import type { AdminOrderRow, OrderRow } from './lib/order-selects'
 
 @Injectable()
 export class OrderMapper {
@@ -49,6 +49,20 @@ export class OrderMapper {
             ),
           }
         : {}),
+    }
+  }
+
+  /** Staff view: the public shape plus next states, history notes and authors, and the guest flag. */
+  adminResponse(row: AdminOrderRow): OrderResponseDto {
+    return {
+      ...this.response(row, true),
+      guest: row.userId === null,
+      history: row.statusHistory.map(event => ({
+        status: event.toStatus,
+        at: event.createdAt.toISOString(),
+        note: event.note,
+        by: event.changedBy ? `${event.changedBy.firstName} ${event.changedBy.lastName}`.trim() : null,
+      })),
     }
   }
 }

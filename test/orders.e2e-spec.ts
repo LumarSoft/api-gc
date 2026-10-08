@@ -13,7 +13,7 @@ import { hashToken } from '../src/common/utils/secure-token'
 import { BuyerType, CartStatus, OrderStatus, UserRole } from '../src/generated/prisma/enums'
 import { PrismaService } from '../src/prisma/prisma.service'
 import type { CheckoutResponseDto } from '../src/checkout/dto/checkout-response.dto'
-import type { OrderResponseDto, OrdersPageDto } from '../src/orders/dto/order-response.dto'
+import type { OrderCountsDto, OrderResponseDto, OrdersPageDto } from '../src/orders/dto/order-response.dto'
 import { OrderStatusService } from '../src/orders/order-status.service'
 import { OrderExpiryService } from '../src/orders/order-expiry.service'
 
@@ -298,5 +298,44 @@ describe('Guest orders (local MySQL e2e)', () => {
     expect(listed.items).toHaveLength(1)
     expect(listed.total).toBeGreaterThanOrEqual(1)
     expect(listed.expiryJobFailed).toBe(false)
+  })
+
+  it('searches and groups orders for staff, and keeps staff notes out of tracking', async () => {
+    const { order, accessToken } = await place(guestCookie)
+    const admin = (path: string) => request(app.getHttpServer()).get(path).set('Cookie', adminCookie)
+    const before = (await admin('/admin/orders/counts').expect(200)).body as OrderCountsDto
+    expect(before.PENDING_PAYMENT).toBeGreaterThanOrEqual(1)
+    await request(app.getHttpServer()).get('/admin/orders/counts').set('Cookie', customerCookie).expect(403)
+
+    const byNumber = (await admin(`/admin/orders?q=${order.number.slice(-6)}`).expect(200)).body as OrdersPageDto
+    expect(byNumber.items.map(item => item.id)).toContain(order.id)
+    const pending = (await admin(`/admin/orders?stage=PENDING_PAYMENT&q=${order.number}`).expect(200))
+      .body as OrdersPageDto
+    expect(pending.items.map(item => item.id)).toEqual([order.id])
+    expect(pending.items[0].guest).toBe(true)
+    const closed = (await admin(`/admin/orders?stage=CLOSED&q=${order.number}`).expect(200)).body as OrdersPageDto
+    expect(closed.items).toHaveLength(0)
+    await admin('/admin/orders?stage=OPEN').expect(400)
+
+    await request(app.getHttpServer())
+      .put(`/admin/orders/${order.id}/status`)
+      .set('Cookie', adminCookie)
+      .send({ status: OrderStatus.CANCELLED, note: 'Pidió cancelar por WhatsApp' })
+      .expect(200)
+    const read = body(await admin(`/admin/orders/${order.id}`).expect(200))
+    expect(read.history.at(-1)).toMatchObject({
+      status: 'CANCELLED',
+      note: 'Pidió cancelar por WhatsApp',
+      by: 'Order Test',
+    })
+    expect(read.history[0].by).toBeNull()
+    const after = (await admin('/admin/orders/counts').expect(200)).body as OrderCountsDto
+    expect(after.PENDING_PAYMENT).toBe(before.PENDING_PAYMENT - 1)
+
+    const tracked = body(
+      await request(app.getHttpServer()).post(`/orders/${order.number}/track`).send({ accessToken }).expect(200),
+    )
+    expect(tracked.history.at(-1)).toEqual({ status: 'CANCELLED', at: expect.any(String) as string })
+    expect(tracked).not.toHaveProperty('guest')
   })
 })

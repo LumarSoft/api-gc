@@ -26,3 +26,15 @@ export const orderSelect = {
 } satisfies Prisma.OrderSelect
 
 export type OrderRow = Prisma.OrderGetPayload<{ select: typeof orderSelect }>
+
+/** Admin view: adds who changed each state and their note, and whether the buyer had an account. */
+export const adminOrderSelect = {
+  ...orderSelect,
+  userId: true,
+  statusHistory: {
+    orderBy: { id: 'asc' },
+    select: { toStatus: true, createdAt: true, note: true, changedBy: { select: { firstName: true, lastName: true } } },
+  },
+} satisfies Prisma.OrderSelect
+
+export type AdminOrderRow = Prisma.OrderGetPayload<{ select: typeof adminOrderSelect }>

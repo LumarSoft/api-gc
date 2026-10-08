@@ -1,5 +1,5 @@
 import { DeliveryMethod, OrderStatus } from '../../generated/prisma/enums'
-import { orderTransitions } from './order-rules'
+import { ORDER_STAGES, orderTransitions, stageCounts } from './order-rules'
 import { reservationHours } from './reservation-hours'
 
 describe('manual order lifecycle', () => {
@@ -21,5 +21,22 @@ describe('manual order lifecycle', () => {
     expect(reservationHours({ value: 48, deletedAt: null })).toBe(48)
     for (const value of [0, -1, 169, 1.5, '24', null, {}]) expect(reservationHours({ value, deletedAt: null })).toBe(24)
     expect(reservationHours({ value: 48, deletedAt: new Date() })).toBe(24)
+  })
+  it('places every status in exactly one admin stage', () => {
+    const grouped = Object.values(ORDER_STAGES).flat()
+    expect(new Set(grouped).size).toBe(grouped.length)
+    expect(grouped.sort()).toEqual(Object.values(OrderStatus).sort())
+  })
+  it('adds the open stages from a count per status', () => {
+    expect(
+      stageCounts({
+        PENDING_PAYMENT: 2,
+        PAYMENT_UNDER_REVIEW: 1,
+        CONFIRMED: 3,
+        PREPARING: 1,
+        SHIPPED: 4,
+        DELIVERED: 9,
+      }),
+    ).toEqual({ PENDING_PAYMENT: 3, TO_FULFILL: 4, READY: 4 })
   })
 })

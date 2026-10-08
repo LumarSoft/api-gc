@@ -8,7 +8,7 @@ import type { AuditActor } from '../common/types/audit-actor'
 import { UserRole } from '../generated/prisma/enums'
 import { AdminOrdersService } from './admin-orders.service'
 import { ChangeOrderStatusDto, ListOrdersDto } from './dto/order-input.dto'
-import type { OrderResponseDto, OrdersPageDto } from './dto/order-response.dto'
+import type { OrderCountsDto, OrderResponseDto, OrdersPageDto } from './dto/order-response.dto'
 import { OrderStatusService } from './order-status.service'
 
 @Controller('admin/orders')
@@ -23,6 +23,11 @@ export class AdminOrdersController {
   @Header('Cache-Control', 'private, no-store')
   list(@Query() query: ListOrdersDto): Promise<OrdersPageDto> {
     return this.orders.list(query)
+  }
+  @Get('counts')
+  @Header('Cache-Control', 'private, no-store')
+  counts(): Promise<OrderCountsDto> {
+    return this.orders.counts()
   }
   @Get(':id')
   @Header('Cache-Control', 'private, no-store')
