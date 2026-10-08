@@ -37,6 +37,7 @@ api-gc/
 │   ├── scripts/                   # create-admin.ts (`npm run admin:create`), seed-catalog.ts (`npm run db:seed`)
 │   ├── generated/prisma/          # Generated Prisma client — git-ignored, never edit
 │   ├── prisma/                    # Global database module
+│   │   ├── migration-check.ts     # Startup: refuse to run with pending migrations
 │   │   ├── prisma.module.ts
 │   │   └── prisma.service.ts      # MySQL pool config + connection lifecycle
 │   ├── app.controller.ts          # GET /health
@@ -46,11 +47,14 @@ api-gc/
 │   └── main.ts                    # Bootstrap — port, CORS, global ValidationPipe
 │
 ├── scripts/doctor.mjs             # `npm run doctor` — checks the local setup and prints fixes
+├── scripts/after-pull.mjs         # Run by the post-pull git hooks: new upgrade notes + doctor
 ├── test/                          # End-to-end tests
 │   └── setup/                     # Points e2e at the test database, creates and migrates it
 │
 ├── .claude/settings.json          # Claude Code: runs the doctor on session start
 ├── .husky/pre-commit              # Runs lint-staged (Prettier)
+├── .husky/post-{merge,checkout,rewrite} # After pull / branch switch: scripts/after-pull.mjs
+├── .github/pull_request_template.md # "Pasos después de mergear" checklist for every PR
 ├── AGENTS.md                      # Guidance for AI agents and humans
 ├── CLAUDE.md                      # Imports AGENTS.md
 ├── STRUCTURE.md                   # This file

@@ -11,7 +11,17 @@ Guidance for AI coding agents (Claude Code, Cursor, Codex, Copilot…) and human
 2. If it reports problems, fix them **before** any other work, using `docs/upgrade-notes.md` for context. Tell the
    user what you fixed and ask before steps that need their input (passwords, secrets).
 3. When your change requires a manual step from the other developers (new env var, migration, seed, service…), add an
-   entry at the top of `docs/upgrade-notes.md` and a check in `scripts/doctor.mjs` in the same PR.
+   entry at the top of `docs/upgrade-notes.md` and a check in `scripts/doctor.mjs` in the same PR, and fill the
+   "Pasos después de mergear" section of the PR template (`.github/pull_request_template.md`).
+
+How the team finds out about those steps without having to remember:
+
+- **After every `git pull`, merge, rebase or branch switch**, the git hooks (`.husky/post-merge`, `post-checkout`,
+  `post-rewrite` → `scripts/after-pull.mjs`) list the new `docs/upgrade-notes.md` entries and run the doctor whenever
+  dependencies, the schema, migrations, `.env.example` or the notes changed. The hooks are installed by `npm install`.
+- **The API refuses to start** when the database lacks a migration this code ships with
+  (`src/prisma/migration-check.ts`), and says which ones and how to apply them. In production that means running
+  `npx prisma migrate deploy` before starting a new build.
 
 ## Project
 

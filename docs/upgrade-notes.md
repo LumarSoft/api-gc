@@ -16,6 +16,20 @@ npm run doctor             # tells you if anything else is missing
 
 ---
 
+## 2026-10-08 — Setup checks after pull and on startup
+
+Nothing to run: this is how pending steps reach you from now on.
+
+- After `git pull` (also merge, rebase, branch switch) the git hooks show the new entries of this file and run the
+  doctor when something relevant changed. They come with Husky, already installed by `npm install`.
+- **The API does not start if the database is missing migrations.** It logs which ones and the command
+  (`npx prisma migrate dev` locally, `npx prisma migrate deploy` in production). Production deploys must run
+  `npx prisma migrate deploy` from the repository folder before restarting the API (PM2): the check reads
+  `prisma/migrations` from the process' working directory, so start PM2 from the repository root (if the folder is not
+  there, the API starts and only logs a warning).
+
+---
+
 ## 2026-10-08 — Anonymous store activity (migration)
 
 `ActivityEvent` gets its first writer (`POST /activity`) and changes shape: anonymous `visitorId` instead of

@@ -1,0 +1,2 @@
+# `git pull --rebase` rewrites instead of merging.
+[ "$1" = "rebase" ] && node scripts/after-pull.mjs ORIG_HEAD HEAD || true
