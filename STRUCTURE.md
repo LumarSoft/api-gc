@@ -24,6 +24,7 @@ api-gc/
 │   ├── categories/                # GET /categories (tree), GET /categories/:slug + /admin/categories
 │   ├── files/                     # Local file storage, public URLs (/files), admin image upload
 │   ├── orders/                    # Guest snapshots, private tracking, admin lifecycle and reservation expiration
+│   ├── dashboard/                 # GET /admin/dashboard: 30-day sales/orders and to-do counts for the admin home
 │   ├── inventory/                 # StockService: stock levels + movement ledger (manual adjustment, TODO(tango))
 │   ├── pricing/                   # Price resolution + /admin/price-lists and /admin/exchange-rates
 │   ├── tags/                      # GET /tags (catalog filters) + /admin/tags
@@ -56,19 +57,20 @@ api-gc/
 
 ## Module overview
 
-| Module           | Path              | Responsibility                               |
-| ---------------- | ----------------- | -------------------------------------------- |
-| AppModule        | `src/`            | Root module, health check                    |
-| PrismaModule     | `src/prisma/`     | Global DB access (PrismaService)             |
-| MailModule       | `src/mail/`       | Global transactional email                   |
-| AuthModule       | `src/auth/`       | Sessions, passwords, email check             |
+| Module           | Path              | Responsibility                                            |
+| ---------------- | ----------------- | --------------------------------------------------------- |
+| AppModule        | `src/`            | Root module, health check                                 |
+| PrismaModule     | `src/prisma/`     | Global DB access (PrismaService)                          |
+| MailModule       | `src/mail/`       | Global transactional email                                |
+| AuthModule       | `src/auth/`       | Sessions, passwords, email check                          |
 | OrdersModule     | `src/orders/`     | Guest orders, tracking, manual lifecycle and reservations |
-| CartModule       | `src/cart/`       | Cookie-owned carts, merge, prices and stock  |
-| AuditLogsModule  | `src/audit-logs/` | Global audit log of admin changes            |
-| FilesModule      | `src/files/`      | Global file storage + image upload           |
-| PricingModule    | `src/pricing/`    | Price list per buyer, USD → ARS, admin rates |
-| InventoryModule  | `src/inventory/`  | Stock levels and movements                   |
-| CategoriesModule | `src/categories/` | Category tree (public + admin)               |
-| BrandsModule     | `src/brands/`     | Brands (public + admin)                      |
-| ProductsModule   | `src/products/`   | Public catalog + admin products              |
-| TagsModule       | `src/tags/`       | Tags for filters (public + admin)            |
+| CartModule       | `src/cart/`       | Cookie-owned carts, merge, prices and stock               |
+| AuditLogsModule  | `src/audit-logs/` | Global audit log of admin changes                         |
+| FilesModule      | `src/files/`      | Global file storage + image upload                        |
+| PricingModule    | `src/pricing/`    | Price list per buyer, USD → ARS, admin rates              |
+| InventoryModule  | `src/inventory/`  | Stock levels and movements                                |
+| CategoriesModule | `src/categories/` | Category tree (public + admin)                            |
+| BrandsModule     | `src/brands/`     | Brands (public + admin)                                   |
+| ProductsModule   | `src/products/`   | Public catalog + admin products                           |
+| TagsModule       | `src/tags/`       | Tags for filters (public + admin)                         |
+| DashboardModule  | `src/dashboard/`  | Admin home metrics (read-only aggregates)                 |
