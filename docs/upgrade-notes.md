@@ -16,6 +16,21 @@ npm run doctor             # tells you if anything else is missing
 
 ---
 
+## 2026-10-08 — Anonymous store activity (migration)
+
+`ActivityEvent` gets its first writer (`POST /activity`) and changes shape: anonymous `visitorId` instead of
+`userId`/`sessionId`, `resultCount` for searches, no `metadata`, and only the event types in use. The table was never
+written, so nothing is lost. Apply the migration and regenerate the client:
+
+```bash
+npx prisma migrate dev
+npx prisma generate
+```
+
+Production: `npx prisma migrate deploy` before starting the new build. `npm run doctor` flags the pending migration.
+
+---
+
 ## 2026-10-06 — Separate database for the e2e tests
 
 `npm run test:e2e` used `DATABASE_URL`, so every run left "Order Test" orders, carts, products and users in the

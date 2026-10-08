@@ -25,7 +25,8 @@ api-gc/
 │   ├── files/                     # Local file storage, public URLs (/files), admin image upload
 │   ├── orders/                    # Guest snapshots, private tracking, admin lifecycle and reservation expiration
 │   ├── dashboard/                 # GET /admin/dashboard: 30-day sales/orders and to-do counts for the admin home
-│   ├── analytics/                 # GET /admin/analytics: stats page (sales, rankings, customers vs previous period)
+│   ├── analytics/                 # GET /admin/analytics(+/behavior): stats page (sales, rankings, customers, visitors)
+│   ├── activity/                  # POST /activity: anonymous store activity reported by the browser
 │   ├── settings/                  # /admin/settings: Rosario delivery rate and reservation window
 │   ├── inventory/                 # StockService: stock levels + movement ledger (manual adjustment, TODO(tango))
 │   ├── pricing/                   # Price resolution + /admin/price-lists and /admin/exchange-rates
@@ -77,3 +78,4 @@ api-gc/
 | TagsModule       | `src/tags/`       | Tags for filters (public + admin)                         |
 | DashboardModule  | `src/dashboard/`  | Admin home metrics (read-only aggregates)                 |
 | AnalyticsModule  | `src/analytics/`  | Admin stats page (read-only aggregates)                   |
+| ActivityModule   | `src/activity/`   | Anonymous store activity for stats                        |

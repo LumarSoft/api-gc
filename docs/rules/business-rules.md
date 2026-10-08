@@ -135,6 +135,19 @@ Domain rules that apply across modules. When a request contradicts one of these,
 - **Duplicating** a product creates a draft copy with new slug and SKUs (`-copia` / `-COPIA`). Tango codes and stock
   are never copied: they belong to the original articles.
 
+## Activity tracking
+
+- **Agreed 2026-10-08:** the store records anonymous activity for the stats page (visits, product views, searches,
+  add to cart, checkout started, order placed). First party only: no Google Analytics or other third parties.
+- A visitor is a random UUID the browser keeps (`localStorage`). It is never linked to an account, and no IP, email or
+  free-form data is stored. Admins are not tracked, and browsers that send Global Privacy Control or Do Not Track are
+  not tracked either.
+- Events come from the browser: blockers, disabled JavaScript and crawlers (filtered by user agent) make the numbers
+  a lower bound. Distinct visitors are counted, so reloading a page does not inflate views.
+- A cart with products, never ordered and untouched for **24 hours** counts as abandoned (stats definition, not a
+  status change: there is no abandoned-cart job or email yet).
+- No retention limit yet: events are append-only. Revisit (purge or aggregate old events) if the table grows large.
+
 ## Favorites
 
 - Only signed-in customers save favorites (the `Favorite` row needs a user); guests are asked to sign in. Favorites are

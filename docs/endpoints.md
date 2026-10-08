@@ -1364,6 +1364,80 @@ against the previous period of the same length.
 `401 Unauthorized`: `{ "message": "Unauthorized", "statusCode": 401 }`.
 `403 Forbidden`: `{ "message": "Forbidden resource", "statusCode": 403 }`.
 
+### GET /admin/analytics/behavior
+
+What anonymous visitors did in the store (see `POST /activity`) and abandoned carts, over the same period and
+`groupBy` as `GET /admin/analytics` (same query, same `400` errors).
+
+**Auth required:** Yes (ADMIN).
+
+- Visitors are anonymous browser ids, counted once (`COUNT(DISTINCT)`) per period, per chart point and per step.
+- `trackingSince`: Argentine day of the first recorded event, `null` before any. Days before it have **no data**, not
+  zero activity: the front says so instead of showing a drop.
+- `funnel`: visitors with any event (`visited`), and those who viewed a product, added to cart, started checkout and
+  placed an order. Steps are counted independently (adding from a list card needs no product view).
+- `products`: top 10 by visitors who viewed them, with visitors who added them to a cart and units sold (paid orders of
+  the period, like `GET /admin/analytics`).
+- `searches.top` / `searches.unanswered`: top 10 texts by visitors; `unanswered` only texts that never found a product.
+  `results` is the most products a search with that text found.
+- `carts.abandoned`: carts with products, never ordered, last touched in the period and at least `abandonAfterHours`
+  (24) ago. `ordersPlaced`: orders placed in the period, to compare against. `products`: top 5 left behind (carts that
+  contain them, units).
+
+**Responses**
+
+`200 OK`
+
+```json
+{
+  "period": {
+    "from": "2026-09-09",
+    "to": "2026-10-08",
+    "previousFrom": "2026-08-10",
+    "previousTo": "2026-09-08",
+    "groupBy": "day"
+  },
+  "buckets": [
+    { "start": "2026-09-09", "end": "2026-09-09", "previousStart": "2026-08-10", "previousEnd": "2026-08-10" },
+    "…"
+  ],
+  "trackingSince": "2026-10-08",
+  "visitors": { "current": 412, "previous": 0, "series": { "current": [0, "…", 412], "previous": [0, "…"] } },
+  "funnel": {
+    "current": { "visited": 412, "viewedProduct": 251, "addedToCart": 34, "startedCheckout": 18, "placedOrder": 9 },
+    "previous": { "visited": 0, "viewedProduct": 0, "addedToCart": 0, "startedCheckout": 0, "placedOrder": 0 }
+  },
+  "products": [
+    {
+      "id": 12,
+      "name": "Impresora Epson EcoTank L3250",
+      "imageUrl": "http://localhost:3001/files/products/l3250.webp",
+      "archived": false,
+      "viewers": 96,
+      "addedToCart": 11,
+      "unitsSold": 4
+    }
+  ],
+  "searches": {
+    "total": { "current": 120, "previous": 0 },
+    "withoutResults": { "current": 31, "previous": 0 },
+    "top": [{ "query": "ecotank", "searches": 22, "visitors": 19, "results": 18 }],
+    "unanswered": [{ "query": "papel fotografico", "searches": 9, "visitors": 8, "results": 0 }]
+  },
+  "carts": {
+    "abandoned": { "current": 21, "previous": 0 },
+    "ordersPlaced": { "current": 85, "previous": 75 },
+    "abandonAfterHours": 24,
+    "products": [
+      { "id": 12, "name": "Impresora Epson EcoTank L3250", "imageUrl": null, "archived": false, "carts": 6, "units": 7 }
+    ]
+  }
+}
+```
+
+`401 Unauthorized`: `{ "message": "Unauthorized", "statusCode": 401 }`.
+`403 Forbidden`: `{ "message": "Forbidden resource", "statusCode": 403 }`.
+
 ## Admin settings
 
 Store settings staff change from the admin. Both writes are audited (`settings.local-delivery`, `settings.reservation`)
@@ -2034,6 +2108,42 @@ reserved stock once. Cancellation is available only before payment confirmation;
 `404 Not Found`: `{ "message": "Pedido no encontrado.", "statusCode": 404 }`.
 `422 Unprocessable Entity` — invalid/repeated transition, missing payment verification, expired payment window or
 inconsistent stock: `{ "message": "Verificá el pago antes de confirmar el pedido.", "statusCode": 422 }`.
+`429 Too Many Requests`: `{ "message": "ThrottlerException: Too Many Requests", "statusCode": 429 }`.
+
+## Store activity
+
+### POST /activity
+
+The store's browser reports what an **anonymous** visitor did, for the stats page. No account, IP or personal data is
+stored: a visitor is a random UUID the browser keeps. Call it from the browser only (never from the front's server),
+fire and forget. Rate limited to 60 requests per minute per IP.
+
+**Auth required:** No.
+
+**Request body**
+
+| Field         | Type    | Required           | Constraints                                                                                    |
+| ------------- | ------- | ------------------ | ---------------------------------------------------------------------------------------------- |
+| `type`        | string  | Yes                | `VISIT` \| `PRODUCT_VIEW` \| `SEARCH` \| `ADD_TO_CART` \| `CHECKOUT_STARTED` \| `ORDER_PLACED` |
+| `visitorId`   | string  | Yes                | UUID v4                                                                                        |
+| `productId`   | integer | For product events | `PRODUCT_VIEW`, `ADD_TO_CART`; an existing, not archived product                               |
+| `query`       | string  | For `SEARCH`       | 1–200 characters; stored trimmed, lowercased, single spaces, at most 100                       |
+| `resultCount` | integer | For `SEARCH`       | 0–1,000,000: products the search found                                                         |
+
+```json
+{ "type": "PRODUCT_VIEW", "visitorId": "3f0c8a8e-2d1b-4c55-9a5e-6f1f2a7b9c10", "productId": 12 }
+```
+
+- `VISIT`: once per browser session (the front sends it on the first store page of a tab session).
+- Requests whose `User-Agent` looks like a crawler, link preview or headless browser (or has none) answer `204` and
+  store nothing.
+
+**Responses**
+
+`204 No Content`
+
+`400 Bad Request`: `{ "message": ["productId must be an integer number"], "error": "Bad Request", "statusCode": 400 }`.
+`404 Not Found`: `{ "message": "Product 999 not found", "error": "Not Found", "statusCode": 404 }`.
 `429 Too Many Requests`: `{ "message": "ThrottlerException: Too Many Requests", "statusCode": 429 }`.
 
 ## Favorites

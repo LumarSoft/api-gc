@@ -86,7 +86,6 @@ model User {
   assignedInquiries          ProductInquiry[]        @relation("InquiryAssignee")
   notesAboutUser             CustomerNote[]          @relation("NoteAboutUser")
   authoredNotes              CustomerNote[]          @relation("NoteAuthor")
-  activityEvents             ActivityEvent[]
   resolvedWithdrawalRequests WithdrawalRequest[]
   auditLogs                  AuditLog[]
 
