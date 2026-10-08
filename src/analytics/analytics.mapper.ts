@@ -10,7 +10,7 @@ import type {
   ComparedDto,
 } from './dto/analytics-response.dto'
 import { type MixRow, type RankRow, sumLines, topRows } from './lib/analytics-rules'
-import type { SoldVariant } from './lib/analytics-selects'
+import type { ProductSummary, SoldVariant } from './lib/analytics-selects'
 
 type Decimal = Prisma.Decimal
 
@@ -28,6 +28,17 @@ const TOP_GROUPS = 8
 @Injectable()
 export class AnalyticsMapper {
   constructor(private readonly files: FilesService) {}
+
+  /** Id, name, first image and archived flag of a product in a stats row. */
+  productSummary(product: ProductSummary): { id: number; name: string; imageUrl: string | null; archived: boolean } {
+    const image = product.images[0]
+    return {
+      id: product.id,
+      name: product.name,
+      imageUrl: image ? this.files.publicUrl(image.file.storageKey) : null,
+      archived: product.deletedAt !== null,
+    }
+  }
 
   readonly decimal = (value: Decimal): string => value.toFixed(2)
 
@@ -73,16 +84,7 @@ export class AnalyticsMapper {
     const variants = new Map(current.map(line => [line.variant.product.id, line.variant.product]))
     const products = top(({ product }) => ({ key: product.id, name: product.name }), TOP_PRODUCTS)
     return {
-      products: products.map(row => {
-        const product = variants.get(row.key)!
-        const image = product.images[0]
-        return {
-          ...this.rankRow(row),
-          id: row.key,
-          imageUrl: image ? this.files.publicUrl(image.file.storageKey) : null,
-          archived: product.deletedAt !== null,
-        }
-      }),
+      products: products.map(row => ({ ...this.rankRow(row), ...this.productSummary(variants.get(row.key)!) })),
       categories: top(({ product: { category } }) => {
         const root = category.parent ?? category
         return { key: root.id, name: root.name }

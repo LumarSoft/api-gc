@@ -1,12 +1,11 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
-import { argentineDay, periodProblem, reportPeriod, type ReportPeriod } from '../common/utils/report-period'
-import type { Prisma } from '../generated/prisma/client'
-import { Currency, OrderStatus, UserRole, WholesaleStatus } from '../generated/prisma/enums'
+import { Injectable } from '@nestjs/common'
+import { argentineDay, type ReportPeriod } from '../common/utils/report-period'
+import { OrderStatus, UserRole, WholesaleStatus } from '../generated/prisma/enums'
 import { PrismaService } from '../prisma/prisma.service'
 import { AnalyticsMapper, type SoldVariantLine } from './analytics.mapper'
 import type { AnalyticsQueryDto } from './dto/analytics-query.dto'
 import type { AdminAnalyticsDto } from './dto/analytics-response.dto'
-import { bucketIndex, defaultGroupBy, periodBuckets } from './lib/analytics-buckets'
+import { analyticsPeriod, type Window } from './lib/analytics-period'
 import {
   bucketSeries,
   customerKey,
@@ -18,17 +17,11 @@ import {
   salesMix,
   sumOf,
 } from './lib/analytics-rules'
-import { paidOrderSelect, soldVariantSelect } from './lib/analytics-selects'
+import { paidIn, paidOrderSelect, soldVariantSelect } from './lib/analytics-selects'
 
-type Window = { gte: Date; lt: Date }
 const current = (period: ReportPeriod): Window => ({ gte: period.from, lt: period.until })
 const previous = (period: ReportPeriod): Window => ({ gte: period.previousFrom, lt: period.from })
 const both = (period: ReportPeriod): Window => ({ gte: period.previousFrom, lt: period.until })
-const paidIn = (window: Window): Prisma.OrderWhereInput => ({
-  status: { in: PAID_STATUSES },
-  currency: Currency.ARS,
-  confirmedAt: window,
-})
 
 /** Store stats for the admin: sales, orders, products and customers of a period against the previous one. */
 @Injectable()
@@ -39,12 +32,7 @@ export class AnalyticsService {
   ) {}
 
   async report(query: AnalyticsQueryDto = {}, now = new Date()): Promise<AdminAnalyticsDto> {
-    const problem = periodProblem(now, query.from, query.to)
-    if (problem) throw new BadRequestException(problem)
-    const period = reportPeriod(now, query.from, query.to)
-    const groupBy = query.groupBy ?? defaultGroupBy(period.days.length)
-    const buckets = periodBuckets(period.days, groupBy)
-    const index = bucketIndex(buckets)
+    const { period, buckets, index, summary } = analyticsPeriod(query, now)
 
     const [paid, placed, lines, customers] = await Promise.all([
       this.paidOrders(period),
@@ -71,13 +59,7 @@ export class AnalyticsService {
     const m = this.mapper
 
     return {
-      period: {
-        from: period.days[0],
-        to: period.days.at(-1)!,
-        previousFrom: buckets[0].previousStart,
-        previousTo: buckets.at(-1)!.previousEnd,
-        groupBy,
-      },
+      period: summary,
       buckets,
       sales: {
         ...m.comparedMoney(sales),
