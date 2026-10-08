@@ -8,8 +8,10 @@ import type { AuditActor } from '../common/types/audit-actor'
 import { UserRole } from '../generated/prisma/enums'
 import { AdminProductContentService } from './admin-product-content.service'
 import { AdminProductDuplicatorService } from './admin-product-duplicator.service'
+import { AdminProductBulkService } from './admin-product-bulk.service'
 import { AdminProductsService } from './admin-products.service'
 import type { AdminProductDetailDto, PaginatedAdminProductsDto } from './dto/admin/admin-product-response.dto'
+import { BulkProductsDto, type BulkProductsResultDto } from './dto/admin/bulk-products.dto'
 import { CreateProductDto } from './dto/admin/create-product.dto'
 import { ListAdminProductsQueryDto } from './dto/admin/list-admin-products-query.dto'
 import { ReplaceProductImagesDto } from './dto/admin/replace-product-images.dto'
@@ -26,11 +28,19 @@ export class AdminProductsController {
     private readonly products: AdminProductsService,
     private readonly content: AdminProductContentService,
     private readonly duplicator: AdminProductDuplicatorService,
+    private readonly bulk: AdminProductBulkService,
   ) {}
 
   @Get()
   findAll(@Query() query: ListAdminProductsQueryDto): Promise<PaginatedAdminProductsDto> {
     return this.products.findAll(query)
+  }
+
+  /** Several products at once; skipped ones are reported, the rest are applied. */
+  @Post('bulk')
+  @HttpCode(200)
+  applyBulk(@Body() dto: BulkProductsDto, @CurrentAuditActor() actor: AuditActor): Promise<BulkProductsResultDto> {
+    return this.bulk.apply(dto, actor)
   }
 
   @Get(':id')

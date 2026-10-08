@@ -27,7 +27,7 @@ api-gc/
 │   ├── inventory/                 # StockService: stock levels + movement ledger (manual adjustment, TODO(tango))
 │   ├── pricing/                   # Price resolution + /admin/price-lists and /admin/exchange-rates
 │   ├── tags/                      # GET /tags (catalog filters) + /admin/tags
-│   ├── products/                  # Public catalog + /admin/products (admin-* services, reader, mapper, duplicator)
+│   ├── products/                  # Public catalog + /admin/products (admin-* services, reader, mapper, duplicator, bulk)
 │   ├── common/                    # Shared guards (JwtAuthGuard, RolesGuard), decorators, auth types, helpers
 │   ├── mail/                      # Transactional email (logged in development until a provider is set)
 │   ├── scripts/                   # create-admin.ts (`npm run admin:create`), seed-catalog.ts (`npm run db:seed`)
