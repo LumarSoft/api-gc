@@ -22,6 +22,7 @@ describe('Guest orders (local MySQL e2e)', () => {
   let prisma: PrismaService
   let variantId: number
   let productId: number
+  const fileIds: number[] = []
   let categoryId: number
   let priceListId: number
   let adminId: number
@@ -154,6 +155,8 @@ describe('Guest orders (local MySQL e2e)', () => {
       }
       const now = new Date()
       await prisma.cart.updateMany({ where: { id: { in: cartIds } }, data: { deletedAt: now, guestToken: null } })
+      await prisma.productImage.updateMany({ where: { fileId: { in: fileIds } }, data: { deletedAt: now } })
+      await prisma.storedFile.updateMany({ where: { id: { in: fileIds } }, data: { deletedAt: now } })
       await prisma.product.update({ where: { id: productId }, data: { deletedAt: now } })
       await prisma.productVariant.update({ where: { id: variantId }, data: { deletedAt: now } })
       await prisma.category.update({ where: { id: categoryId }, data: { deletedAt: now } })
@@ -181,6 +184,24 @@ describe('Guest orders (local MySQL e2e)', () => {
       .send({ accessToken })
       .expect(200)
     expect(body(tracked).items[0].name).toBe('Order test product')
+    expect(body(tracked).items[0].imageUrl).toBeNull()
+    // The thumbnail is the product's current first live image (archived ones are skipped).
+    const image = async (key: string, sortOrder: number, deletedAt: Date | null = null): Promise<void> => {
+      const file = await prisma.storedFile.create({
+        data: { storageKey: key, originalName: 'foto.png', mimeType: 'image/png', sizeBytes: 1, visibility: 'PUBLIC' },
+      })
+      fileIds.push(file.id)
+      await prisma.productImage.create({ data: { productId, fileId: file.id, sortOrder, deletedAt } })
+    }
+    const key = `test/orders-${randomUUID()}`
+    await image(`${key}-second.png`, 1)
+    await image(`${key}-first.png`, 0)
+    await image(`${key}-archived.png`, -1, new Date())
+    const withImage = await request(app.getHttpServer())
+      .post(`/orders/${order.number}/track`)
+      .send({ accessToken })
+      .expect(200)
+    expect(body(withImage).items[0].imageUrl).toMatch(new RegExp(`/${key}-first\\.png$`))
     expect(body(tracked).total.amount).toBe('24.70')
     expect(tracked.headers['cache-control']).toBe('private, no-store')
     expect(tracked.body).not.toHaveProperty('accessTokenHash')
