@@ -1659,7 +1659,8 @@ lines, names, prices, contact, address or shipping changes. `reservationHours` i
       "sku": "TEST",
       "quantity": 1,
       "unitPrice": { "amount": "12.35", "currency": "ARS" },
-      "total": { "amount": "12.35", "currency": "ARS" }
+      "total": { "amount": "12.35", "currency": "ARS" },
+      "imageUrl": "http://localhost:3001/files/products/2026/10/foto.webp"
     }
   ],
   "history": [{ "status": "PENDING_PAYMENT", "at": "2026-10-05T18:00:00.000Z" }]
@@ -1667,7 +1668,8 @@ lines, names, prices, contact, address or shipping changes. `reservationHours` i
 ```
 
 For local delivery, `shippingAddress` contains `street`, `streetNumber`, `city`, `province`, `postalCode`. Pickup
-returns null. No secrets, actor ids, internal/staff notes or live catalog prices are returned.
+returns null. No secrets, actor ids, internal/staff notes or live catalog prices are returned. Each item's `imageUrl` is the
+product's current first image (null without images): a thumbnail only, not part of the purchase snapshot.
 
 `400 Bad Request` — invalid DTO/unknown fields: `{ "message": ["property total should not exist"], "statusCode": 400 }`.
 `401 Unauthorized` — invalid optional session: `{ "message": "Unauthorized", "statusCode": 401 }`.

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { FilesService } from '../files/files.service'
 import { AddressType } from '../generated/prisma/enums'
 import type { OrderResponseDto } from './dto/order-response.dto'
 import { orderTransitions } from './lib/order-rules'
@@ -6,6 +7,8 @@ import type { AdminOrderRow, OrderRow } from './lib/order-selects'
 
 @Injectable()
 export class OrderMapper {
+  constructor(private readonly files: FilesService) {}
+
   response(row: OrderRow, admin = false): OrderResponseDto {
     const money = (value: { toFixed: (places: number) => string }) => ({
       amount: value.toFixed(2),
@@ -33,14 +36,18 @@ export class OrderMapper {
             postalCode: shipping.postalCode,
           }
         : null,
-      items: row.items.map(item => ({
-        name: item.productName,
-        variantName: item.variantName,
-        sku: item.sku,
-        quantity: item.quantity,
-        unitPrice: money(item.unitPrice),
-        total: money(item.lineTotal),
-      })),
+      items: row.items.map(item => {
+        const image = item.variant.product.images[0]
+        return {
+          name: item.productName,
+          variantName: item.variantName,
+          sku: item.sku,
+          quantity: item.quantity,
+          unitPrice: money(item.unitPrice),
+          total: money(item.lineTotal),
+          imageUrl: image ? this.files.publicUrl(image.file.storageKey) : null,
+        }
+      }),
       history: row.statusHistory.map(event => ({ status: event.toStatus, at: event.createdAt.toISOString() })),
       ...(admin
         ? {

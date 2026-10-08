@@ -27,6 +27,8 @@ export interface OrderResponseDto {
     quantity: number
     unitPrice: MoneyDto
     total: MoneyDto
+    /** The product's current first image (not a purchase-time snapshot); null when it has none. */
+    imageUrl: string | null
   }[]
   /** `note` and `by` (staff name, null for the system) only in admin responses. */
   history: { status: OrderStatus; at: string; note?: string | null; by?: string | null }[]

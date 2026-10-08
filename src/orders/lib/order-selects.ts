@@ -17,7 +17,29 @@ export const orderSelect = {
   contactPhone: true,
   items: {
     orderBy: { id: 'asc' },
-    select: { productName: true, variantName: true, sku: true, quantity: true, unitPrice: true, lineTotal: true },
+    select: {
+      productName: true,
+      variantName: true,
+      sku: true,
+      quantity: true,
+      unitPrice: true,
+      lineTotal: true,
+      // Thumbnail only: the product's current first image, like the cart. Name and prices stay the snapshot.
+      variant: {
+        select: {
+          product: {
+            select: {
+              images: {
+                where: { deletedAt: null, file: { deletedAt: null } },
+                orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
+                take: 1,
+                select: { file: { select: { storageKey: true } } },
+              },
+            },
+          },
+        },
+      },
+    },
   },
   addresses: {
     select: { type: true, name: true, street: true, streetNumber: true, city: true, province: true, postalCode: true },
