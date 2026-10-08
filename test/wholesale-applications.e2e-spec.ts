@@ -14,6 +14,7 @@ import { PrismaService } from '../src/prisma/prisma.service'
 import type {
   AdminWholesaleApplicationDto,
   MyWholesaleApplicationDto,
+  WholesaleApplicationCountsDto,
   WholesaleApplicationsPageDto,
 } from '../src/wholesale-applications/dto/wholesale-application-response.dto'
 import { isValidCuit } from '../src/wholesale-applications/lib/cuit'
@@ -147,6 +148,43 @@ describe('Wholesale applications (local MySQL e2e)', () => {
       .expect(201)
     const old = (await decide(first, 'approve').expect(422)).body as { message: string }
     expect(old.message).toMatch(/ya no admite/)
+  })
+
+  it('searches by name, CUIT or email and counts applications per status', async () => {
+    const list = async (query: string): Promise<number[]> =>
+      (
+        (await request(server()).get(`/admin/wholesale-applications?${query}`).set('Cookie', adminCookie).expect(200))
+          .body as WholesaleApplicationsPageDto
+      ).items.map(item => item.id)
+    const ids = (
+      await prisma.wholesaleApplication.findMany({
+        where: { company: { cuit } },
+        orderBy: { id: 'desc' },
+        select: { id: true },
+      })
+    ).map(row => row.id)
+
+    expect(await list(`q=${encodeURIComponent(input.cuit)}`)).toEqual(ids)
+    expect(await list(`q=${cuit.slice(2, 9)}`)).toEqual(ids)
+    expect(await list(`q=${cuit}&status=PENDING`)).toEqual([ids[0]])
+    expect(await list(`q=${cuit}&status=REJECTED`)).toEqual([ids[1]])
+    expect(await list(`q=${encodeURIComponent('imprenta prueba')}&status=PENDING`)).toContain(ids[0])
+    expect(await list(`q=wholesale-customer&status=PENDING`)).toContain(ids[0])
+    expect(await list(`q=${randomUUID()}`)).toEqual([])
+    await request(server())
+      .get(`/admin/wholesale-applications?q=${'x'.repeat(101)}`)
+      .set('Cookie', adminCookie)
+      .expect(400)
+
+    await request(server()).get('/admin/wholesale-applications/counts').set('Cookie', customerCookie).expect(403)
+    const counts = (
+      await request(server()).get('/admin/wholesale-applications/counts').set('Cookie', adminCookie).expect(200)
+    ).body as WholesaleApplicationCountsDto
+    expect(Object.keys(counts).sort()).toEqual(['APPROVED', 'PAUSED', 'PENDING', 'REJECTED'])
+    expect(counts.PENDING).toBe(
+      await prisma.wholesaleApplication.count({ where: { status: 'PENDING', deletedAt: null } }),
+    )
+    expect(counts.REJECTED).toBeGreaterThanOrEqual(1)
   })
 
   it('approves, pauses and resumes the account, changing the buyer profile immediately', async () => {

@@ -47,3 +47,6 @@ export class WholesaleApplicationsPageDto {
   total: number
   totalPages: number
 }
+
+/** GET /admin/wholesale-applications/counts: applications in each status, for list views and the nav badge. */
+export type WholesaleApplicationCountsDto = Record<WholesaleStatus, number>
