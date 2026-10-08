@@ -1169,8 +1169,19 @@ decimals, > 0; `effectiveFrom` defaults to now and may be in the future (schedul
 
 ### GET /admin/dashboard
 
-Summary for the admin home: the last 30 Argentine calendar days (today included) against the 30 days before, and the
-work waiting outside orders (order stages come from `GET /admin/orders/counts`).
+Summary for the admin home: a period of Argentine calendar days (by default the last 30, today included) against the
+previous period of the same length, and the work waiting outside orders (order stages come from
+`GET /admin/orders/counts`).
+
+**Query**
+
+| Field  | Type   | Required | Constraints                                                                 |
+| ------ | ------ | -------- | --------------------------------------------------------------------------- |
+| `from` | string | No       | Calendar day `YYYY-MM-DD` (Argentina), first day included. With `to`.       |
+| `to`   | string | No       | Calendar day, last day included; not after today; at most 366 days in total |
+
+`400 Bad Request` for a malformed or impossible day (`"from must be a calendar day (YYYY-MM-DD)"`), only one end
+(`"Indicá el inicio y el fin del período."`), a reversed range, a range ending in the future or longer than 366 days.
 
 - `sales`: orders whose payment staff verified (`CONFIRMED` through `DELIVERED`), by confirmation date, ARS.
 - `orders`: orders placed, by placement date, whatever happened to them later.

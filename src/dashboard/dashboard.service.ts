@@ -1,14 +1,16 @@
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { Prisma } from '../generated/prisma/client'
 import { Currency, OrderStatus, ProductStatus, WholesaleStatus } from '../generated/prisma/enums'
 import { PrismaService } from '../prisma/prisma.service'
 import { outOfStockWhere } from '../products/lib/admin-product-filters'
+import type { DashboardQueryDto } from './dto/dashboard-query.dto'
 import type { AdminDashboardDto } from './dto/dashboard-response.dto'
 import {
   argentineDay,
   averageOrder,
   dailySeries,
   dashboardRange,
+  rangeProblem,
   type PaidOrder,
   periodTotals,
 } from './lib/dashboard-rules'
@@ -22,19 +24,28 @@ const PAID: OrderStatus[] = [
   OrderStatus.DELIVERED,
 ]
 
-/** The admin home: how the store did in the last 30 days and what is waiting outside orders. */
+/** The admin home: how the store did in a period (last 30 days by default) and what is waiting outside orders. */
 @Injectable()
 export class DashboardService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async summary(now = new Date()): Promise<AdminDashboardDto> {
-    const range = dashboardRange(now)
+  async summary(query: DashboardQueryDto = {}, now = new Date()): Promise<AdminDashboardDto> {
+    const problem = rangeProblem(now, query.from, query.to)
+    if (problem) throw new BadRequestException(problem)
+    const range = dashboardRange(now, query.from, query.to)
     const [paid, placed, previousPlaced, wholesalePending, publishedOutOfStock, drafts] = await Promise.all([
       this.prisma.order.findMany({
-        where: { status: { in: PAID }, currency: Currency.ARS, confirmedAt: { gte: range.previousFrom } },
+        where: {
+          status: { in: PAID },
+          currency: Currency.ARS,
+          confirmedAt: { gte: range.previousFrom, lt: range.until },
+        },
         select: { confirmedAt: true, total: true },
       }),
-      this.prisma.order.findMany({ where: { placedAt: { gte: range.from } }, select: { placedAt: true } }),
+      this.prisma.order.findMany({
+        where: { placedAt: { gte: range.from, lt: range.until } },
+        select: { placedAt: true },
+      }),
       this.prisma.order.count({ where: { placedAt: { gte: range.previousFrom, lt: range.from } } }),
       this.prisma.wholesaleApplication.count({ where: { status: WholesaleStatus.PENDING, deletedAt: null } }),
       this.prisma.product.count({
