@@ -7,7 +7,7 @@ export interface DashboardMetricDto<TValue> {
 }
 
 export interface AdminDashboardDto {
-  /** Argentine calendar days of the current period, oldest first. */
+  /** Argentine calendar days of the period, oldest first (both ends of the requested range included). */
   days: string[]
   /** Paid orders (confirmed by staff), by confirmation date. ARS. */
   sales: DashboardMetricDto<MoneyDto> & { daily: string[] }

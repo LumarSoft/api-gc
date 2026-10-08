@@ -5,13 +5,17 @@ const AR_OFFSET_MS = 3 * 60 * 60 * 1000
 const DAY_MS = 24 * 60 * 60 * 1000
 
 export const DASHBOARD_DAYS = 30
+/** Longest range the home accepts (a leap year), so the daily series stays a few hundred points. */
+export const DASHBOARD_MAX_DAYS = 366
 
 export interface DashboardRange {
-  /** First instant of the current period (Argentine midnight, `days` days back including today). */
+  /** First instant of the period (Argentine midnight of its first day). */
   from: Date
+  /** First instant after the period (Argentine midnight of the day after its last day). */
+  until: Date
   /** First instant of the previous period, of the same length, right before `from`. */
   previousFrom: Date
-  /** Argentine calendar days of the current period, oldest first ("2026-10-08"). */
+  /** Argentine calendar days of the period, oldest first ("2026-10-08"). */
   days: string[]
 }
 
@@ -20,14 +24,42 @@ export function argentineDay(at: Date): string {
   return new Date(at.getTime() - AR_OFFSET_MS).toISOString().slice(0, 10)
 }
 
-/** The last `days` Argentine days up to today, and the same length before them for comparison. */
-export function dashboardRange(now: Date, days = DASHBOARD_DAYS): DashboardRange {
-  const todayStart = Date.parse(`${argentineDay(now)}T00:00:00.000Z`) + AR_OFFSET_MS
-  const from = todayStart - (days - 1) * DAY_MS
+/** Argentine midnight of a calendar day ("2026-10-08" → 2026-10-08T03:00:00Z). */
+const dayStart = (day: string): number => Date.parse(`${day}T00:00:00.000Z`) + AR_OFFSET_MS
+
+/** A real calendar day in YYYY-MM-DD ("2026-02-30" is not). */
+export function isCalendarDay(value: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) && new Date(`${value}T00:00:00.000Z`).toISOString().startsWith(value)
+}
+
+/**
+ * Why a requested range cannot be shown, or null: both ends or none, in order, not in the future, at most
+ * DASHBOARD_MAX_DAYS long.
+ */
+export function rangeProblem(now: Date, from?: string, to?: string): string | null {
+  if (!from && !to) return null
+  if (!from || !to) return 'Indicá el inicio y el fin del período.'
+  if (from > to) return 'El inicio del período tiene que ser anterior al fin.'
+  if (to > argentineDay(now)) return 'El período no puede terminar en el futuro.'
+  if ((dayStart(to) - dayStart(from)) / DAY_MS + 1 > DASHBOARD_MAX_DAYS)
+    return `El período puede tener hasta ${DASHBOARD_MAX_DAYS} días.`
+  return null
+}
+
+/**
+ * The requested Argentine days (both ends included) or, without them, the last 30 days up to today; plus the
+ * previous period of the same length for comparison. Call `rangeProblem` first.
+ */
+export function dashboardRange(now: Date, from?: string, to?: string): DashboardRange {
+  const last = to ?? argentineDay(now)
+  const lastStart = dayStart(last)
+  const start = from ? dayStart(from) : lastStart - (DASHBOARD_DAYS - 1) * DAY_MS
+  const length = Math.round((lastStart - start) / DAY_MS) + 1
   return {
-    from: new Date(from),
-    previousFrom: new Date(from - days * DAY_MS),
-    days: Array.from({ length: days }, (_, index) => argentineDay(new Date(from + index * DAY_MS))),
+    from: new Date(start),
+    until: new Date(lastStart + DAY_MS),
+    previousFrom: new Date(start - length * DAY_MS),
+    days: Array.from({ length }, (_, index) => argentineDay(new Date(start + index * DAY_MS))),
   }
 }
 

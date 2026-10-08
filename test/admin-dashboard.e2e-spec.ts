@@ -122,4 +122,18 @@ describe('Admin dashboard (local MySQL e2e)', () => {
     expect(after.averageOrder.current).not.toBeNull()
     expect(after.todo.drafts - before.todo.drafts).toBe(1)
   })
+
+  it('takes a custom range of Argentine days and rejects invalid ones', async () => {
+    const get = (query: string) =>
+      request(app.getHttpServer()).get(`/admin/dashboard${query}`).set('Cookie', adminCookie)
+    const today = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString().slice(0, 10)
+    const yesterday = new Date(Date.now() - 27 * 60 * 60 * 1000).toISOString().slice(0, 10)
+    const ranged = (await get(`?from=${yesterday}&to=${today}`).expect(200)).body as AdminDashboardDto
+    expect(ranged.days).toEqual([yesterday, today])
+    expect(ranged.sales.daily).toHaveLength(2)
+    await get(`?from=${yesterday}`).expect(400)
+    await get(`?from=${today}&to=${yesterday}`).expect(400)
+    await get('?from=2026-01-01&to=2999-01-01').expect(400)
+    await get('?from=2026-02-30&to=2026-03-01').expect(400)
+  })
 })
