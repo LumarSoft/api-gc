@@ -401,6 +401,7 @@ describe('Guest orders (local MySQL e2e)', () => {
     expect(paged.items.map(item => item.number)).toEqual([first.order.number])
     expect(paged.totalPages).toBe(2)
     await mine('/orders/mine?pageSize=51').expect(400)
+    await mine('/orders/mine?page=99999999999999999999').expect(400)
 
     const read = await mine(`/orders/mine/${first.order.number}`).expect(200)
     expect(read.headers['cache-control']).toBe('private, no-store')

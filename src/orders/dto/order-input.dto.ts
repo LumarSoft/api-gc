@@ -25,10 +25,12 @@ export class OrderNumberDto {
 
 /** Pagination of the customer's own orders (account area). */
 export class ListMyOrdersDto {
+  /** Capped so an absurd page cannot overflow the database offset (500). */
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
+  @Max(10_000)
   page: number = 1
 
   @IsOptional()

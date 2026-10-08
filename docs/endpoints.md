@@ -1737,10 +1737,10 @@ the orders they placed themselves.
 
 **Query**
 
-| Field      | Type    | Required | Constraints      |
-| ---------- | ------- | -------- | ---------------- |
-| `page`     | integer | No       | ≥ 1, default 1   |
-| `pageSize` | integer | No       | 1–50, default 10 |
+| Field      | Type    | Required | Constraints        |
+| ---------- | ------- | -------- | ------------------ |
+| `page`     | integer | No       | 1–10000, default 1 |
+| `pageSize` | integer | No       | 1–50, default 10   |
 
 **Responses**
 
