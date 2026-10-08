@@ -19,6 +19,7 @@ import { OrdersModule } from './orders/orders.module'
 import { FavoritesModule } from './favorites/favorites.module'
 import { WholesaleApplicationsModule } from './wholesale-applications/wholesale-applications.module'
 import { DashboardModule } from './dashboard/dashboard.module'
+import { SettingsModule } from './settings/settings.module'
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { DashboardModule } from './dashboard/dashboard.module'
     FavoritesModule,
     WholesaleApplicationsModule,
     DashboardModule,
+    SettingsModule,
     OrdersModule,
   ],
   controllers: [AppController],

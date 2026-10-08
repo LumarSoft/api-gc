@@ -70,6 +70,7 @@ Domain rules that apply across modules. When a request contradicts one of these,
   A changed review returns 409 and requires review again. The fingerprint is not authorization and no client total is trusted.
 - **Provisional implementation choice:** pending manual-payment reservations use the existing 24-hour transfer window.
   `Setting.reservation.manualHours` can override it with an integer 1–168; absent, archived or invalid values use 24.
+  Staff edit it in the admin (`/admin/settings/reservation`).
   Checkout shows this window before confirmation and tracking shows the precise expiration. Revisit with the client
   when their offline payment process is finalized.
 - Pending orders may be cancelled; confirmed orders advance to preparation, then ready for pickup (pickup) or shipped
@@ -107,7 +108,9 @@ Domain rules that apply across modules. When a request contradicts one of these,
 ## Shipping
 
 - In-store pickup is always free.
-- Rosario delivery: configurable flat rate and configurable minimum order amount for free shipping.
+- Rosario delivery: configurable flat rate and configurable minimum order amount for free shipping. Staff set both, and turn it
+  on or off, in the admin (`/admin/settings/local-delivery`); turning it on requires a rate, and a free-shipping amount
+  must be above zero.
 - Rest of the country: quoted by postal code, weight and dimensions through an external provider.
 - Shipping rules and thresholds are configuration stored in the database, not constants in code.
 
