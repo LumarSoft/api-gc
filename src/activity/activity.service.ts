@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
-import { ActivityType } from '../generated/prisma/enums'
+import { ActivityType, ProductStatus } from '../generated/prisma/enums'
 import { PrismaService } from '../prisma/prisma.service'
 import type { RecordActivityDto } from './dto/record-activity.dto'
 import { isBot, normalizeSearch, PRODUCT_EVENTS } from './lib/activity-rules'
@@ -14,8 +14,9 @@ export class ActivityService {
     const productEvent = PRODUCT_EVENTS.includes(event.type)
     const search = event.type === ActivityType.SEARCH
     if (productEvent) {
+      // Only published products are visible in the store; anything else would let anyone probe draft ids.
       const product = await this.prisma.product.findFirst({
-        where: { id: event.productId, deletedAt: null },
+        where: { id: event.productId, deletedAt: null, status: ProductStatus.PUBLISHED },
         select: { id: true },
       })
       if (!product) throw new NotFoundException(`Product ${event.productId} not found`)

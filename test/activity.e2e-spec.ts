@@ -10,7 +10,7 @@ import type { App } from 'supertest/types'
 import type { AdminBehaviorDto } from '../src/analytics/dto/behavior-response.dto'
 import { AppModule } from '../src/app.module'
 import { PrismaExceptionFilter } from '../src/common/filters/prisma-exception.filter'
-import { ActivityType, CartStatus, UserRole } from '../src/generated/prisma/enums'
+import { ActivityType, CartStatus, ProductStatus, UserRole } from '../src/generated/prisma/enums'
 import { PrismaService } from '../src/prisma/prisma.service'
 
 const BROWSER = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 Version/17.0 Safari/605.1.15'
@@ -41,7 +41,9 @@ describe('Store activity and behavior stats (local MySQL e2e)', () => {
     suffix = randomUUID().slice(0, 8)
     categoryId = (await prisma.category.create({ data: { name: 'Activity test', slug: `activity-${suffix}` } })).id
     productId = (
-      await prisma.product.create({ data: { name: `Activity ${suffix}`, slug: `activity-${suffix}`, categoryId } })
+      await prisma.product.create({
+        data: { name: `Activity ${suffix}`, slug: `activity-${suffix}`, categoryId, status: ProductStatus.PUBLISHED },
+      })
     ).id
     variantId = (
       await prisma.productVariant.create({ data: { productId, sku: `ACTIVITY-${suffix}`, isDefault: true } })
@@ -95,6 +97,11 @@ describe('Store activity and behavior stats (local MySQL e2e)', () => {
     await send({ type: 'VISIT', visitorId: 'not-a-uuid' }).expect(400)
     await send({ type: 'LOGIN', visitorId }).expect(400)
     await send({ type: 'ADD_TO_CART', visitorId, productId: 999_999_999 }).expect(404)
+    const draft = await prisma.product.create({
+      data: { name: `Draft ${suffix}`, slug: `activity-draft-${suffix}`, categoryId },
+    })
+    await send({ type: 'PRODUCT_VIEW', visitorId, productId: draft.id }).expect(404)
+    await prisma.product.update({ where: { id: draft.id }, data: { deletedAt: new Date() } })
   })
 
   it('reports the funnel, viewed products, searches and abandoned carts of a period', async () => {
