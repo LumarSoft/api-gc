@@ -1,0 +1,2 @@
+Read `AGENTS.md` and every file in `docs/rules/` before writing code. If `PENDING-SETUP.md` exists at the repository
+root, fix the setup steps it lists before the user's task (see the "AI agents" note at the top of `AGENTS.md`).
