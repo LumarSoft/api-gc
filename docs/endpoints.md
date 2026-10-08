@@ -2126,7 +2126,7 @@ fire and forget. Rate limited to 60 requests per minute per IP.
 | ------------- | ------- | ------------------ | ---------------------------------------------------------------------------------------------- |
 | `type`        | string  | Yes                | `VISIT` \| `PRODUCT_VIEW` \| `SEARCH` \| `ADD_TO_CART` \| `CHECKOUT_STARTED` \| `ORDER_PLACED` |
 | `visitorId`   | string  | Yes                | UUID v4                                                                                        |
-| `productId`   | integer | For product events | `PRODUCT_VIEW`, `ADD_TO_CART`; an existing, not archived product                               |
+| `productId`   | integer | For product events | `PRODUCT_VIEW`, `ADD_TO_CART`; a published product                                             |
 | `query`       | string  | For `SEARCH`       | 1–200 characters; stored trimmed, lowercased, single spaces, at most 100                       |
 | `resultCount` | integer | For `SEARCH`       | 0–1,000,000: products the search found                                                         |
 
