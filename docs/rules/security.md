@@ -29,6 +29,7 @@
 - **Routes the front calls from its server (Server Components) must use `@SkipThrottle()`.** Those requests all come
   from the front server's IP, so a per-IP limit would be shared by every visitor and take the store down under normal
   traffic. Today: `products`, `categories`, `tags`, `brands` and `GET /auth/me`.
+- `POST /activity` (anonymous stats events, called by the browser) has its own limit: 60 requests/min per IP.
 - Never skip throttling on routes that change data or check credentials — the browser calls those directly, with the
   visitor's own IP.
 - Per-visitor limits for public reads belong in the reverse proxy / CDN in front of the API.

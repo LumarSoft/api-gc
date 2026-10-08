@@ -7,15 +7,15 @@ enum InquiryStatus {
   CLOSED
 }
 
+/// What a store visitor did, as reported by the browser (see business-rules.md → Activity tracking).
 enum ActivityType {
+  /// Opened the store in a new browser session.
+  VISIT
   PRODUCT_VIEW
   SEARCH
   ADD_TO_CART
   CHECKOUT_STARTED
   ORDER_PLACED
-  CONFIGURATOR_COMPLETED
-  ASSISTANT_STARTED
-  INQUIRY_SENT
 }
 
 enum WithdrawalStatus {
@@ -70,23 +70,24 @@ model CustomerNote {
   @@index([authorId])
 }
 
-/// Behavioral events for stats (most viewed products, searches, funnel). Append-only (see database.md).
+/// Anonymous store activity for the stats page (funnel, most viewed products, searches). Append-only (see database.md).
+/// No account, IP or personal data: a visitor is a random id the browser keeps.
 model ActivityEvent {
   id          Int          @id @default(autoincrement())
   type        ActivityType
-  userId      Int?
-  sessionId   String?      @db.VarChar(64)
+  /// Random UUID the browser stores for this visitor (not tied to an account).
+  visitorId   String       @db.Char(36)
+  /// PRODUCT_VIEW and ADD_TO_CART.
   productId   Int?
-  searchQuery String?      @db.VarChar(200)
-  /// Extra event data. Shape depends on `type`, e.g. { "orderId": 5 } for ORDER_PLACED.
-  metadata    Json?
+  /// SEARCH: the normalized text (trimmed, lowercased, single spaces).
+  searchQuery String?      @db.VarChar(100)
+  /// SEARCH: how many products the search found.
+  resultCount Int?
   createdAt   DateTime     @default(now())
 
-  user    User?    @relation(fields: [userId], references: [id])
   product Product? @relation(fields: [productId], references: [id])
 
   @@index([type, createdAt])
-  @@index([userId])
   @@index([productId])
 }
 
