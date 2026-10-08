@@ -325,7 +325,7 @@ stock.
 
 | Param    | Type    | Required | Constraints                                                                                     |
 | -------- | ------- | -------- | ----------------------------------------------------------------------------------------------- |
-| page     | number  | No       | ≥ 1. Default `1`                                                                                |
+| page     | number  | No       | 1–10000. Default `1`                                                                            |
 | pageSize | number  | No       | 1–48. Default `24`                                                                              |
 | category | string  | No       | Category slug. Includes its subcategories                                                       |
 | brand    | string  | No       | Comma-separated brand slugs, e.g. `epson`                                                       |
@@ -773,7 +773,7 @@ Paginated list, any status, archived products excluded.
 
 | Param        | Type   | Required | Constraints                                                  |
 | ------------ | ------ | -------- | ------------------------------------------------------------ |
-| `page`       | number | No       | ≥1, default 1                                                |
+| `page`       | number | No       | 1–10000, default 1                                           |
 | `pageSize`   | number | No       | 1–100, default 25                                            |
 | `q`          | string | No       | Name or SKU, ≤100 chars                                      |
 | `status`     | enum   | No       | `DRAFT` \| `PUBLISHED` \| `HIDDEN`                           |
@@ -1785,7 +1785,7 @@ original records are retained.
 
 | Field      | Type        | Required | Constraints                                                                                                                                                       |
 | ---------- | ----------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `page`     | integer     | No       | >=1, default 1                                                                                                                                                    |
+| `page`     | integer     | No       | 1–10000, default 1                                                                                                                                                |
 | `pageSize` | integer     | No       | 1–100, default 25                                                                                                                                                 |
 | `status`   | OrderStatus | No       | One schema enum value                                                                                                                                             |
 | `stage`    | string      | No       | `PENDING_PAYMENT` (pending or under review), `TO_FULFILL` (confirmed, preparing), `READY` (ready for pickup, shipped) or `CLOSED` (delivered, cancelled, expired) |
@@ -1987,7 +1987,7 @@ sumarte."` — the existing company is never revealed).
 
 ### GET /admin/wholesale-applications
 
-**Auth required:** Yes (ADMIN). Query `page`, `pageSize` (1–100, default 25), `status` (`PENDING`, `APPROVED`,
+**Auth required:** Yes (ADMIN). Query `page` (1–10000, default 1), `pageSize` (1–100, default 25), `status` (`PENDING`, `APPROVED`,
 `REJECTED`, `PAUSED`) and `q` (max 100, trimmed: partial match on legal or trade name, company email, applicant name
 or email, and the CUIT — `30-71234567` also matches the stored digits). Newest first. `400` invalid query.
 

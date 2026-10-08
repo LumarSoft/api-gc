@@ -175,6 +175,10 @@ describe('Wholesale applications (local MySQL e2e)', () => {
       .get(`/admin/wholesale-applications?q=${'x'.repeat(101)}`)
       .set('Cookie', adminCookie)
       .expect(400)
+    await request(server())
+      .get('/admin/wholesale-applications?page=99999999999999999999')
+      .set('Cookie', adminCookie)
+      .expect(400)
 
     await request(server()).get('/admin/wholesale-applications/counts').set('Cookie', customerCookie).expect(403)
     const counts = (
