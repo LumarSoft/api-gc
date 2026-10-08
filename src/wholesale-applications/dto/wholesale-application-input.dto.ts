@@ -66,6 +66,13 @@ export class ListWholesaleApplicationsDto {
   @IsOptional()
   @IsEnum(WholesaleStatus)
   status?: WholesaleStatus
+
+  /** Legal or trade name, CUIT (with or without dashes), company email or applicant name/email (partial). */
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MaxLength(100)
+  q?: string
 }
 
 export class WholesaleDecisionDto {

@@ -3,13 +3,16 @@ import { ConfigService } from '@nestjs/config'
 import { AuditLogsService } from '../audit-logs/audit-logs.service'
 import type { AuditActor } from '../common/types/audit-actor'
 import { Prisma } from '../generated/prisma/client'
+import { WholesaleStatus } from '../generated/prisma/enums'
 import { MailService } from '../mail/mail.service'
 import { PrismaService } from '../prisma/prisma.service'
 import type { ListWholesaleApplicationsDto } from './dto/wholesale-application-input.dto'
 import type {
   AdminWholesaleApplicationDto,
+  WholesaleApplicationCountsDto,
   WholesaleApplicationsPageDto,
 } from './dto/wholesale-application-response.dto'
+import { applicationSearchWhere } from './lib/wholesale-application-search'
 import { applicationSelect, type ApplicationRow } from './lib/wholesale-application-selects'
 import { wholesaleDecisionMessage } from './lib/wholesale-emails'
 import { decisionTarget, type WholesaleDecision } from './lib/wholesale-rules'
@@ -30,6 +33,7 @@ export class AdminWholesaleApplicationsService {
     const where: Prisma.WholesaleApplicationWhereInput = {
       deletedAt: null,
       ...(query.status ? { status: query.status } : {}),
+      ...(query.q ? applicationSearchWhere(query.q) : {}),
     }
     const [rows, total] = await Promise.all([
       this.prisma.wholesaleApplication.findMany({
@@ -49,6 +53,19 @@ export class AdminWholesaleApplicationsService {
       total,
       totalPages: Math.max(1, Math.ceil(total / query.pageSize)),
     }
+  }
+
+  async counts(): Promise<WholesaleApplicationCountsDto> {
+    const groups = await this.prisma.wholesaleApplication.groupBy({
+      by: ['status'],
+      where: { deletedAt: null },
+      _count: { _all: true },
+    })
+    const counts = Object.fromEntries(
+      Object.values(WholesaleStatus).map(status => [status, 0]),
+    ) as WholesaleApplicationCountsDto
+    for (const group of groups) counts[group.status] = group._count._all
+    return counts
   }
 
   async read(id: number): Promise<AdminWholesaleApplicationDto> {

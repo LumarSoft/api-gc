@@ -1939,12 +1939,28 @@ sumarte."` — the existing company is never revealed).
 ### GET /admin/wholesale-applications
 
 **Auth required:** Yes (ADMIN). Query `page`, `pageSize` (1–100, default 25), `status` (`PENDING`, `APPROVED`,
-`REJECTED`, `PAUSED`). Newest first.
+`REJECTED`, `PAUSED`) and `q` (max 100, trimmed: partial match on legal or trade name, company email, applicant name
+or email, and the CUIT — `30-71234567` also matches the stored digits). Newest first. `400` invalid query.
 
 `200 OK` — `{ items, page, pageSize, total, totalPages }`; each item is the application shape above plus
 `submittedBy: { id, name, email }`, `reviewedBy: { id, name } | null`, `latest` (false when the company sent a newer
 application) and `allowedDecisions` (subset of `approve`,
 `reject`, `pause`, `resume`; empty for an application that is not the company's latest).
+
+### GET /admin/wholesale-applications/counts
+
+How many applications are in each status, for the list views and the admin navigation badge. Every application
+counts, including those superseded by a newer one from the same company.
+
+**Auth required:** Yes (ADMIN).
+
+`200 OK`
+
+```json
+{ "PENDING": 2, "APPROVED": 14, "REJECTED": 3, "PAUSED": 1 }
+```
+
+`401 Unauthorized`, `403 Forbidden` (customers), `429 Too Many Requests`.
 
 ### GET /admin/wholesale-applications/:id
 

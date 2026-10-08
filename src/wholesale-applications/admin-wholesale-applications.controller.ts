@@ -10,6 +10,7 @@ import { AdminWholesaleApplicationsService } from './admin-wholesale-application
 import { ListWholesaleApplicationsDto, WholesaleDecisionDto } from './dto/wholesale-application-input.dto'
 import type {
   AdminWholesaleApplicationDto,
+  WholesaleApplicationCountsDto,
   WholesaleApplicationsPageDto,
 } from './dto/wholesale-application-response.dto'
 
@@ -23,6 +24,12 @@ export class AdminWholesaleApplicationsController {
   @Header('Cache-Control', 'private, no-store')
   list(@Query() query: ListWholesaleApplicationsDto): Promise<WholesaleApplicationsPageDto> {
     return this.applications.list(query)
+  }
+
+  @Get('counts')
+  @Header('Cache-Control', 'private, no-store')
+  counts(): Promise<WholesaleApplicationCountsDto> {
+    return this.applications.counts()
   }
 
   @Get(':id')
