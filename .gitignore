@@ -37,3 +37,6 @@ npm-debug.log*
 
 # Uploaded files (local storage)
 /storage
+
+# Written by npm run doctor while the setup has errors
+PENDING-SETUP.md

@@ -3,11 +3,19 @@
 Guidance for AI coding agents (Claude Code, Cursor, Codex, Copilot…) and humans working in this repository.
 **Read this file and every file in `docs/rules/` before writing code.**
 
+> **AI agents — before the user's task:** if `PENDING-SETUP.md` exists at the repository root, this machine is missing
+> setup steps (a migration, a dependency, an env var…). Read it, fix those steps first (ask the user only for secrets or
+> passwords), tell the user what you ran, and run `npm run doctor` until it passes (the file then disappears). If the
+> API refuses to start saying migrations are pending, apply them as it says; never skip or remove that check, edit
+> applied migrations, or run `prisma migrate reset` / `db push`. When the user says "after pulling it doesn't work",
+> start with `npm run doctor` and the newest entries of `docs/upgrade-notes.md`.
+
 ## Start of every session (humans and AI agents)
 
 1. Run `npm run doctor`. It checks Node, dependencies, `.env`, the Prisma client, pending migrations and the seed,
    and prints the exact command to fix each problem. (Claude Code runs it automatically on session start through
-   `.claude/settings.json`.)
+   `.claude/settings.json`.) While it finds errors it also writes `PENDING-SETUP.md` (git-ignored) for whoever opens
+   the project next, and deletes it once everything passes.
 2. If it reports problems, fix them **before** any other work, using `docs/upgrade-notes.md` for context. Tell the
    user what you fixed and ask before steps that need their input (passwords, secrets).
 3. When your change requires a manual step from the other developers (new env var, migration, seed, service…), add an

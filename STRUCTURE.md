@@ -52,6 +52,8 @@ api-gc/
 │   └── setup/                     # Points e2e at the test database, creates and migrates it
 │
 ├── .claude/settings.json          # Claude Code: runs the doctor on session start
+├── .cursor/rules/project.mdc      # Cursor: points to AGENTS.md
+├── .github/copilot-instructions.md # Copilot: points to AGENTS.md
 ├── .husky/pre-commit              # Runs lint-staged (Prettier)
 ├── .husky/post-{merge,checkout,rewrite} # After pull / branch switch: scripts/after-pull.mjs
 ├── .github/pull_request_template.md # "Pasos después de mergear" checklist for every PR

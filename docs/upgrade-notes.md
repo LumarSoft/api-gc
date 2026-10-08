@@ -16,6 +16,15 @@ npm run doctor             # tells you if anything else is missing
 
 ---
 
+## 2026-10-08 — Pending setup notice for people and AI agents
+
+Nothing to run. While `npm run doctor` finds errors it writes `PENDING-SETUP.md` (git-ignored) at the repository root
+with the missing steps; it deletes it once everything passes. `AGENTS.md` (read by Claude Code, Codex, Cursor and
+Copilot; `.cursor/rules/` and `.github/copilot-instructions.md` point to it) tells AI agents to fix those steps before
+the user's task.
+
+---
+
 ## 2026-10-08 — Setup checks after pull and on startup
 
 Nothing to run: this is how pending steps reach you from now on.
