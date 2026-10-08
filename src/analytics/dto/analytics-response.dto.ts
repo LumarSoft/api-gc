@@ -24,6 +24,7 @@ export interface AnalyticsRankRowDto {
   units: number
   sales: MoneyDto
   previousSales: MoneyDto
+  previousUnits: number
 }
 
 export interface AnalyticsProductRowDto extends AnalyticsRankRowDto {
@@ -51,7 +52,10 @@ export interface AdminAnalyticsDto {
   buyerTypes: AnalyticsMixRowDto<BuyerType>[]
   paymentMethods: AnalyticsMixRowDto<PaymentMethod>[]
   deliveryMethods: AnalyticsMixRowDto<DeliveryMethod>[]
+  /** Top 10 by sales (then units). */
   products: AnalyticsProductRowDto[]
+  /** Top 10 by units (then sales): what moves most, whatever its price (ink next to printers). */
+  productsByUnits: AnalyticsProductRowDto[]
   /** Top-level categories (a subcategory's sales count for its parent). */
   categories: AnalyticsRankRowDto[]
   /** `id: null` = products without a brand. */

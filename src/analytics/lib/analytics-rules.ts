@@ -142,6 +142,7 @@ export interface SoldLine<K> {
 
 export interface RankRow<K> extends SoldLine<K> {
   previousSales: Decimal
+  previousUnits: number
 }
 
 /** Adds up lines of the same key (variants of one product, products of one category). */
@@ -157,10 +158,24 @@ export function sumLines<K>(lines: SoldLine<K>[]): Map<K, SoldLine<K>> {
   return totals
 }
 
-/** The top `limit` of the period by sales (then units), each with what it sold in the previous period. */
-export function topRows<K>(current: Map<K, SoldLine<K>>, previous: Map<K, SoldLine<K>>, limit: number): RankRow<K>[] {
+/**
+ * The top `limit` of the period by sales (then units) or by units (then sales), each with what it sold in the previous
+ * period.
+ */
+export function topRows<K>(
+  current: Map<K, SoldLine<K>>,
+  previous: Map<K, SoldLine<K>>,
+  limit: number,
+  by: 'sales' | 'units' = 'sales',
+): RankRow<K>[] {
+  const bySales = (a: SoldLine<K>, b: SoldLine<K>) => b.sales.comparedTo(a.sales)
+  const byUnits = (a: SoldLine<K>, b: SoldLine<K>) => b.units - a.units
   return [...current.values()]
-    .sort((a, b) => b.sales.comparedTo(a.sales) || b.units - a.units)
+    .sort((a, b) => (by === 'sales' ? bySales(a, b) || byUnits(a, b) : byUnits(a, b) || bySales(a, b)))
     .slice(0, limit)
-    .map(row => ({ ...row, previousSales: previous.get(row.key)?.sales ?? zero() }))
+    .map(row => ({
+      ...row,
+      previousSales: previous.get(row.key)?.sales ?? zero(),
+      previousUnits: previous.get(row.key)?.units ?? 0,
+    }))
 }

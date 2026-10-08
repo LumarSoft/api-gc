@@ -1240,8 +1240,9 @@ against the previous period of the same length.
 - `hoursToPay`: median hours from placing an order to staff confirming its payment; `null` without paid orders.
 - `buyerTypes`, `paymentMethods`, `deliveryMethods`: paid orders and sales per value, biggest first, with the previous
   period's sales.
-- `products` (top 10), `categories` and `brands` (top 8): units and line totals of paid orders (before order discounts,
-  without shipping). A subcategory counts for its top-level category; `brands[].id: null` = products without a brand.
+- `products` (top 10 by sales), `productsByUnits` (top 10 by units, then sales), `categories` and `brands` (top 8 by
+  sales): units and line totals of paid orders (before order discounts, without shipping), with `previousSales` and
+  `previousUnits` of the previous period. A subcategory counts for its top-level category; `brands[].id: null` = products without a brand.
   `archived: true` = the product was archived since (no admin page).
 - `customers`: told apart by order email (guests have no account). `returning` = customers of the period who had a
   paid order before it. `signUps`: customer accounts created. `frequentCustomerApplications.approved`: approved in the
@@ -1324,10 +1325,12 @@ against the previous period of the same length.
       "units": 3,
       "sales": { "amount": "1259997.00", "currency": "ARS" },
       "previousSales": { "amount": "419999.00", "currency": "ARS" },
+      "previousUnits": 1,
       "imageUrl": "http://localhost:3001/files/products/l3250.webp",
       "archived": false
     }
   ],
+  "productsByUnits": ["…same shape as products…"],
   "categories": [
     {
       "id": 1,

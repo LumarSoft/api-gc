@@ -162,6 +162,12 @@ describe('Admin analytics (local MySQL e2e)', () => {
     expect(product).toMatchObject({ units: 2, archived: false, imageUrl: null })
     expect(product?.sales.amount).toBe('600000000.00')
     expect(product?.previousSales.amount).toBe('300000000.00')
+    expect(product?.previousUnits).toBe(1)
+    expect(after.productsByUnits.length).toBeGreaterThan(0)
+    // Ranked by units: no row sold more units than the one before it.
+    after.productsByUnits.slice(1).forEach((row, index) => {
+      expect(row.units).toBeLessThanOrEqual(after.productsByUnits[index].units)
+    })
     // The subcategory's sales count for its top-level category.
     expect(after.categories.find(row => row.id === categoryIds[1])?.sales.amount).toBe('600000000.00')
     expect(after.categories.some(row => row.id === categoryIds[0])).toBe(false)
