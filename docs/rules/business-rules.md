@@ -66,6 +66,9 @@ Domain rules that apply across modules. When a request contradicts one of these,
   server-rendered pages, analytics or logs. The number/email alone cannot grant access. No automatic emails in this
   stage: the buyer must copy/bookmark the private link shown after confirmation. Lost-link recovery by identity checks
   and token rotation remains a future support workflow; no insecure public email/number lookup is exposed.
+- A signed-in buyer also sees their orders in the account area (`GET /orders/mine`), owned by `Order.userId` only.
+  Guest orders are never attached to an account by email, before or after sign-up: the typed checkout email does not
+  prove ownership. Wholesale company members see only the orders they placed.
 - A review fingerprint detects changed product names, quantities, ARS prices, contact data, destination or delivery cost.
   A changed review returns 409 and requires review again. The fingerprint is not authorization and no client total is trusted.
 - **Provisional implementation choice:** pending manual-payment reservations use the existing 24-hour transfer window.

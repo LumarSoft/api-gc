@@ -9,6 +9,8 @@ import { OrderMapper } from './order.mapper'
 import { OrderStockService } from './order-stock.service'
 import { OrderStatusService } from './order-status.service'
 import { OrderExpiryService } from './order-expiry.service'
+import { CustomerOrdersController } from './customer-orders.controller'
+import { CustomerOrdersService } from './customer-orders.service'
 
 @Module({
   imports: [CartModule, PricingModule],
@@ -19,8 +21,9 @@ import { OrderExpiryService } from './order-expiry.service'
     OrderStockService,
     OrderStatusService,
     OrderExpiryService,
+    CustomerOrdersService,
   ],
-  controllers: [OrdersController, AdminOrdersController],
+  controllers: [CustomerOrdersController, OrdersController, AdminOrdersController],
   exports: [OrdersService],
 })
 export class OrdersModule {}

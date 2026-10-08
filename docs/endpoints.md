@@ -1727,6 +1727,53 @@ This is capability-based retry recovery, not public recovery by email. No new or
 `404 Not Found` — no completed attempt: `{ "message": "Todavía no encontramos una confirmación para este intento.", "statusCode": 404 }`.
 `429 Too Many Requests`: `{ "message": "ThrottlerException: Too Many Requests", "statusCode": 429 }`.
 
+### GET /orders/mine
+
+The signed-in customer's own orders (`Order.userId`), latest id first, for the account area. Guest orders placed with
+the same email are not linked: an email typed at checkout does not prove ownership. Wholesale company members only see
+the orders they placed themselves.
+
+**Auth required:** Yes (any role).
+
+**Query**
+
+| Field      | Type    | Required | Constraints      |
+| ---------- | ------- | -------- | ---------------- |
+| `page`     | integer | No       | ≥ 1, default 1   |
+| `pageSize` | integer | No       | 1–50, default 10 |
+
+**Responses**
+
+`200 OK` — `Cache-Control: private, no-store`. Each item has the same shape as the tracking response (no staff
+fields):
+
+```json
+{
+  "items": [{ "id": 12, "number": "CG-000012", "status": "PENDING_PAYMENT", "...": "..." }],
+  "page": 1,
+  "pageSize": 10,
+  "total": 1,
+  "totalPages": 1
+}
+```
+
+`400 Bad Request` — `{ "message": ["pageSize must not be greater than 50"], "statusCode": 400 }`.
+`401 Unauthorized` — no session: `{ "message": "Unauthorized", "statusCode": 401 }`.
+
+### GET /orders/mine/:number
+
+One of the signed-in customer's orders, same shape as tracking. Another account's or a guest order answers exactly like
+a missing one.
+
+**Auth required:** Yes (any role).
+
+**Responses**
+
+`200 OK` — `Cache-Control: private, no-store`; same complete order example as placement.
+`400 Bad Request` — number not `CG-` + 6–10 digits: `{ "message": ["number must match /^CG-\\d{6,10}$/ regular expression"], "statusCode": 400 }`.
+`401 Unauthorized` — no session: `{ "message": "Unauthorized", "statusCode": 401 }`.
+`404 Not Found` — `{ "message": "No encontramos este pedido en tu cuenta.", "statusCode": 404 }`.
+
 ### GET /admin/orders
 
 Paged orders, latest id first, optionally filtered by status, stage and a search term. Manual lifecycle only; all
