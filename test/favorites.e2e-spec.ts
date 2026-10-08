@@ -108,6 +108,7 @@ describe('Favorites and offers (local MySQL e2e)', () => {
     const all = (await request(server()).get(`/products?category=${categorySlug}`).expect(200))
       .body as PaginatedProductsDto
     expect(all.total).toBe(3)
+    await request(server()).get('/products?page=99999999999999999999').expect(400)
   })
 
   it('requires a session for favorites', async () => {

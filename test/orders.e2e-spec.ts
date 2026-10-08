@@ -342,6 +342,7 @@ describe('Guest orders (local MySQL e2e)', () => {
     const closed = (await admin(`/admin/orders?stage=CLOSED&q=${order.number}`).expect(200)).body as OrdersPageDto
     expect(closed.items).toHaveLength(0)
     await admin('/admin/orders?stage=OPEN').expect(400)
+    await admin('/admin/orders?page=99999999999999999999').expect(400)
 
     await request(app.getHttpServer())
       .put(`/admin/orders/${order.id}/status`)

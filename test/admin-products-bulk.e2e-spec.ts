@@ -105,6 +105,10 @@ describe('Admin bulk product actions (local MySQL e2e)', () => {
     await bulk({ ids: [], action: 'HIDE' }).expect(400)
     await bulk({ ids: Array.from({ length: 101 }, (_, index) => index + 1), action: 'HIDE' }).expect(400)
     await bulk({ ids: [id], action: 'DELETE' }).expect(400)
+    await request(app.getHttpServer())
+      .get('/admin/products?page=99999999999999999999')
+      .set('Cookie', adminCookie)
+      .expect(400)
     expect((await prisma.product.findUniqueOrThrow({ where: { id } })).status).toBe(ProductStatus.DRAFT)
   })
 

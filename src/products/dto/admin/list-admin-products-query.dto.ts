@@ -8,10 +8,12 @@ export type AdminProductSort = (typeof ADMIN_PRODUCT_SORTS)[number]
 export const MAX_ADMIN_PAGE_SIZE = 100
 
 export class ListAdminProductsQueryDto {
+  /** Capped so an absurd page cannot overflow the database offset (500). */
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
+  @Max(10_000)
   page: number = 1
 
   @IsOptional()
