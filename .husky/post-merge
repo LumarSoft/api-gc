@@ -1,0 +1,1 @@
+node scripts/after-pull.mjs ORIG_HEAD HEAD || true

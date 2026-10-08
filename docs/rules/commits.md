@@ -35,7 +35,8 @@ docs: document products endpoints
 - Branches: `feat/<topic>`, `fix/<topic>`, `chore/<topic>`. Never push directly to `master`/`main`.
 - Every change goes through a PR reviewed by another team member.
 - One PR = one responsibility. PR title follows the same Conventional Commits format.
-- If a PR includes a migration, say so in the description.
+- Fill the PR template (`.github/pull_request_template.md`): "Pasos después de mergear" lists every manual step
+  (migration, env vars, seed, server config) so whoever deploys sees it.
 
 ## Rules
 

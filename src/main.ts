@@ -6,9 +6,13 @@ import type { Response } from 'express'
 import { join, resolve } from 'node:path'
 import { AppModule } from './app.module'
 import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter'
+import { assertMigrationsApplied } from './prisma/migration-check'
+import { PrismaService } from './prisma/prisma.service'
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule)
+  // Before serving anything: a deploy that forgot `prisma migrate deploy` must not start (docs/upgrade-notes.md).
+  await assertMigrationsApplied(app.get(PrismaService))
 
   // Behind a reverse proxy / load balancer the client IP comes from X-Forwarded-For. Without this, rate limits would
   // count every customer as the proxy's single IP. TRUST_PROXY = number of proxy hops in front of the API.
@@ -54,4 +58,7 @@ async function bootstrap() {
   new Logger('Bootstrap').log(`App running on port ${port}`)
 }
 
-void bootstrap()
+bootstrap().catch((error: unknown) => {
+  new Logger('Bootstrap').error(error instanceof Error ? error.message : String(error))
+  process.exit(1)
+})
