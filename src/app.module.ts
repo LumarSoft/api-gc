@@ -18,6 +18,7 @@ import { CheckoutModule } from './checkout/checkout.module'
 import { OrdersModule } from './orders/orders.module'
 import { FavoritesModule } from './favorites/favorites.module'
 import { WholesaleApplicationsModule } from './wholesale-applications/wholesale-applications.module'
+import { DashboardModule } from './dashboard/dashboard.module'
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { WholesaleApplicationsModule } from './wholesale-applications/wholesale-
     CheckoutModule,
     FavoritesModule,
     WholesaleApplicationsModule,
+    DashboardModule,
     OrdersModule,
   ],
   controllers: [AppController],

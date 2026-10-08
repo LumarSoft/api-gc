@@ -15,13 +15,7 @@ export function adminProductsWhere(
     filters.push({ OR: [{ categoryId: query.categoryId }, { category: { parentId: query.categoryId } }] })
   }
   if (query.brandId) filters.push({ brandId: query.brandId })
-  if (query.stock === 'out') {
-    filters.push({
-      variants: {
-        none: { deletedAt: null, isActive: true, inventory: { is: { onHand: { gt: reservedField } } } },
-      },
-    })
-  }
+  if (query.stock === 'out') filters.push(outOfStockWhere(reservedField))
   if (query.q) {
     // `contains` becomes LIKE: escape % and _ so they are searched literally.
     const term = query.q.trim().replace(/[\\%_]/g, '\\$&')
@@ -30,6 +24,15 @@ export function adminProductsWhere(
     })
   }
   return { AND: filters }
+}
+
+/** No active variant has stock left once reservations are taken out. Shared by the list and the admin home. */
+export function outOfStockWhere(reservedField: Prisma.FieldRef<'InventoryLevel', 'Int'>): Prisma.ProductWhereInput {
+  return {
+    variants: {
+      none: { deletedAt: null, isActive: true, inventory: { is: { onHand: { gt: reservedField } } } },
+    },
+  }
 }
 
 export function adminProductsOrderBy(sort: AdminProductSort): Prisma.ProductOrderByWithRelationInput[] {

@@ -1165,6 +1165,41 @@ decimals, > 0; `effectiveFrom` defaults to now and may be in the future (schedul
 
 **Auth required:** Yes (ADMIN). `201 Created` — same shape as `GET /admin/exchange-rates`.
 
+## Admin home
+
+### GET /admin/dashboard
+
+Summary for the admin home: the last 30 Argentine calendar days (today included) against the 30 days before, and the
+work waiting outside orders (order stages come from `GET /admin/orders/counts`).
+
+- `sales`: orders whose payment staff verified (`CONFIRMED` through `DELIVERED`), by confirmation date, ARS.
+- `orders`: orders placed, by placement date, whatever happened to them later.
+- `averageOrder`: sales divided by paid orders; `null` when there were none.
+- `daily` arrays have one value per entry of `days` (oldest first), zero on days without activity.
+
+**Auth required:** Yes (ADMIN).
+
+**Responses**
+
+`200 OK`
+
+```json
+{
+  "days": ["2026-09-09", "…", "2026-10-08"],
+  "sales": {
+    "current": { "amount": "2239997.00", "currency": "ARS" },
+    "previous": { "amount": "0.00", "currency": "ARS" },
+    "daily": ["0.00", "…", "2239997.00"]
+  },
+  "orders": { "current": 5, "previous": 0, "daily": [0, "…", 5] },
+  "averageOrder": { "current": { "amount": "2239997.00", "currency": "ARS" }, "previous": null },
+  "todo": { "wholesalePending": 1, "publishedOutOfStock": 2, "drafts": 0 }
+}
+```
+
+`401 Unauthorized`: `{ "message": "Unauthorized", "statusCode": 401 }`.
+`403 Forbidden`: `{ "message": "Forbidden resource", "statusCode": 403 }`.
+
 ## Checkout preparation
 
 Browser-only, optional authentication. Guest ownership uses the existing `cg_cart` cookie (path `/cart`);
