@@ -13,7 +13,12 @@ import { hashToken } from '../src/common/utils/secure-token'
 import { BuyerType, CartStatus, OrderStatus, UserRole } from '../src/generated/prisma/enums'
 import { PrismaService } from '../src/prisma/prisma.service'
 import type { CheckoutResponseDto } from '../src/checkout/dto/checkout-response.dto'
-import type { OrderCountsDto, OrderResponseDto, OrdersPageDto } from '../src/orders/dto/order-response.dto'
+import type {
+  MyOrdersPageDto,
+  OrderCountsDto,
+  OrderResponseDto,
+  OrdersPageDto,
+} from '../src/orders/dto/order-response.dto'
 import { OrderStatusService } from '../src/orders/order-status.service'
 import { OrderExpiryService } from '../src/orders/order-expiry.service'
 
@@ -358,5 +363,69 @@ describe('Guest orders (local MySQL e2e)', () => {
     )
     expect(tracked.history.at(-1)).toEqual({ status: 'CANCELLED', at: expect.any(String) as string })
     expect(tracked).not.toHaveProperty('guest')
+  })
+
+  it("lists and reads a signed-in customer's own orders, never a guest's or another account's", async () => {
+    await request(app.getHttpServer())
+      .post('/cart/items')
+      .set('Cookie', customerCookie)
+      .send({ variantId, quantity: 1 })
+      .expect(200)
+    const customerCart = await prisma.cart.findFirstOrThrow({
+      where: { userId: customerId, status: CartStatus.ACTIVE, deletedAt: null },
+      select: { id: true },
+    })
+    cartIds.push(customerCart.id)
+    const first = await place(customerCookie)
+    await request(app.getHttpServer())
+      .post('/cart/items')
+      .set('Cookie', customerCookie)
+      .send({ variantId, quantity: 3 })
+      .expect(200)
+    const secondCart = await prisma.cart.findFirstOrThrow({
+      where: { userId: customerId, status: CartStatus.ACTIVE, deletedAt: null },
+      select: { id: true },
+    })
+    cartIds.push(secondCart.id)
+    const second = await place(customerCookie)
+    const guest = await place(guestCookie)
+    const mine = (path: string, cookie = customerCookie) => request(app.getHttpServer()).get(path).set('Cookie', cookie)
+
+    const page = (await mine('/orders/mine').expect(200)).body as MyOrdersPageDto
+    expect(page.items.map(item => item.number)).toEqual([second.order.number, first.order.number])
+    expect(page).toMatchObject({ page: 1, pageSize: 10, total: 2, totalPages: 1 })
+    expect(page.items[0].items[0].quantity).toBe(3)
+    expect(page.items[0]).not.toHaveProperty('guest')
+    expect(page.items[0]).not.toHaveProperty('allowedStatuses')
+    const paged = (await mine('/orders/mine?page=2&pageSize=1').expect(200)).body as MyOrdersPageDto
+    expect(paged.items.map(item => item.number)).toEqual([first.order.number])
+    expect(paged.totalPages).toBe(2)
+    await mine('/orders/mine?pageSize=51').expect(400)
+    await mine('/orders/mine?page=99999999999999999999').expect(400)
+
+    const read = await mine(`/orders/mine/${first.order.number}`).expect(200)
+    expect(read.headers['cache-control']).toBe('private, no-store')
+    expect(body(read)).toMatchObject({ number: first.order.number, status: 'PENDING_PAYMENT' })
+    expect(body(read).history[0]).toEqual({ status: 'PENDING_PAYMENT', at: expect.any(String) as string })
+    await mine(`/orders/mine/${guest.order.number}`).expect(404)
+    await mine('/orders/mine/not-a-number').expect(400)
+    await request(app.getHttpServer()).get('/orders/mine').expect(401)
+    await request(app.getHttpServer()).get(`/orders/mine/${first.order.number}`).expect(401)
+
+    const other = await prisma.user.create({
+      data: {
+        email: `order-other-${randomUUID().slice(0, 8)}@example.test`,
+        firstName: 'Other',
+        lastName: 'Test',
+        passwordHash: await hash(access(), 10),
+      },
+    })
+    try {
+      const otherCookie = `cg_at=${await app.get(JwtService).signAsync({ sub: other.id })}`
+      expect(((await mine('/orders/mine', otherCookie).expect(200)).body as MyOrdersPageDto).total).toBe(0)
+      await mine(`/orders/mine/${first.order.number}`, otherCookie).expect(404)
+    } finally {
+      await prisma.user.update({ where: { id: other.id }, data: { deletedAt: new Date() } })
+    }
   })
 })

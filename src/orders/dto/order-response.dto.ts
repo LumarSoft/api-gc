@@ -47,6 +47,15 @@ export interface OrdersPageDto {
   expiryJobFailed: boolean
 }
 
+/** The signed-in customer's orders, newest first. */
+export interface MyOrdersPageDto {
+  items: OrderResponseDto[]
+  page: number
+  pageSize: number
+  total: number
+  totalPages: number
+}
+
 /** Orders that need staff action, per open stage. */
 export interface OrderCountsDto {
   PENDING_PAYMENT: number
