@@ -78,8 +78,9 @@ Domain rules that apply across modules. When a request contradicts one of these,
   Checkout shows this window before confirmation and tracking shows the precise expiration. Revisit with the client
   when their offline payment process is finalized.
 - Pending orders may be cancelled; confirmed orders advance to preparation, then ready for pickup (pickup) or shipped
-  (local and carrier delivery), then delivered. Carrier orders also advance on their own when the carrier reports the
-  parcel handed over or delivered. Paid cancellation/refunds are not enabled in this stage. Expired/cancelled/delivered
+  (local delivery), then delivered. Carrier orders are prepared by staff but shipped and delivered **only by the
+  carrier** (agreed 2026-10-09): they advance on their own when the carrier reports the parcel handed over or
+  delivered (webhook, or "Actualizar" in the admin), so an order never shows delivered while its parcel is at the store. Paid cancellation/refunds are not enabled in this stage. Expired/cancelled/delivered
   states are terminal. Staff notes and actor ids stay out of guest tracking.
 
 - An order line stores a **snapshot** of product name, unit price and currency at purchase time. An order is never

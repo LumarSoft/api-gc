@@ -41,6 +41,15 @@ describe('manual order lifecycle', () => {
   })
 })
 
+describe('carrier orders', () => {
+  it('are prepared by staff but shipped and delivered only by the carrier', () => {
+    expect(orderTransitions(OrderStatus.CONFIRMED, DeliveryMethod.CARRIER)).toEqual([OrderStatus.PREPARING])
+    expect(orderTransitions(OrderStatus.PREPARING, DeliveryMethod.CARRIER)).toEqual([])
+    expect(orderTransitions(OrderStatus.SHIPPED, DeliveryMethod.CARRIER)).toEqual([])
+    expect(orderTransitions(OrderStatus.PREPARING, DeliveryMethod.LOCAL_DELIVERY)).toEqual([OrderStatus.SHIPPED])
+  })
+})
+
 describe('carrier-driven order status', () => {
   it('ships a paid order once the carrier has it, and delivers it when the carrier does', () => {
     expect(carrierOrderStatus(OrderStatus.CONFIRMED, ShipmentStatus.IN_TRANSIT)).toBe(OrderStatus.SHIPPED)

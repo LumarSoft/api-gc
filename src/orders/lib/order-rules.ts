@@ -1,6 +1,12 @@
 import { DeliveryMethod, OrderStatus, ShipmentStatus } from '../../generated/prisma/enums'
 
+/**
+ * The states staff can move an order to. Carrier orders are shipped and delivered only by the carrier's own status
+ * (`carrierOrderStatus`), so the order never says "delivered" while the parcel is still at the store.
+ */
 export function orderTransitions(status: OrderStatus, delivery: DeliveryMethod): OrderStatus[] {
+  if (delivery === DeliveryMethod.CARRIER && (status === OrderStatus.PREPARING || status === OrderStatus.SHIPPED))
+    return []
   switch (status) {
     case OrderStatus.PENDING_PAYMENT:
       return [OrderStatus.CONFIRMED, OrderStatus.CANCELLED]
