@@ -45,6 +45,20 @@ export const orderSelect = {
     select: { type: true, name: true, street: true, streetNumber: true, city: true, province: true, postalCode: true },
   },
   statusHistory: { orderBy: { id: 'asc' }, select: { toStatus: true, createdAt: true } },
+  shipments: {
+    where: { deletedAt: null },
+    orderBy: { id: 'desc' },
+    take: 1,
+    select: {
+      status: true,
+      carrier: true,
+      service: true,
+      carrierStatus: true,
+      trackingNumber: true,
+      trackingUrl: true,
+      pickupPoint: true,
+    },
+  },
 } satisfies Prisma.OrderSelect
 
 export type OrderRow = Prisma.OrderGetPayload<{ select: typeof orderSelect }>
@@ -56,6 +70,10 @@ export const adminOrderSelect = {
   statusHistory: {
     orderBy: { id: 'asc' },
     select: { toStatus: true, createdAt: true, note: true, changedBy: { select: { firstName: true, lastName: true } } },
+  },
+  shipments: {
+    ...orderSelect.shipments,
+    select: { ...orderSelect.shipments.select, externalId: true },
   },
 } satisfies Prisma.OrderSelect
 

@@ -1,4 +1,4 @@
-import { DeliveryMethod, OrderStatus } from '../../generated/prisma/enums'
+import { DeliveryMethod, OrderStatus, ShipmentStatus } from '../../generated/prisma/enums'
 
 export function orderTransitions(status: OrderStatus, delivery: DeliveryMethod): OrderStatus[] {
   switch (status) {
@@ -14,6 +14,38 @@ export function orderTransitions(status: OrderStatus, delivery: DeliveryMethod):
     default:
       return []
   }
+}
+
+/**
+ * The order state a carrier shipment implies, when the order is behind it: handed over (or waiting at a branch) means
+ * shipped, delivered means delivered. Returns, losses and cancellations need a person, so they never move the order.
+ */
+export function carrierOrderStatus(status: OrderStatus, shipment: ShipmentStatus): OrderStatus | null {
+  const fulfilling = status === OrderStatus.CONFIRMED || status === OrderStatus.PREPARING
+  if (shipment === ShipmentStatus.DELIVERED && (fulfilling || status === OrderStatus.SHIPPED))
+    return OrderStatus.DELIVERED
+  if ((shipment === ShipmentStatus.IN_TRANSIT || shipment === ShipmentStatus.READY_FOR_PICKUP) && fulfilling)
+    return OrderStatus.SHIPPED
+  return null
+}
+
+export type ShipmentAction = 'CREATE' | 'DOCUMENTS' | 'CANCEL' | 'REFRESH'
+
+/**
+ * What staff can do with an order's carrier shipment. It is created at the provider once the order is paid; labels
+ * and cancellation only make sense before the carrier has it.
+ */
+export function shipmentActions(
+  status: OrderStatus,
+  shipment: { status: ShipmentStatus; externalId: string | null },
+): ShipmentAction[] {
+  if (!shipment.externalId)
+    return shipment.status === ShipmentStatus.PENDING &&
+      (status === OrderStatus.CONFIRMED || status === OrderStatus.PREPARING)
+      ? ['CREATE']
+      : []
+  if (shipment.status === ShipmentStatus.CANCELLED) return ['REFRESH']
+  return shipment.status === ShipmentStatus.PENDING ? ['DOCUMENTS', 'CANCEL', 'REFRESH'] : ['DOCUMENTS', 'REFRESH']
 }
 
 /** Groups of states the admin works through, used as list views and counters. */
