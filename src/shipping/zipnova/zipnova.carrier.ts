@@ -103,7 +103,12 @@ export class ZipnovaCarrier implements ShippingCarrier {
       download = await this.client.download(`/shipments/${this.id(id)}/${what}.${format}`)
     } catch (error) {
       // Zipnova answers 400 when the carrier works without a dispatch guide (e.g. OCA home delivery).
-      if (kind === 'guide' && error instanceof CarrierError && error.kind === 'REJECTED')
+      if (
+        kind === 'guide' &&
+        error instanceof CarrierError &&
+        error.kind === 'REJECTED' &&
+        /guide/i.test(error.message)
+      )
         throw new CarrierError('REJECTED', 'este transporte no usa guía de despacho; alcanza con la etiqueta', 400)
       throw error
     }
