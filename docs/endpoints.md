@@ -2243,7 +2243,8 @@ Download the dispatch documents (`DOCUMENTS`). `kind`: `label` (one per package;
 
 `200 OK` — the file (`application/pdf` or `text/plain`), `Content-Disposition: attachment`.
 `400 Bad Request` — unknown `kind` or `format`, or a guide in ZPL.
-`422 Unprocessable Entity` — not available, or Zipnova has not generated it yet:
+`422 Unprocessable Entity` — not available, the carrier works without a guide (`"Zipnova rechazó la operación: este
+transporte no usa guía de despacho; alcanza con la etiqueta"`), or Zipnova has not generated it yet:
 `{ "message": "Zipnova todavía no generó la documentación. Probá en unos minutos.", "statusCode": 422 }`.
 
 #### POST /admin/orders/:id/shipment/cancel

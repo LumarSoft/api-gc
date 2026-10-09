@@ -67,7 +67,7 @@ describe('Zipnova carrier requests', () => {
     })
   })
 
-  it('accepts documents as a raw file or as base64 inside JSON', async () => {
+  it('accepts documents as a raw file or as base64 in `body`, as Zipnova answers them', async () => {
     const download = (answer: ZipnovaDownload) => withClient({ download: () => Promise.resolve(answer) })
     const raw = await download({ bytes: Buffer.from('%PDF'), contentType: 'application/pdf' }).document(
       '2',
@@ -75,14 +75,24 @@ describe('Zipnova carrier requests', () => {
       'pdf',
     )
     expect(raw.content.toString()).toBe('%PDF')
-    const json = await download({ json: { content: Buffer.from('^XA').toString('base64') } }).document(
+    const json = await download({ json: { format: 'zpl', body: Buffer.from('^XA').toString('base64') } }).document(
       '2',
       'label',
       'zpl',
     )
     expect(json).toMatchObject({ contentType: 'text/plain; charset=utf-8', fileName: 'etiqueta-2.zpl' })
     expect(json.content.toString()).toBe('^XA')
-    await expect(download({ json: {} }).document('2', 'guide', 'pdf')).rejects.toMatchObject({ kind: 'NOT_READY' })
+    const plain = await download({ json: { format: 'zpl', body: '^XA^FO50^XZ' } }).document('2', 'label', 'zpl')
+    expect(plain.content.toString()).toBe('^XA^FO50^XZ')
+    await expect(download({ json: {} }).document('2', 'label', 'pdf')).rejects.toMatchObject({ kind: 'NOT_READY' })
+  })
+
+  it('explains a missing dispatch guide instead of passing on the provider message', async () => {
+    const download = () => Promise.reject(new CarrierError('REJECTED', 'Shipment does not use shipping guide.', 400))
+    await expect(withClient({ download }).document('2', 'guide', 'pdf')).rejects.toMatchObject({
+      kind: 'REJECTED',
+      message: 'este transporte no usa guía de despacho; alcanza con la etiqueta',
+    })
   })
 
   it('never puts a non-numeric id in a provider URL', async () => {

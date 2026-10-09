@@ -44,9 +44,9 @@ export interface ZipnovaShipmentList {
   data?: ZipnovaShipment[] | null
 }
 
+/** Answer of `GET /shipments/{id}/{label|document}.{pdf|zpl}` (checked in test mode, 2026-10-09). */
 export interface ZipnovaDocument {
-  /** Base64 of the file. */
-  content?: string | null
-  data?: string | null
-  file?: string | null
+  format?: string | null
+  /** The file in base64. */
+  body?: string | null
 }
