@@ -1542,7 +1542,7 @@ Read the current cart, available delivery options and initial pickup totals. No 
       "description": "El costo depende del destino y de los productos.",
       "enabled": false,
       "cost": null,
-      "unavailableReason": "La cotización de envíos todavía no está disponible."
+      "unavailableReason": "El envío al resto del país todavía no está disponible."
     }
   ],
   "deliveryMethod": "STORE_PICKUP",
@@ -1550,6 +1550,7 @@ Read the current cart, available delivery options and initial pickup totals. No 
   "total": { "amount": "0.00", "currency": "ARS" },
   "customer": null,
   "shippingAddress": null,
+  "shippingQuote": null,
   "canReview": false,
   "reviewToken": null,
   "reservationHours": 24
@@ -1557,7 +1558,10 @@ Read the current cart, available delivery options and initial pickup totals. No 
 ```
 
 Local delivery costs come from the active ARS `ShippingMethod` rate and free-shipping threshold. Missing/negative
-rates, negative thresholds, inactive methods and USD rates are unavailable. Carrier quotes are not implemented.
+rates, negative thresholds, inactive methods and USD rates are unavailable. `CARRIER` is enabled when Zipnova is
+configured and every line can be quoted; otherwise `unavailableReason` says why (bulky items, products without weight
+and measurements, or more than 100 units are shipped by arrangement). Its `cost` stays null until the buyer picks a
+quote (`POST /cart/checkout/shipping-quotes`, then preview with `shippingQuoteId`).
 `canReview` requires a nonempty cart without price/stock issues. `total` is null when it cannot be fully priced in ARS.
 
 `401 Unauthorized`
@@ -1581,18 +1585,23 @@ echoed for this response only; later GET requests return `customer: null` and `s
 
 **Request body**
 
-| Field                          | Type   | Required              | Constraints                                                           |
-| ------------------------------ | ------ | --------------------- | --------------------------------------------------------------------- |
-| `name`                         | string | Yes                   | Trimmed, nonempty, max 200                                            |
-| `email`                        | string | Yes                   | Valid email, trimmed, max 191                                         |
-| `phone`                        | string | No                    | Trimmed, max 30                                                       |
-| `deliveryMethod`               | enum   | Yes                   | `STORE_PICKUP`, `LOCAL_DELIVERY`, `CARRIER`; method must be available |
-| `shippingAddress`              | object | For local delivery    | Validated nested object; city Rosario, province Santa Fe              |
-| `shippingAddress.street`       | string | When address supplied | Trimmed, nonempty, max 150                                            |
-| `shippingAddress.streetNumber` | string | When address supplied | Trimmed, nonempty, max 20                                             |
-| `shippingAddress.city`         | string | When address supplied | Trimmed, nonempty, max 100                                            |
-| `shippingAddress.province`     | string | When address supplied | Trimmed, nonempty, max 100                                            |
-| `shippingAddress.postalCode`   | string | When address supplied | Trimmed, nonempty, max 10                                             |
+| Field                          | Type   | Required              | Constraints                                                                |
+| ------------------------------ | ------ | --------------------- | -------------------------------------------------------------------------- |
+| `name`                         | string | Yes                   | Trimmed, nonempty, max 200                                                 |
+| `email`                        | string | Yes                   | Valid email, trimmed, max 191                                              |
+| `phone`                        | string | For carrier           | Trimmed, max 30                                                            |
+| `deliveryMethod`               | enum   | Yes                   | `STORE_PICKUP`, `LOCAL_DELIVERY`, `CARRIER`; method must be available      |
+| `shippingAddress`              | object | For local and carrier | Validated nested object; local delivery: city Rosario, Santa Fe            |
+| `shippingAddress.street`       | string | When address supplied | Trimmed, nonempty, max 150                                                 |
+| `shippingAddress.streetNumber` | string | When address supplied | Trimmed, nonempty, max 20                                                  |
+| `shippingAddress.city`         | string | When address supplied | Trimmed, nonempty, max 100                                                 |
+| `shippingAddress.province`     | string | When address supplied | Trimmed, nonempty, max 100                                                 |
+| `shippingAddress.postalCode`   | string | When address supplied | Trimmed, nonempty, max 10                                                  |
+| `shippingAddress.taxId`        | string | For carrier           | DNI or CUIT of the recipient; spaces, dots and dashes removed; 7–11 digits |
+| `shippingQuoteId`              | int    | For carrier           | An option from `POST /cart/checkout/shipping-quotes` for this cart         |
+
+For `CARRIER`, the quote must belong to the current cart, be unexpired (30 minutes), match the address' postal code,
+city and province, and the cart must still have the quoted lines and quantities; otherwise `422` asks to quote again.
 
 ```json
 { "name": "Cliente de prueba", "email": "cliente@example.test", "deliveryMethod": "STORE_PICKUP" }
@@ -1602,7 +1611,9 @@ echoed for this response only; later GET requests return `customer: null` and `s
 
 `200 OK` — same complete shape as GET, with freshly priced real cart lines, `canReview: true`, the selected method,
 its shipping cost and the exact full total. `customer` contains `{ "name": "Cliente de prueba", "email":
-"cliente@example.test", "phone": null }`; local delivery returns the validated address, pickup returns null.
+"cliente@example.test", "phone": null }`; local delivery and carrier return the validated address, pickup returns null.
+Carrier previews also return the chosen option in `shippingQuote` (same shape as a quote option below) and its price
+as `shippingTotal`.
 
 Example for a cart containing one unit of a test product (sample data):
 
@@ -1651,7 +1662,7 @@ Example for a cart containing one unit of a test product (sample data):
       "description": "El costo depende del destino y de los productos.",
       "enabled": false,
       "cost": null,
-      "unavailableReason": "La cotización de envíos todavía no está disponible."
+      "unavailableReason": "El envío al resto del país todavía no está disponible."
     }
   ],
   "deliveryMethod": "STORE_PICKUP",
@@ -1659,6 +1670,7 @@ Example for a cart containing one unit of a test product (sample data):
   "total": { "amount": "12.35", "currency": "ARS" },
   "customer": { "name": "Cliente de prueba", "email": "cliente@example.test", "phone": null },
   "shippingAddress": null,
+  "shippingQuote": null,
   "canReview": true,
   "reviewToken": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "reservationHours": 24
@@ -1671,7 +1683,8 @@ Example for a cart containing one unit of a test product (sample data):
 { "message": ["email must be an email"], "error": "Bad Request", "statusCode": 400 }
 ```
 
-`422 Unprocessable Entity` — empty cart, cart price/stock issue, unavailable delivery or local address outside Rosario.
+`422 Unprocessable Entity` — empty cart, cart price/stock issue, unavailable delivery, local address outside Rosario,
+missing carrier data (address, DNI/CUIT, phone, quote) or a carrier quote that expired or no longer matches.
 
 ```json
 {
@@ -1681,6 +1694,70 @@ Example for a cart containing one unit of a test product (sample data):
 }
 ```
 
+`401` and `429` have the same format as GET.
+
+### POST /cart/checkout/shipping-quotes
+
+Quote carrier shipping (rest of the country, through Zipnova) for the owner's current cart and a destination. Each
+option is stored for 30 minutes; the buyer sends the chosen `id` as `shippingQuoteId` to preview and confirm. Branch
+delivery comes as one option per branch, so a choice is always a single id.
+
+**Auth required:** No. Same optional-session and cookie rules as preview.
+
+**Rate limit:** 20 requests per minute per IP (each call asks the provider).
+
+**Request body**
+
+| Field                    | Type   | Required | Constraints                |
+| ------------------------ | ------ | -------- | -------------------------- |
+| `destination`            | object | Yes      | Validated nested object    |
+| `destination.city`       | string | Yes      | Trimmed, nonempty, max 100 |
+| `destination.province`   | string | Yes      | Trimmed, nonempty, max 100 |
+| `destination.postalCode` | string | Yes      | Trimmed, nonempty, max 10  |
+
+```json
+{ "destination": { "city": "Córdoba", "province": "Córdoba", "postalCode": "5000" } }
+```
+
+**Responses**
+
+`200 OK` — the best option per delivery mode, as Zipnova ranks them (the account's "selección automática" setting):
+
+```json
+{
+  "options": [
+    {
+      "id": 41,
+      "kind": "HOME",
+      "carrier": "OCA",
+      "service": "Entrega a domicilio",
+      "cost": { "amount": "12416.00", "currency": "ARS" },
+      "minDays": 5,
+      "maxDays": 6,
+      "pickupPoint": null
+    },
+    {
+      "id": 42,
+      "kind": "PICKUP_POINT",
+      "carrier": "OCA",
+      "service": "Entrega en punto de entrega",
+      "cost": { "amount": "12096.00", "currency": "ARS" },
+      "minDays": 3,
+      "maxDays": 5,
+      "pickupPoint": "Agente Oficial - Punto Oca - Rapipago — Marcelo T. De Alvear 203, Cordoba, Cordoba"
+    }
+  ],
+  "expiresAt": "2026-10-09T19:47:00.000Z"
+}
+```
+
+`cost` is what the buyer pays, VAT and insurance included.
+
+`400 Bad Request` — invalid or unknown fields: `{ "message": ["destination.postalCode should not be empty"], "statusCode": 400 }`.
+`422 Unprocessable Entity` — empty cart, price/stock issue, carrier not configured, cart shipped by arrangement,
+destination the provider does not recognize, or no options:
+`{ "message": "No pudimos cotizar el envío a esa dirección. Revisá el código postal, la localidad y la provincia.", "statusCode": 422 }`.
+`503 Service Unavailable` — the provider did not answer: `{ "message": "No pudimos cotizar el envío en este momento. Probá de nuevo en unos minutos.", "statusCode": 503 }`.
 `401` and `429` have the same format as GET.
 
 ## Cart
@@ -1824,7 +1901,8 @@ Errors: shared `401`, `409`, `429` above.
 
 ## Guest orders and manual management
 
-All responses below use `Cache-Control: private, no-store`. The API makes no outbound payment/email/shipping calls.
+All responses below use `Cache-Control: private, no-store`. The API makes no outbound payment or email calls; carrier
+shipments are booked at Zipnova only by the admin routes below.
 Money is in immutable ARS snapshots. Tracking returns full order lines as one aggregate, not a collection.
 The private token is a bearer capability; redact request bodies containing `accessToken` in every proxy/logger.
 
@@ -1837,15 +1915,16 @@ convert the cart and assign `CG-` plus a padded numeric id. Status starts `PENDI
 
 **Request body**
 
-| Field             | Type   | Required           | Constraints                                                                                             |
-| ----------------- | ------ | ------------------ | ------------------------------------------------------------------------------------------------------- |
-| `name`            | string | Yes                | Trimmed/nonempty, max 200                                                                               |
-| `email`           | string | Yes                | Valid email, trimmed, max 191                                                                           |
-| `phone`           | string | No                 | Trimmed, max 30                                                                                         |
-| `deliveryMethod`  | enum   | Yes                | Available `STORE_PICKUP` or configured `LOCAL_DELIVERY`; carrier unavailable                            |
-| `shippingAddress` | object | For local delivery | Same nested fields/limits as preview; Rosario, Santa Fe                                                 |
-| `reviewToken`     | string | Yes                | 64 lowercase hex characters from the exact preview being confirmed                                      |
-| `accessToken`     | string | Yes                | 64 lowercase hex characters, generated from 32 secure random bytes before first POST; reused on retries |
+| Field             | Type   | Required          | Constraints                                                                                             |
+| ----------------- | ------ | ----------------- | ------------------------------------------------------------------------------------------------------- |
+| `name`            | string | Yes               | Trimmed/nonempty, max 200                                                                               |
+| `email`           | string | Yes               | Valid email, trimmed, max 191                                                                           |
+| `phone`           | string | For carrier       | Trimmed, max 30                                                                                         |
+| `deliveryMethod`  | enum   | Yes               | Available `STORE_PICKUP`, configured `LOCAL_DELIVERY` or `CARRIER`                                      |
+| `shippingAddress` | object | For local/carrier | Same nested fields/limits as preview (carrier: with `taxId`); local delivery: Rosario, Santa Fe         |
+| `shippingQuoteId` | int    | For carrier       | Same option as the reviewed preview; checked again inside the order transaction                         |
+| `reviewToken`     | string | Yes               | 64 lowercase hex characters from the exact preview being confirmed                                      |
+| `accessToken`     | string | Yes               | 64 lowercase hex characters, generated from 32 secure random bytes before first POST; reused on retries |
 
 Amounts, ownership, payment method and status cannot be supplied. An existing token returns its original order,
 without another stock/payment operation and without requiring the now-converted cart cookie. Token possession grants
@@ -1882,6 +1961,7 @@ lines, names, prices, contact, address or shipping changes. `reservationHours` i
   "expiresAt": "2026-10-06T18:00:00.000Z",
   "customer": { "name": "Cliente de prueba", "email": "cliente@example.test", "phone": null },
   "shippingAddress": null,
+  "shipment": null,
   "items": [
     {
       "name": "Producto de prueba",
@@ -1897,8 +1977,24 @@ lines, names, prices, contact, address or shipping changes. `reservationHours` i
 }
 ```
 
-For local delivery, `shippingAddress` contains `street`, `streetNumber`, `city`, `province`, `postalCode`. Pickup
-returns null. No secrets, actor ids, internal/staff notes or live catalog prices are returned. Each item's `imageUrl` is the
+For local delivery and carrier, `shippingAddress` contains `street`, `streetNumber`, `city`, `province`, `postalCode`.
+Pickup returns null. Carrier orders also return `shipment` (null otherwise):
+
+```json
+{
+  "status": "IN_TRANSIT",
+  "carrier": "OCA",
+  "service": "Entrega a domicilio",
+  "carrierStatus": "En camino",
+  "trackingNumber": "4000123",
+  "trackingUrl": "https://...",
+  "pickupPoint": null
+}
+```
+
+`status` is `PENDING`, `IN_TRANSIT`, `READY_FOR_PICKUP` (waiting at a carrier branch), `DELIVERED`, `RETURNED`,
+`CANCELLED` or `LOST`; `carrierStatus` is the carrier's own wording. Admin responses add `shipment.actions`: any of
+`CREATE`, `DOCUMENTS`, `CANCEL`, `REFRESH` (see the shipment routes). No secrets, actor ids, internal/staff notes or live catalog prices are returned. Each item's `imageUrl` is the
 product's current first image (null without images): a thumbnail only, not part of the purchase snapshot.
 
 `400 Bad Request` — invalid DTO/unknown fields: `{ "message": ["property total should not exist"], "statusCode": 400 }`.
@@ -2112,6 +2208,69 @@ reserved stock once. Cancellation is available only before payment confirmation;
 `422 Unprocessable Entity` — invalid/repeated transition, missing payment verification, expired payment window or
 inconsistent stock: `{ "message": "Verificá el pago antes de confirmar el pedido.", "statusCode": 422 }`.
 `429 Too Many Requests`: `{ "message": "ThrottlerException: Too Many Requests", "statusCode": 429 }`.
+
+### Carrier shipments (admin)
+
+`CARRIER` orders get a pending shipment with the buyer's chosen option when placed. Staff book it at Zipnova once the
+order is paid; from then on Zipnova's webhook keeps it updated and moves the order to `SHIPPED` (handed over or waiting
+at a branch) and `DELIVERED`, with a system history event such as `"OCA: En camino"`. Returns, losses and
+cancellations never move the order: staff decide. Every route answers with the updated admin order (see GET above),
+whose `shipment.actions` lists what is available.
+
+**Auth required:** Yes (ADMIN), on every route below. Bookings and cancellations are audited.
+
+#### POST /admin/orders/:id/shipment
+
+Book the shipment at Zipnova (`CREATE`, only for `CONFIRMED` or `PREPARING` orders). The order number is the
+provider's reference, so a retry after a lost answer finds the same shipment instead of booking another one. Zipnova
+charges it to the account balance; without balance it stays `PENDING` ("Procesando") and its documents are not ready.
+
+`200 OK` — the order with `shipment.externalId` stored internally and `"actions": ["DOCUMENTS", "CANCEL", "REFRESH"]`.
+`422 Unprocessable Entity` — not available for this order, missing recipient data or product measurements, or
+Zipnova refused the data: `{ "message": "Zipnova rechazó la operación: Destino inexistente en base de datos", "statusCode": 422 }`.
+`503 Service Unavailable` — Zipnova did not answer: `{ "message": "Zipnova no responde. Probá de nuevo en unos minutos.", "statusCode": 503 }`.
+
+#### GET /admin/orders/:id/shipment/documents/:kind
+
+Download the dispatch documents (`DOCUMENTS`). `kind`: `label` (one per package; stick each on its package) or
+`guide` (dispatch guide; not every carrier has one; attach it to the invoice or remito). Query `format`: `pdf`
+(default) or `zpl` (thermal printers, labels only). Downloading marks the shipment "Listo para despacho" at Zipnova.
+
+`200 OK` — the file (`application/pdf` or `text/plain`), `Content-Disposition: attachment`.
+`400 Bad Request` — unknown `kind` or `format`, or a guide in ZPL.
+`422 Unprocessable Entity` — not available, or Zipnova has not generated it yet:
+`{ "message": "Zipnova todavía no generó la documentación. Probá en unos minutos.", "statusCode": 422 }`.
+
+#### POST /admin/orders/:id/shipment/cancel
+
+Cancel before dispatch (`CANCEL`, only while `PENDING`). The order keeps its status; a cancelled shipment cannot be
+booked again from here (do it in Zipnova's panel). `422` when not available or refused by Zipnova; `503` as above.
+
+#### POST /admin/orders/:id/shipment/refresh
+
+Read the shipment from Zipnova now (`REFRESH`), for when a webhook was missed. `503` when Zipnova does not answer.
+
+All routes also return `400` (invalid id), `401`, `403`, `404` (`"Pedido no encontrado."`) and `429` like GET above.
+
+### POST /shipping/webhooks/:token
+
+Zipnova notifications (configure topic `status` in Zipnova → Configuración → Integraciones → Gestionar credenciales y
+webhooks, URL `<API URL>/shipping/webhooks/<ZIPNOVA_WEBHOOK_SECRET>`). The body only identifies the shipment; its
+state is always read from Zipnova's API. Shipments not booked from this store are acknowledged and ignored.
+
+**Auth required:** No (the secret in the URL). **Rate limit:** 600 requests per minute per IP.
+
+**Request body** — Zipnova's payload; only `topic` (`status` or `shipment`) and `data.shipment_id` are read:
+
+```json
+{ "topic": "status", "timestamp": "2024-03-08T18:56:34+00:00", "data": { "shipment_id": 3850099 } }
+```
+
+**Responses**
+
+`200 OK`: `{ "received": true }`.
+`404 Not Found` — wrong or unset secret.
+`503 Service Unavailable` — Zipnova did not answer the status read; Zipnova retries hourly for 12 hours.
 
 ## Store activity
 

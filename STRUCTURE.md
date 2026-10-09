@@ -28,6 +28,8 @@ api-gc/
 │   ├── analytics/                 # GET /admin/analytics(+/behavior): stats page (sales, rankings, customers, visitors)
 │   ├── activity/                  # POST /activity: anonymous store activity reported by the browser
 │   ├── settings/                  # /admin/settings: Rosario delivery rate and reservation window
+│   ├── shipping/                  # Carrier provider behind SHIPPING_CARRIER (zipnova/ adapter) + cart shipping quotes
+│   ├── shipments/                 # Carrier shipments of orders: admin booking/labels/cancel + provider webhook
 │   ├── inventory/                 # StockService: stock levels + movement ledger (manual adjustment, TODO(tango))
 │   ├── pricing/                   # Price resolution + /admin/price-lists and /admin/exchange-rates
 │   ├── tags/                      # GET /tags (catalog filters) + /admin/tags
@@ -85,3 +87,5 @@ api-gc/
 | DashboardModule  | `src/dashboard/`  | Admin home metrics (read-only aggregates)                 |
 | AnalyticsModule  | `src/analytics/`  | Admin stats page (read-only aggregates)                   |
 | ActivityModule   | `src/activity/`   | Anonymous store activity for stats                        |
+| ShippingModule   | `src/shipping/`   | Carrier provider (Zipnova) and cart shipping quotes       |
+| ShipmentsModule  | `src/shipments/`  | Order shipments: booking, documents, status webhook       |
