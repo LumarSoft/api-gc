@@ -134,6 +134,9 @@ Domain rules that apply across modules. When a request contradicts one of these,
   dispatch and book it again. Zipnova's webhook then updates the shipment and moves the order to shipped and delivered on its own.
   Returns, losses and cancellations do not change the order: staff decide what to do.
 - Zipnova emails the buyer the tracking link (its account setting), so the store does not need its own email for it.
+- Labels describe each item by its **SKU**, not its name (agreed 2026-10-09): staff still recognize it, and the box does
+  not announce an expensive printer to everyone who handles it. A package with several units shows "N productos"
+  (Zipnova's own wording).
 
 ## Products
 

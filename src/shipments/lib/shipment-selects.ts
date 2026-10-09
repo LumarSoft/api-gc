@@ -42,13 +42,11 @@ export const bookingOrderSelect = {
         select: {
           id: true,
           sku: true,
-          name: true,
           weightGrams: true,
           lengthMm: true,
           widthMm: true,
           heightMm: true,
           isBulky: true,
-          product: { select: { name: true } },
         },
       },
     },

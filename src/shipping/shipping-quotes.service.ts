@@ -31,8 +31,6 @@ const variantSelect = {
   widthMm: true,
   heightMm: true,
   isBulky: true,
-  name: true,
-  product: { select: { name: true } },
 } satisfies Prisma.ProductVariantSelect
 
 const selectedQuoteSelect = {
@@ -169,13 +167,9 @@ export class ShippingQuotesService {
   }
 
   private async variants(db: Prisma.TransactionClient, lines: ShippableLine[]): Promise<ShippableVariant[]> {
-    const rows = await db.productVariant.findMany({
+    return db.productVariant.findMany({
       where: { id: { in: lines.map(line => line.variantId) } },
       select: variantSelect,
     })
-    return rows.map(({ product, name, ...row }) => ({
-      ...row,
-      name: [product.name, name].filter(Boolean).join(' '),
-    }))
   }
 }

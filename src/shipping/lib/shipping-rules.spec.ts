@@ -3,7 +3,6 @@ import { MAX_QUOTED_UNITS, carrierItems, itemsHash, sameDestination, shippabilit
 const variant = {
   id: 1,
   sku: 'T544',
-  name: 'Tinta T544 Negra',
   weightGrams: 150,
   lengthMm: 61,
   widthMm: 60,
@@ -36,12 +35,12 @@ describe('Shipping rules', () => {
     expect(shippabilityIssue([{ ...line, quantity: MAX_QUOTED_UNITS + 1 }], [variant])).toBe('TOO_MANY_UNITS')
   })
 
-  it('sends one item per unit with whole centimeters rounded up', () => {
+  it('sends one item per unit, described by its SKU, with whole centimeters rounded up', () => {
     const items = carrierItems([{ variantId: 1, quantity: 2 }], [variant])
     expect(items).toHaveLength(2)
     expect(items[0]).toEqual({
       sku: 'T544',
-      description: 'Tinta T544 Negra',
+      description: 'T544',
       weightGrams: 150,
       heightCm: 15,
       widthCm: 6,

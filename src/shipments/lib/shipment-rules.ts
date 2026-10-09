@@ -20,10 +20,7 @@ export function bookingRequest(order: BookingOrder, reference: string): CarrierS
   if (!address.city || !address.province || !address.postalCode)
     return { error: 'Falta la localidad, la provincia o el código postal del envío.' }
   const lines = order.items.map(item => ({ variantId: item.variant.id, quantity: item.quantity }))
-  const variants = order.items.map(({ variant: { product, name, ...variant } }) => ({
-    ...variant,
-    name: [product.name, name].filter(Boolean).join(' '),
-  }))
+  const variants = order.items.map(item => item.variant)
   const issue = shippabilityIssue(lines, variants)
   if (issue) return { error: `${SHIPPABILITY_MESSAGES[issue]} Revisá el peso y las medidas de los productos.` }
   return {
