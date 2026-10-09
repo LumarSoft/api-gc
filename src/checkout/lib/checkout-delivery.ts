@@ -1,6 +1,8 @@
 import { Prisma } from '../../generated/prisma/client'
 import { Currency, DeliveryMethod } from '../../generated/prisma/enums'
 import type { MoneyDto } from '../../pricing/pricing.service'
+import { isValidCuit } from '../../wholesale-applications/lib/cuit'
+import type { PreviewCheckoutDto } from '../dto/checkout-input.dto'
 import type { CheckoutDeliveryDto } from '../dto/checkout-response.dto'
 
 export type ShippingConfiguration = {
@@ -13,9 +15,17 @@ export type ShippingConfiguration = {
   freeShippingThreshold: Prisma.Decimal | null
 }
 
+/** Whether the cart can go by carrier, and the price of the quote the buyer chose, if any. */
+export interface CarrierDelivery {
+  enabled: boolean
+  reason: string | null
+  cost: MoneyDto | null
+}
+
 export function checkoutDeliveryOptions(
   config: ShippingConfiguration[],
   subtotal: MoneyDto | null,
+  carrier: CarrierDelivery,
 ): CheckoutDeliveryDto[] {
   const local = config.find(method => method.code === DeliveryMethod.LOCAL_DELIVERY)
   const configured = Boolean(
@@ -51,11 +61,30 @@ export function checkoutDeliveryOptions(
       code: DeliveryMethod.CARRIER,
       name: 'Envío al resto del país',
       description: 'El costo depende del destino y de los productos.',
-      enabled: false,
-      cost: null,
-      unavailableReason: 'La cotización de envíos todavía no está disponible.',
+      enabled: carrier.enabled,
+      cost: carrier.enabled ? carrier.cost : null,
+      unavailableReason: carrier.enabled ? null : carrier.reason,
     },
   ]
+}
+
+/** What the delivery method needs from the buyer beyond the DTO rules; null when the input is complete. */
+export function deliveryInputError(input: PreviewCheckoutDto): string | null {
+  const address = input.shippingAddress
+  if (
+    input.deliveryMethod === DeliveryMethod.LOCAL_DELIVERY &&
+    (!address || !isRosarioAddress(address.city, address.province))
+  )
+    return 'La entrega local requiere una dirección en Rosario, Santa Fe.'
+  if (input.deliveryMethod === DeliveryMethod.CARRIER) {
+    if (!address) return 'Completá la dirección de envío.'
+    if (!address.taxId) return 'Completá el DNI o CUIT de quien recibe el envío.'
+    if (address.taxId.length === 11 && !isValidCuit(address.taxId))
+      return 'El CUIT de quien recibe no es válido. Revisá los 11 números.'
+    if (!input.phone) return 'Completá un teléfono de contacto para el envío.'
+    if (!input.shippingQuoteId) return 'Elegí una opción de envío.'
+  }
+  return null
 }
 
 export function checkoutTotal(subtotal: MoneyDto | null, shipping: MoneyDto | null): MoneyDto | null {

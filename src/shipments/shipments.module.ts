@@ -1,0 +1,15 @@
+import { Module } from '@nestjs/common'
+import { OrdersModule } from '../orders/orders.module'
+import { ShippingModule } from '../shipping/shipping.module'
+import { AdminShipmentsController } from './admin-shipments.controller'
+import { ShipmentBookingService } from './shipment-booking.service'
+import { ShipmentsService } from './shipments.service'
+import { ShippingWebhooksController } from './shipping-webhooks.controller'
+
+/** Carrier shipments of orders: staff operations and the provider's status notifications. */
+@Module({
+  imports: [OrdersModule, ShippingModule],
+  controllers: [AdminShipmentsController, ShippingWebhooksController],
+  providers: [ShipmentBookingService, ShipmentsService],
+})
+export class ShipmentsModule {}

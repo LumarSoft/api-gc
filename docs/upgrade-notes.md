@@ -16,6 +16,37 @@ npm run doctor             # tells you if anything else is missing
 
 ---
 
+## 2026-10-09 — Carrier shipping through Zipnova (migration, env vars)
+
+Checkout can quote and book shipping to the rest of the country through Zipnova (Correo Argentino, OCA and others).
+`ShippingQuote` and `Shipment` change shape (both were empty) and `ShipmentStatus` changes values. Apply the migration
+and regenerate the client:
+
+```bash
+npx prisma migrate dev
+npx prisma generate
+```
+
+Copy the new `ZIPNOVA_*` variables from `.env.example` into `.env`. **Empty credentials keep carrier shipping off**
+(checkout shows it as unavailable), which is fine for local work. To use it, create your own Zipnova account (free
+Starter plan), or ask Mateo for the development account's key and secret and then **set `ZIPNOVA_REFERENCE_PREFIX`**
+(e.g. `DEV-<your name>-`) so your orders `CG-000001…` never collide with someone else's. Fill:
+
+- `ZIPNOVA_API_KEY`, `ZIPNOVA_API_SECRET`, `ZIPNOVA_ACCOUNT_ID`: Zipnova → Configuración → Integraciones →
+  Gestionar credenciales y webhooks.
+- `ZIPNOVA_ORIGIN_ID`: id of the dispatch location (Configuración → Ubicaciones).
+- `ZIPNOVA_WEBHOOK_SECRET`: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
+
+Products need weight and measurements (admin → product → variants) to be quoted.
+
+Production: `npx prisma migrate deploy`, set the variables with the client's Zipnova account, and in Zipnova create a
+webhook with topic `status` and URL `https://<API domain>/shipping/webhooks/<ZIPNOVA_WEBHOOK_SECRET>`. Keep the
+account in Zipnova's test mode until the first bookings have been checked. Leave `ZIPNOVA_REFERENCE_PREFIX` empty.
+The webhook secret travels in the URL path: exclude `/shipping/webhooks/` from the Nginx access log
+(`location /shipping/webhooks/ { access_log off; ... }`). `npm run doctor` warns about a half configuration.
+
+---
+
 ## 2026-10-08 — Pending setup notice for people and AI agents
 
 Nothing to run. While `npm run doctor` finds errors it writes `PENDING-SETUP.md` (git-ignored) at the repository root

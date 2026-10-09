@@ -1,4 +1,5 @@
-import type { DeliveryMethod, OrderStatus, PaymentMethod } from '../../generated/prisma/enums'
+import type { DeliveryMethod, OrderStatus, PaymentMethod, ShipmentStatus } from '../../generated/prisma/enums'
+import type { ShipmentAction } from '../lib/order-rules'
 import type { MoneyDto } from '../../pricing/pricing.service'
 
 export interface OrderResponseDto {
@@ -30,6 +31,20 @@ export interface OrderResponseDto {
     /** The product's current first image (not a purchase-time snapshot); null when it has none. */
     imageUrl: string | null
   }[]
+  /** The carrier shipment (CARRIER delivery); null for pickup and Rosario delivery. */
+  shipment: {
+    status: ShipmentStatus
+    carrier: string | null
+    service: string | null
+    /** The carrier's own wording of the status. */
+    carrierStatus: string | null
+    trackingNumber: string | null
+    trackingUrl: string | null
+    /** Branch where the buyer picks it up (branch delivery). */
+    pickupPoint: string | null
+    /** What staff can do with it. Only included in admin responses. */
+    actions?: ShipmentAction[]
+  } | null
   /** `note` and `by` (staff name, null for the system) only in admin responses. */
   history: { status: OrderStatus; at: string; note?: string | null; by?: string | null }[]
   /** Placed without an account. Only included in admin responses. */

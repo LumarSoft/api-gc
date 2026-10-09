@@ -2,11 +2,17 @@ import { Injectable, NotFoundException, UnprocessableEntityException } from '@ne
 import { AuditLogsService } from '../audit-logs/audit-logs.service'
 import type { AuditActor } from '../common/types/audit-actor'
 import { Prisma } from '../generated/prisma/client'
-import { OrderStatus, PaymentProvider, PaymentStatus, ReservationStatus } from '../generated/prisma/enums'
+import {
+  OrderStatus,
+  PaymentProvider,
+  PaymentStatus,
+  ReservationStatus,
+  ShipmentStatus,
+} from '../generated/prisma/enums'
 import { PrismaService } from '../prisma/prisma.service'
 import type { ChangeOrderStatusDto } from './dto/order-input.dto'
 import type { OrderResponseDto } from './dto/order-response.dto'
-import { orderTransitions } from './lib/order-rules'
+import { carrierOrderStatus, orderTransitions } from './lib/order-rules'
 import { adminOrderSelect } from './lib/order-selects'
 import { OrderMapper } from './order.mapper'
 import { OrderStockService } from './order-stock.service'
@@ -57,13 +63,19 @@ export class OrderStatusService {
             },
           })
         }
-        if (input.status === OrderStatus.CANCELLED || input.status === OrderStatus.EXPIRED)
+        if (input.status === OrderStatus.CANCELLED || input.status === OrderStatus.EXPIRED) {
           await this.stock.resolve(
             tx,
             id,
             input.status === OrderStatus.EXPIRED ? ReservationStatus.EXPIRED : ReservationStatus.RELEASED,
             actor?.userId,
           )
+          // A carrier shipment is only booked once paid, so an unpaid order's shipment never left: close it.
+          await tx.shipment.updateMany({
+            where: { orderId: id, externalId: null, status: ShipmentStatus.PENDING },
+            data: { status: ShipmentStatus.CANCELLED },
+          })
+        }
         const saved = await tx.order.update({
           where: { id },
           data: {
@@ -95,6 +107,26 @@ export class OrderStatusService {
             tx,
           )
         return this.mapper.adminResponse(saved)
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted },
+    )
+  }
+
+  /**
+   * The system transition that follows a carrier shipment (webhook or manual refresh), with no actor. Same order lock
+   * as `change`; does nothing when the order is not behind the shipment, so repeated notifications are harmless.
+   */
+  async followShipment(id: number, shipment: ShipmentStatus, note: string): Promise<void> {
+    await this.prisma.$transaction(
+      async tx => {
+        await tx.$queryRaw`SELECT id FROM \`Order\` WHERE id = ${id} FOR UPDATE`
+        const order = await tx.order.findUnique({ where: { id }, select: { status: true } })
+        const next = order ? carrierOrderStatus(order.status, shipment) : null
+        if (!order || !next) return
+        await tx.order.update({
+          where: { id },
+          data: { status: next, statusHistory: { create: { fromStatus: order.status, toStatus: next, note } } },
+        })
       },
       { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted },
     )

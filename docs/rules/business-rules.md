@@ -52,10 +52,11 @@ Domain rules that apply across modules. When a request contradicts one of these,
   guests. It validates contact details and recalculates the cart plus delivery with decimal arithmetic. It does not
   persist contact/address data, create an order, reserve stock or initiate payment. Confirmation is a separate request that checks current prices/stock again and atomically creates the order and reservation.
 - Pickup is free. Preview offers local delivery only with an active ARS flat rate and nonnegative threshold in
-  `ShippingMethod`; its destination must be Rosario, Santa Fe. Carrier quotes remain unavailable until an adapter exists.
+  `ShippingMethod`; its destination must be Rosario, Santa Fe. Carrier delivery (rest of the country) is described in
+  "Shipping" below.
 
-- **Current scope (requested 2026-10-05):** guest completion is enabled; no external payment, email, carrier or Tango
-  integrations are activated. Orders use `MANUAL` payment, pending until an admin explicitly verifies receipt of the
+- **Current scope (requested 2026-10-05):** guest completion is enabled; no external payment, email or Tango
+  integrations are activated (carrier shipping: see "Shipping"). Orders use `MANUAL` payment, pending until an admin explicitly verifies receipt of the
   full amount. Confirmation records an approved manual `Payment`, consumes the reservation and records stock sale
   movements and an audit entry. This does not move money, issue an invoice or charge a wholesale current account.
 - `Order.userId` is nullable. A guest never gets a synthetic account. A cryptographically random 256-bit browser token
@@ -77,12 +78,14 @@ Domain rules that apply across modules. When a request contradicts one of these,
   Checkout shows this window before confirmation and tracking shows the precise expiration. Revisit with the client
   when their offline payment process is finalized.
 - Pending orders may be cancelled; confirmed orders advance to preparation, then ready for pickup (pickup) or shipped
-  (local delivery), then delivered. Paid cancellation/refunds are not enabled in this stage. Expired/cancelled/delivered
+  (local and carrier delivery), then delivered. Carrier orders also advance on their own when the carrier reports the
+  parcel handed over or delivered. Paid cancellation/refunds are not enabled in this stage. Expired/cancelled/delivered
   states are terminal. Staff notes and actor ids stay out of guest tracking.
 
 - An order line stores a **snapshot** of product name, unit price and currency at purchase time. An order is never
   recalculated with current prices.
-- Order state changes go through a single service method that validates the transition.
+- Order state changes go through `OrderStatusService`, which validates every transition (staff changes, reservation
+  expiry and carrier updates).
 - Orders are never deleted — they are cancelled.
 
 ## Stock
@@ -116,6 +119,20 @@ Domain rules that apply across modules. When a request contradicts one of these,
   must be above zero.
 - Rest of the country: quoted by postal code, weight and dimensions through an external provider.
 - Shipping rules and thresholds are configuration stored in the database, not constants in code.
+- **Carrier provider (agreed 2026-10-09): Zipnova**, which quotes and books Correo Argentino, OCA and other carriers
+  with its own negotiated rates (no carrier contracts needed). It is off until its credentials are in the environment.
+- The buyer quotes a destination (postal code, city, province) and sees the best option per delivery mode, as Zipnova
+  ranks them with the account's selection setting (price by default): home delivery and branch pickup, one choice per
+  branch. The price shown is Zipnova's buyer price with VAT and insurance; no free-shipping threshold applies to the
+  carrier yet. A quote lasts 30 minutes and only for the quoted cart lines and destination.
+- Carrier delivery needs the recipient's DNI or CUIT (check digit validated) and a phone (carriers require them), and every product with
+  weight and measurements. Bulky items, products without measurements and carts of more than 100 units are shipped
+  by arrangement: the option is shown as unavailable with that explanation.
+- The order keeps the chosen option on a pending `Shipment`. Staff book it at Zipnova from the order once it is paid
+  (it is charged to the Zipnova balance), print the label (PDF or ZPL) and the dispatch guide, and can cancel it before
+  dispatch and book it again. Zipnova's webhook then updates the shipment and moves the order to shipped and delivered on its own.
+  Returns, losses and cancellations do not change the order: staff decide what to do.
+- Zipnova emails the buyer the tracking link (its account setting), so the store does not need its own email for it.
 
 ## Products
 

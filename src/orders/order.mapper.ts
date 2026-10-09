@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { FilesService } from '../files/files.service'
 import { AddressType } from '../generated/prisma/enums'
 import type { OrderResponseDto } from './dto/order-response.dto'
-import { orderTransitions } from './lib/order-rules'
+import { orderTransitions, shipmentActions } from './lib/order-rules'
 import type { AdminOrderRow, OrderRow } from './lib/order-selects'
 
 @Injectable()
@@ -48,6 +48,17 @@ export class OrderMapper {
           imageUrl: image ? this.files.publicUrl(image.file.storageKey) : null,
         }
       }),
+      shipment: row.shipments[0]
+        ? {
+            status: row.shipments[0].status,
+            carrier: row.shipments[0].carrier,
+            service: row.shipments[0].service,
+            carrierStatus: row.shipments[0].carrierStatus,
+            trackingNumber: row.shipments[0].trackingNumber,
+            trackingUrl: row.shipments[0].trackingUrl,
+            pickupPoint: row.shipments[0].pickupPoint,
+          }
+        : null,
       history: row.statusHistory.map(event => ({ status: event.toStatus, at: event.createdAt.toISOString() })),
       ...(admin
         ? {
@@ -61,8 +72,12 @@ export class OrderMapper {
 
   /** Staff view: the public shape plus next states, history notes and authors, and the guest flag. */
   adminResponse(row: AdminOrderRow): OrderResponseDto {
+    const response = this.response(row, true)
+    const shipment = row.shipments[0]
     return {
-      ...this.response(row, true),
+      ...response,
+      shipment:
+        response.shipment && shipment ? { ...response.shipment, actions: shipmentActions(row.status, shipment) } : null,
       guest: row.userId === null,
       history: row.statusHistory.map(event => ({
         status: event.toStatus,

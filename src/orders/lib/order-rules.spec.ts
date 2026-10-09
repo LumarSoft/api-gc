@@ -1,5 +1,5 @@
-import { DeliveryMethod, OrderStatus } from '../../generated/prisma/enums'
-import { ORDER_STAGES, orderTransitions, stageCounts } from './order-rules'
+import { DeliveryMethod, OrderStatus, ShipmentStatus } from '../../generated/prisma/enums'
+import { ORDER_STAGES, carrierOrderStatus, orderTransitions, shipmentActions, stageCounts } from './order-rules'
 import { reservationHours } from './reservation-hours'
 
 describe('manual order lifecycle', () => {
@@ -38,5 +38,54 @@ describe('manual order lifecycle', () => {
         DELIVERED: 9,
       }),
     ).toEqual({ PENDING_PAYMENT: 3, TO_FULFILL: 4, READY: 4 })
+  })
+})
+
+describe('carrier-driven order status', () => {
+  it('ships a paid order once the carrier has it, and delivers it when the carrier does', () => {
+    expect(carrierOrderStatus(OrderStatus.CONFIRMED, ShipmentStatus.IN_TRANSIT)).toBe(OrderStatus.SHIPPED)
+    expect(carrierOrderStatus(OrderStatus.PREPARING, ShipmentStatus.READY_FOR_PICKUP)).toBe(OrderStatus.SHIPPED)
+    expect(carrierOrderStatus(OrderStatus.SHIPPED, ShipmentStatus.DELIVERED)).toBe(OrderStatus.DELIVERED)
+    expect(carrierOrderStatus(OrderStatus.PREPARING, ShipmentStatus.DELIVERED)).toBe(OrderStatus.DELIVERED)
+  })
+
+  it.each([
+    [OrderStatus.PENDING_PAYMENT, ShipmentStatus.IN_TRANSIT],
+    [OrderStatus.SHIPPED, ShipmentStatus.IN_TRANSIT],
+    [OrderStatus.CANCELLED, ShipmentStatus.DELIVERED],
+    [OrderStatus.PREPARING, ShipmentStatus.PENDING],
+    [OrderStatus.SHIPPED, ShipmentStatus.RETURNED],
+    [OrderStatus.SHIPPED, ShipmentStatus.LOST],
+    [OrderStatus.CONFIRMED, ShipmentStatus.CANCELLED],
+  ])('leaves %s alone when the shipment is %s', (order, shipment) => {
+    expect(carrierOrderStatus(order, shipment)).toBeNull()
+  })
+})
+
+describe('carrier shipment actions', () => {
+  const pending = { status: ShipmentStatus.PENDING, externalId: null }
+  it('creates the shipment at the provider only for paid orders', () => {
+    expect(shipmentActions(OrderStatus.PENDING_PAYMENT, pending)).toEqual([])
+    expect(shipmentActions(OrderStatus.CONFIRMED, pending)).toEqual(['CREATE'])
+    expect(shipmentActions(OrderStatus.PREPARING, pending)).toEqual(['CREATE'])
+    expect(shipmentActions(OrderStatus.SHIPPED, pending)).toEqual(['CREATE'])
+    expect(shipmentActions(OrderStatus.CANCELLED, pending)).toEqual([])
+    expect(shipmentActions(OrderStatus.DELIVERED, pending)).toEqual([])
+  })
+
+  it('cancels only before the carrier has the parcel, and books again after a cancellation', () => {
+    const created = { status: ShipmentStatus.PENDING, externalId: '9' }
+    expect(shipmentActions(OrderStatus.PREPARING, created)).toEqual(['DOCUMENTS', 'CANCEL', 'REFRESH'])
+    expect(shipmentActions(OrderStatus.SHIPPED, { ...created, status: ShipmentStatus.IN_TRANSIT })).toEqual([
+      'DOCUMENTS',
+      'REFRESH',
+    ])
+    expect(shipmentActions(OrderStatus.PREPARING, { ...created, status: ShipmentStatus.CANCELLED })).toEqual([
+      'CREATE',
+      'REFRESH',
+    ])
+    expect(shipmentActions(OrderStatus.DELIVERED, { ...created, status: ShipmentStatus.CANCELLED })).toEqual([
+      'REFRESH',
+    ])
   })
 })
