@@ -398,14 +398,15 @@ describe('Carrier shipping (local MySQL e2e)', () => {
     ])
   })
 
-  it('books a shipment marked as shipped by hand, and never twice while a booking is in flight', async () => {
+  it('leaves shipping and delivery to the carrier, and never books twice while a booking is in flight', async () => {
     const order = await paidOrder()
-    for (const status of [OrderStatus.PREPARING, OrderStatus.SHIPPED])
-      await request(server())
-        .put(`/admin/orders/${order.id}/status`)
-        .set('Cookie', adminCookie)
-        .send({ status })
-        .expect(200)
+    const status = (next: OrderStatus): request.Test =>
+      request(server()).put(`/admin/orders/${order.id}/status`).set('Cookie', adminCookie).send({ status: next })
+    const prepared = (await status(OrderStatus.PREPARING).expect(200)).body as OrderResponseDto
+    expect(prepared.allowedStatuses).toEqual([])
+    await status(OrderStatus.SHIPPED).expect(422)
+    await status(OrderStatus.DELIVERED).expect(422)
+
     const shipment = await prisma.shipment.findFirstOrThrow({ where: { orderId: order.id } })
     await prisma.shipment.update({ where: { id: shipment.id }, data: { bookingStartedAt: new Date() } })
     const booked = fake.booked.length
@@ -416,7 +417,7 @@ describe('Carrier shipping (local MySQL e2e)', () => {
       data: { bookingStartedAt: new Date(Date.now() - 3 * 60_000) },
     })
     expect(((await admin('post', `${order.id}/shipment`).expect(200)).body as OrderResponseDto).status).toBe(
-      OrderStatus.SHIPPED,
+      OrderStatus.PREPARING,
     )
     expect(fake.booked).toHaveLength(booked + 1)
   })

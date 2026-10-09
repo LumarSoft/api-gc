@@ -2204,6 +2204,7 @@ reserved stock once. Cancellation is available only before payment confirmation;
 
 `200 OK` — complete order example above, now `"status": "CONFIRMED"`, with the new history event and
 `"allowedStatuses": ["PREPARING"]`. Routes are pending→confirmed/cancelled→preparing→ready-for-pickup/shipped→delivered.
+Carrier orders stop at preparing: shipped and delivered are set only by the carrier shipment (see below).
 `EXPIRED` is job-only and cannot be requested by staff. A late payment cannot be confirmed even before the job runs.
 `400 Bad Request` — malformed id/body: `{ "message": ["paymentReceived must be equal to true"], "statusCode": 400 }`.
 `401 Unauthorized`: `{ "message": "Unauthorized", "statusCode": 401 }`.
