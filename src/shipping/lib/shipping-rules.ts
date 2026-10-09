@@ -9,7 +9,6 @@ export const MAX_QUOTED_UNITS = 100
 export interface ShippableVariant {
   id: number
   sku: string
-  name: string
   weightGrams: number | null
   lengthMm: number | null
   widthMm: number | null
@@ -48,14 +47,17 @@ export function shippabilityIssue(lines: ShippableLine[], variants: ShippableVar
   return lineVariants.every(measured) ? null : 'MISSING_MEASUREMENTS'
 }
 
-/** One carrier item per unit, so the provider can pack them. Millimeters become whole centimeters, rounded up. */
+/**
+ * One carrier item per unit, so the provider can pack them. Millimeters become whole centimeters, rounded up. The
+ * description printed on the label is the SKU: staff recognize it, and the box does not announce what is inside.
+ */
 export function carrierItems(lines: ShippableLine[], variants: ShippableVariant[]): CarrierItem[] {
   const cm = (mm: number | null): number => Math.max(1, Math.ceil((mm ?? 0) / 10))
   return lines.flatMap(line => {
     const variant = variants.find(candidate => candidate.id === line.variantId)!
     const item: CarrierItem = {
       sku: variant.sku,
-      description: variant.name.slice(0, 100),
+      description: variant.sku,
       weightGrams: variant.weightGrams ?? 0,
       heightCm: cm(variant.heightMm),
       widthCm: cm(variant.widthMm),

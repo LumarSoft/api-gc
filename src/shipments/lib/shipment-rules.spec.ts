@@ -28,13 +28,11 @@ const order = (patch: Partial<BookingOrder> = {}): BookingOrder => ({
       variant: {
         id: 7,
         sku: 'T544',
-        name: 'Negra',
         weightGrams: 150,
         lengthMm: 60,
         widthMm: 60,
         heightMm: 150,
         isBulky: false,
-        product: { name: 'Tinta T544' },
       },
     },
   ],
@@ -71,6 +69,7 @@ describe('Shipment booking', () => {
       recipient: { taxId: '30111222', phone: '341555', email: 'ana@example.test' },
     })
     expect('items' in request && request.items).toHaveLength(2)
+    expect('items' in request && request.items[0].description).toBe('T544')
   })
 
   it('explains what is missing instead of calling the provider', () => {
