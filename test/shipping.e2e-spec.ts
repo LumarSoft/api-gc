@@ -332,6 +332,7 @@ describe('Carrier shipping (local MySQL e2e)', () => {
 
     const booked = (await admin('post', `${order.id}/shipment`).expect(200)).body as OrderResponseDto
     expect(booked.shipment?.actions).toEqual(['DOCUMENTS', 'CANCEL', 'REFRESH'])
+    expect(booked.shipment?.dispatch).toBe('CARRIER_BRANCH')
     expect(fake.booked.at(-1)).toMatchObject({
       reference: order.number,
       carrierId: 233,

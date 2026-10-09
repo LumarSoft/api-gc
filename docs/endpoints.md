@@ -1995,7 +1995,10 @@ Pickup returns null. Carrier orders also return `shipment` (null otherwise):
 `status` is `PENDING`, `IN_TRANSIT`, `READY_FOR_PICKUP` (waiting at a carrier branch), `DELIVERED`, `RETURNED`,
 `CANCELLED` or `LOST`; `carrierStatus` is the carrier's own wording. Cancelling or expiring an unpaid carrier order
 closes its shipment (`CANCELLED`). Admin responses add `shipment.actions`: any of
-`CREATE`, `DOCUMENTS`, `CANCEL`, `REFRESH` (see the shipment routes). No secrets, actor ids, internal/staff notes or live catalog prices are returned. Each item's `imageUrl` is the
+`CREATE`, `DOCUMENTS`, `CANCEL`, `REFRESH` (see the shipment routes), and `shipment.dispatch`: how the store hands
+the parcel over — `CARRIER_BRANCH` (take it to a branch of the carrier), `PROVIDER_HUB` (take it to Zipnova's
+distribution center), `PICKUP` (it is collected) or null. `trackingNumber` is the carrier's number, or Zipnova's guide
+number (the one on the label, e.g. `0999-31404615`) until the carrier assigns one. No secrets, actor ids, internal/staff notes or live catalog prices are returned. Each item's `imageUrl` is the
 product's current first image (null without images): a thumbnail only, not part of the purchase snapshot.
 
 `400 Bad Request` — invalid DTO/unknown fields: `{ "message": ["property total should not exist"], "statusCode": 400 }`.

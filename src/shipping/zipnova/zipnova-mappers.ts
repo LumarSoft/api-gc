@@ -154,7 +154,7 @@ export function carrierShipment(shipment: ZipnovaShipment): CarrierShipment {
     status: shipmentStatus(shipment.status),
     statusLabel: shipment.status_name || shipment.status,
     carrier: shipment.carrier?.name ?? null,
-    trackingNumber: shipment.carrier_tracking_id || null,
+    trackingNumber: shipment.carrier_tracking_id || shipment.delivery_id || null,
     trackingUrl: shipment.tracking || null,
   }
 }
