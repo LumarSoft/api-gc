@@ -15,7 +15,7 @@ import {
 } from '../shipping-carrier'
 import { carrierShipment, quoteBody, quoteOptions, shipmentBody } from './zipnova-mappers'
 import type { ZipnovaDocument, ZipnovaQuoteResponse, ZipnovaShipment, ZipnovaShipmentList } from './zipnova-types'
-import { ZipnovaClient } from './zipnova.client'
+import { ZipnovaClient, type ZipnovaDownload } from './zipnova.client'
 
 /** Booking can take Zipnova a while (it quotes again and asks the carrier for a tracking number). */
 const BOOKING_TIMEOUT_MS = 20_000
@@ -98,23 +98,29 @@ export class ZipnovaCarrier implements ShippingCarrier {
 
   async document(id: string, kind: CarrierDocumentKind, format: CarrierDocumentFormat): Promise<CarrierDocument> {
     const what = kind === 'guide' ? 'document' : 'label'
-    const download = await this.client.download(`/shipments/${this.id(id)}/${what}.${format}`)
-    // TODO(zipnova): confirm the answer's shape once the account is in test mode; the docs only say "documento en
-    // base64 con formato y contenido", so a raw file and the usual base64 fields are both accepted.
-    let content: Buffer
-    if ('bytes' in download) content = download.bytes
-    else {
-      const json = download.json as ZipnovaDocument
-      const base64 = json.content ?? json.data ?? json.file
-      if (typeof base64 !== 'string' || !base64) throw new CarrierError('NOT_READY', 'Zipnova returned no document')
-      content = Buffer.from(base64.replace(/^data:[^,]*,/, ''), 'base64')
+    let download: ZipnovaDownload
+    try {
+      download = await this.client.download(`/shipments/${this.id(id)}/${what}.${format}`)
+    } catch (error) {
+      // Zipnova answers 400 when the carrier works without a dispatch guide (e.g. OCA home delivery).
+      if (kind === 'guide' && error instanceof CarrierError && error.kind === 'REJECTED')
+        throw new CarrierError('REJECTED', 'este transporte no usa guía de despacho; alcanza con la etiqueta', 400)
+      throw error
     }
-    if (!content.length) throw new CarrierError('NOT_READY', 'Zipnova returned an empty document')
+    const content = 'bytes' in download ? download.bytes : this.decode((download.json as ZipnovaDocument).body)
+    if (!content?.length) throw new CarrierError('NOT_READY', 'Zipnova returned no document')
     return {
       content,
       contentType: format === 'pdf' ? 'application/pdf' : 'text/plain; charset=utf-8',
       fileName: `${kind === 'guide' ? 'guia' : 'etiqueta'}-${id}.${format}`,
     }
+  }
+
+  /** The documented answer is base64; a file sent as plain text (ZPL or PDF) is kept as is. */
+  private decode(body: string | null | undefined): Buffer | null {
+    if (typeof body !== 'string' || !body) return null
+    if (body.startsWith('^XA') || body.startsWith('%PDF')) return Buffer.from(body, 'latin1')
+    return Buffer.from(body.replace(/^data:[^,]*,/, ''), 'base64')
   }
 
   /**
