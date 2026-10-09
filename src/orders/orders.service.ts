@@ -3,7 +3,7 @@ import { ConflictException, Injectable, NotFoundException, UnprocessableEntityEx
 import { CartOwnerService } from '../cart/cart-owner.service'
 import { CartMapper } from '../cart/cart.mapper'
 import { cartVariantSelect } from '../cart/lib/cart-selects'
-import { checkoutDeliveryOptions, checkoutTotal, isRosarioAddress } from '../checkout/lib/checkout-delivery'
+import { checkoutDeliveryOptions, checkoutTotal, deliveryInputError } from '../checkout/lib/checkout-delivery'
 import { checkoutReview } from '../checkout/lib/checkout-review'
 import type { AuthenticatedUser } from '../common/types/authenticated-user'
 import { hashToken } from '../common/utils/secure-token'
@@ -11,6 +11,7 @@ import { Prisma } from '../generated/prisma/client'
 import { AddressType, BuyerType, CartStatus, Currency, DeliveryMethod, PaymentMethod } from '../generated/prisma/enums'
 import { PricingService } from '../pricing/pricing.service'
 import { PrismaService } from '../prisma/prisma.service'
+import { ShippingQuotesService } from '../shipping/shipping-quotes.service'
 import type { PlaceOrderDto } from './dto/order-input.dto'
 import type { OrderResponseDto } from './dto/order-response.dto'
 import { orderSelect } from './lib/order-selects'
@@ -27,6 +28,7 @@ export class OrdersService {
     private readonly pricing: PricingService,
     private readonly mapper: OrderMapper,
     private readonly stock: OrderStockService,
+    private readonly quotes: ShippingQuotesService,
   ) {}
 
   async place(
@@ -66,16 +68,19 @@ export class OrdersService {
         const local = await tx.shippingMethod.findFirst({
           where: { code: DeliveryMethod.LOCAL_DELIVERY, deletedAt: null },
         })
-        const selected = checkoutDeliveryOptions(local ? [local] : [], cart.subtotal).find(
-          option => option.code === input.deliveryMethod,
-        )!
+        const inputError = deliveryInputError(input)
+        if (inputError) throw new UnprocessableEntityException(inputError)
+        const quote =
+          input.deliveryMethod === DeliveryMethod.CARRIER
+            ? await this.quotes.selected(tx, input.shippingQuoteId!, owner.cartId, lines, input.shippingAddress!)
+            : null
+        const selected = checkoutDeliveryOptions(local ? [local] : [], cart.subtotal, {
+          enabled: Boolean(quote),
+          reason: null,
+          cost: quote ? { amount: quote.amount.toFixed(2), currency: Currency.ARS } : null,
+        }).find(option => option.code === input.deliveryMethod)!
         if (!selected.enabled || !selected.cost)
           throw new UnprocessableEntityException(selected.unavailableReason ?? 'La entrega no está disponible.')
-        if (
-          input.deliveryMethod === DeliveryMethod.LOCAL_DELIVERY &&
-          (!input.shippingAddress || !isRosarioAddress(input.shippingAddress.city, input.shippingAddress.province))
-        )
-          throw new UnprocessableEntityException('La entrega local requiere una dirección en Rosario, Santa Fe.')
         if (checkoutReview(cart, input, selected.cost) !== input.reviewToken)
           throw new ConflictException('Tu compra cambió desde la revisión. Revisá los datos y el total de nuevo.')
         const total = checkoutTotal(cart.subtotal, selected.cost)!
@@ -132,7 +137,7 @@ export class OrdersService {
             addresses: {
               create: [
                 { type: AddressType.BILLING, name: input.name, phone: input.phone || null },
-                ...(input.deliveryMethod === DeliveryMethod.LOCAL_DELIVERY
+                ...(input.deliveryMethod !== DeliveryMethod.STORE_PICKUP
                   ? [
                       {
                         type: AddressType.SHIPPING,
@@ -144,6 +149,24 @@ export class OrdersService {
                   : []),
               ],
             },
+            ...(quote
+              ? {
+                  shipments: {
+                    create: {
+                      method: DeliveryMethod.CARRIER,
+                      carrier: quote.carrier,
+                      service: quote.service,
+                      carrierId: quote.carrierId,
+                      serviceType: quote.serviceType,
+                      logisticType: quote.logisticType,
+                      pickupPointId: quote.pickupPointId,
+                      pickupPoint: quote.pickupPoint,
+                      cost: quote.cost,
+                      currency: quote.currency,
+                    },
+                  },
+                }
+              : {}),
             statusHistory: { create: { toStatus: 'PENDING_PAYMENT' } },
           },
           select: { id: true },

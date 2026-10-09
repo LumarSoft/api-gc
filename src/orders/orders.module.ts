@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common'
 import { CartModule } from '../cart/cart.module'
 import { PricingModule } from '../pricing/pricing.module'
+import { ShippingModule } from '../shipping/shipping.module'
 import { OrdersService } from './orders.service'
 import { OrdersController } from './orders.controller'
 import { AdminOrdersController } from './admin-orders.controller'
@@ -13,7 +14,7 @@ import { CustomerOrdersController } from './customer-orders.controller'
 import { CustomerOrdersService } from './customer-orders.service'
 
 @Module({
-  imports: [CartModule, PricingModule],
+  imports: [CartModule, PricingModule, ShippingModule],
   providers: [
     OrdersService,
     AdminOrdersService,
@@ -24,6 +25,6 @@ import { CustomerOrdersService } from './customer-orders.service'
     CustomerOrdersService,
   ],
   controllers: [CustomerOrdersController, OrdersController, AdminOrdersController],
-  exports: [OrdersService],
+  exports: [OrdersService, AdminOrdersService, OrderStatusService],
 })
 export class OrdersModule {}

@@ -3,11 +3,13 @@ import { Currency, DeliveryMethod } from '../../generated/prisma/enums'
 import {
   checkoutDeliveryOptions,
   checkoutTotal,
+  deliveryInputError,
   isRosarioAddress,
   type ShippingConfiguration,
 } from './checkout-delivery'
 
 const money = (amount: string) => ({ amount, currency: Currency.ARS })
+const noCarrier = { enabled: false, reason: 'No disponible.', cost: null }
 const local: ShippingConfiguration = {
   code: DeliveryMethod.LOCAL_DELIVERY,
   name: 'Local',
@@ -20,17 +22,17 @@ const local: ShippingConfiguration = {
 
 describe('Checkout delivery', () => {
   it('keeps pickup free and never invents a local rate or carrier quote', () => {
-    const options = checkoutDeliveryOptions([], money('100000.00'))
+    const options = checkoutDeliveryOptions([], money('100000.00'), noCarrier)
     expect(options[0].cost).toEqual(money('0.00'))
     expect(options.slice(1).every(option => !option.enabled && option.cost === null)).toBe(true)
   })
 
   it('applies the configured free-shipping threshold at its exact decimal boundary', () => {
-    expect(checkoutDeliveryOptions([local], money('99999.99'))[1].cost).toEqual(money('2500.25'))
-    expect(checkoutDeliveryOptions([local], money('100000.00'))[1].cost).toEqual(money('0.00'))
-    expect(checkoutDeliveryOptions([{ ...local, freeShippingThreshold: null }], money('200000.00'))[1].cost).toEqual(
-      money('2500.25'),
-    )
+    expect(checkoutDeliveryOptions([local], money('99999.99'), noCarrier)[1].cost).toEqual(money('2500.25'))
+    expect(checkoutDeliveryOptions([local], money('100000.00'), noCarrier)[1].cost).toEqual(money('0.00'))
+    expect(
+      checkoutDeliveryOptions([{ ...local, freeShippingThreshold: null }], money('200000.00'), noCarrier)[1].cost,
+    ).toEqual(money('2500.25'))
   })
 
   it.each([
@@ -40,13 +42,41 @@ describe('Checkout delivery', () => {
     { flatRate: new Prisma.Decimal('-1') },
     { freeShippingThreshold: new Prisma.Decimal('-1') },
   ])('rejects unusable configuration %j', patch => {
-    expect(checkoutDeliveryOptions([{ ...local, ...patch }], money('100000.00'))[1].enabled).toBe(false)
+    expect(checkoutDeliveryOptions([{ ...local, ...patch }], money('100000.00'), noCarrier)[1].enabled).toBe(false)
   })
 
   it('allows a configured zero flat rate', () => {
-    expect(checkoutDeliveryOptions([{ ...local, flatRate: new Prisma.Decimal(0) }], money('1.00'))[1].cost).toEqual(
-      money('0.00'),
-    )
+    expect(
+      checkoutDeliveryOptions([{ ...local, flatRate: new Prisma.Decimal(0) }], money('1.00'), noCarrier)[1].cost,
+    ).toEqual(money('0.00'))
+  })
+
+  it('offers the carrier only when the cart can be quoted, priced with the chosen quote', () => {
+    expect(checkoutDeliveryOptions([], money('1.00'), noCarrier)[2]).toMatchObject({
+      enabled: false,
+      cost: null,
+      unavailableReason: 'No disponible.',
+    })
+    const carrier = { enabled: true, reason: null, cost: money('12143.00') }
+    expect(checkoutDeliveryOptions([], money('1.00'), carrier)[2]).toMatchObject({
+      enabled: true,
+      cost: money('12143.00'),
+      unavailableReason: null,
+    })
+  })
+
+  it('asks carrier buyers for the address, document, phone and a chosen quote', () => {
+    const address = { street: 'Mitre', streetNumber: '1', city: 'Córdoba', province: 'Córdoba', postalCode: '5000' }
+    const base = { name: 'A', email: 'a@example.test', deliveryMethod: DeliveryMethod.CARRIER }
+    expect(deliveryInputError(base)).toBe('Completá la dirección de envío.')
+    expect(deliveryInputError({ ...base, shippingAddress: address })).toMatch(/DNI o CUIT/)
+    const complete = { ...base, shippingAddress: { ...address, taxId: '30111222' } }
+    expect(deliveryInputError(complete)).toMatch(/teléfono/)
+    expect(deliveryInputError({ ...complete, phone: '341' })).toBe('Elegí una opción de envío.')
+    expect(deliveryInputError({ ...complete, phone: '341', shippingQuoteId: 3 })).toBeNull()
+    expect(
+      deliveryInputError({ ...base, deliveryMethod: DeliveryMethod.LOCAL_DELIVERY, shippingAddress: address }),
+    ).toMatch(/Rosario/)
   })
 
   it('calculates exact totals and refuses incomplete or mixed-currency amounts', () => {

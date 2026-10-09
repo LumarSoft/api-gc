@@ -64,6 +64,24 @@ if (!env) {
   }
 }
 
+// 3b. Carrier shipping (Zipnova): optional, but half a configuration fails at checkout or misses webhooks
+if (env) {
+  const zipnova = ['ZIPNOVA_API_KEY', 'ZIPNOVA_API_SECRET', 'ZIPNOVA_ACCOUNT_ID', 'ZIPNOVA_ORIGIN_ID']
+  const set = zipnova.filter(key => env[key])
+  if (set.length === 0) ok('Carrier shipping (Zipnova) off: no credentials in .env')
+  else if (set.length < zipnova.length)
+    warn(
+      `Carrier shipping (Zipnova) half configured, missing: ${zipnova.filter(key => !env[key]).join(', ')}`,
+      'complete them in .env (see .env.example and docs/upgrade-notes.md)',
+    )
+  else if ((env.ZIPNOVA_WEBHOOK_SECRET ?? '').length < 32)
+    warn(
+      'ZIPNOVA_WEBHOOK_SECRET is empty or shorter than 32 characters: shipment status updates will be refused',
+      `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"  → paste into .env`,
+    )
+  else ok('Carrier shipping (Zipnova) configured')
+}
+
 // 4. Prisma client generated from the current schema (compared by content: switching branches changes file dates)
 const schemaDir = join(ROOT, 'prisma', 'schema')
 const generatedClass = join(ROOT, 'src', 'generated', 'prisma', 'internal', 'class.ts')

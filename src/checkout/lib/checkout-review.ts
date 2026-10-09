@@ -21,15 +21,17 @@ export function checkoutReview(cart: CartResponseDto, input: PreviewCheckoutDto,
         phone: input.phone || null,
         deliveryMethod: input.deliveryMethod,
         address:
-          input.deliveryMethod === DeliveryMethod.LOCAL_DELIVERY && input.shippingAddress
+          input.deliveryMethod !== DeliveryMethod.STORE_PICKUP && input.shippingAddress
             ? [
                 input.shippingAddress.street,
                 input.shippingAddress.streetNumber,
                 input.shippingAddress.city,
                 input.shippingAddress.province,
                 input.shippingAddress.postalCode,
+                ...(input.deliveryMethod === DeliveryMethod.CARRIER ? [input.shippingAddress.taxId ?? null] : []),
               ]
             : null,
+        ...(input.deliveryMethod === DeliveryMethod.CARRIER ? { shippingQuoteId: input.shippingQuoteId ?? null } : {}),
         shipping: shipping.amount,
       }),
     )
