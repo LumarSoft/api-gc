@@ -109,6 +109,12 @@ describe('Zipnova mapping', () => {
     expect(home.destination).not.toHaveProperty('point_id')
   })
 
+  it("falls back to Zipnova's guide number until the carrier assigns its own", () => {
+    const shipment = { id: 1, external_id: 'CG-000874', status: 'ready_to_ship', delivery_id: '0999-31404615' }
+    expect(carrierShipment({ ...shipment, carrier_tracking_id: null }).trackingNumber).toBe('0999-31404615')
+    expect(carrierShipment({ ...shipment, carrier_tracking_id: '4000123' }).trackingNumber).toBe('4000123')
+  })
+
   it('maps a shipment to our shape', () => {
     expect(
       carrierShipment({

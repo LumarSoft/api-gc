@@ -36,6 +36,8 @@ export interface ZipnovaShipment {
   status_name?: string | null
   carrier?: { name?: string | null } | null
   carrier_tracking_id?: string | null
+  /** Zipnova's guide number (printed on the label, e.g. "0999-31404615"); the carrier's own number comes later. */
+  delivery_id?: string | null
   /** Zipnova's public tracking page. */
   tracking?: string | null
 }

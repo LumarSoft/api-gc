@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { FilesService } from '../files/files.service'
 import { AddressType } from '../generated/prisma/enums'
 import type { OrderResponseDto } from './dto/order-response.dto'
+import { dispatchMode } from '../shipping/lib/dispatch-mode'
 import { orderTransitions, shipmentActions } from './lib/order-rules'
 import type { AdminOrderRow, OrderRow } from './lib/order-selects'
 
@@ -77,7 +78,13 @@ export class OrderMapper {
     return {
       ...response,
       shipment:
-        response.shipment && shipment ? { ...response.shipment, actions: shipmentActions(row.status, shipment) } : null,
+        response.shipment && shipment
+          ? {
+              ...response.shipment,
+              actions: shipmentActions(row.status, shipment),
+              dispatch: dispatchMode(shipment.logisticType),
+            }
+          : null,
       guest: row.userId === null,
       history: row.statusHistory.map(event => ({
         status: event.toStatus,

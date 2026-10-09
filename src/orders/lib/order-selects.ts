@@ -73,7 +73,7 @@ export const adminOrderSelect = {
   },
   shipments: {
     ...orderSelect.shipments,
-    select: { ...orderSelect.shipments.select, externalId: true },
+    select: { ...orderSelect.shipments.select, externalId: true, logisticType: true },
   },
 } satisfies Prisma.OrderSelect
 

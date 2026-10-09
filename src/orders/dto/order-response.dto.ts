@@ -1,4 +1,5 @@
 import type { DeliveryMethod, OrderStatus, PaymentMethod, ShipmentStatus } from '../../generated/prisma/enums'
+import type { DispatchMode } from '../../shipping/lib/dispatch-mode'
 import type { ShipmentAction } from '../lib/order-rules'
 import type { MoneyDto } from '../../pricing/pricing.service'
 
@@ -44,6 +45,8 @@ export interface OrderResponseDto {
     pickupPoint: string | null
     /** What staff can do with it. Only included in admin responses. */
     actions?: ShipmentAction[]
+    /** How the store hands it over (carrier branch, Zipnova's hub or pickup). Only included in admin responses. */
+    dispatch?: DispatchMode | null
   } | null
   /** `note` and `by` (staff name, null for the system) only in admin responses. */
   history: { status: OrderStatus; at: string; note?: string | null; by?: string | null }[]
