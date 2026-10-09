@@ -81,8 +81,6 @@ export interface CarrierShipment {
   carrier: string | null
   trackingNumber: string | null
   trackingUrl: string | null
-  /** What the store pays the provider, VAT included (decimal string), when known. */
-  cost: string | null
 }
 
 export type CarrierDocumentKind = 'label' | 'guide'
@@ -120,6 +118,8 @@ export class CarrierError extends Error {
   constructor(
     readonly kind: 'UNAVAILABLE' | 'REJECTED' | 'NOT_FOUND' | 'NOT_READY',
     message: string,
+    /** The provider's HTTP status, when it answered. */
+    readonly status?: number,
   ) {
     super(message)
   }

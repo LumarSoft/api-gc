@@ -3,8 +3,13 @@ import { SHIPPABILITY_MESSAGES, carrierItems, shippabilityIssue } from '../../sh
 import type { CarrierShipment, CarrierShipmentRequest } from '../../shipping/shipping-carrier'
 import type { BookingOrder, SyncedShipment } from './shipment-selects'
 
+/** Our reference for the provider: the order number, plus the attempt when it is booked again after a cancel. */
+export function bookingReference(orderNumber: string, attempt: number): string {
+  return attempt > 1 ? `${orderNumber}-${attempt}` : orderNumber
+}
+
 /** The provider request for an order's shipment, or why it cannot be booked. */
-export function bookingRequest(order: BookingOrder): CarrierShipmentRequest | { error: string } {
+export function bookingRequest(order: BookingOrder, reference: string): CarrierShipmentRequest | { error: string } {
   const shipment = order.shipments[0]
   const address = order.addresses[0]
   const phone = address?.phone ?? order.contactPhone
@@ -22,7 +27,7 @@ export function bookingRequest(order: BookingOrder): CarrierShipmentRequest | { 
   const issue = shippabilityIssue(lines, variants)
   if (issue) return { error: `${SHIPPABILITY_MESSAGES[issue]} Revisá el peso y las medidas de los productos.` }
   return {
-    reference: order.number,
+    reference,
     declaredValue: order.subtotal.toFixed(2),
     items: carrierItems(lines, variants),
     carrierId: shipment.carrierId,
@@ -41,6 +46,18 @@ export function bookingRequest(order: BookingOrder): CarrierShipmentRequest | { 
       postalCode: address.postalCode,
     },
   }
+}
+
+const FINAL: ShipmentStatus[] = [
+  ShipmentStatus.DELIVERED,
+  ShipmentStatus.RETURNED,
+  ShipmentStatus.CANCELLED,
+  ShipmentStatus.LOST,
+]
+
+/** A provider read older than what is stored (two notifications racing): a final state never goes back. */
+export function staleShipmentStatus(current: ShipmentStatus, remote: ShipmentStatus): boolean {
+  return FINAL.includes(current) && !FINAL.includes(remote)
 }
 
 const HANDED_OVER: ShipmentStatus[] = [
@@ -62,7 +79,6 @@ export function syncedShipmentData(
     ...(remote.carrier ? { carrier: remote.carrier.slice(0, 60) } : {}),
     trackingNumber: remote.trackingNumber?.slice(0, 100) ?? null,
     trackingUrl: remote.trackingUrl?.slice(0, 500) ?? null,
-    ...(remote.cost ? { cost: remote.cost } : {}),
     ...(HANDED_OVER.includes(remote.status) && !current.shippedAt ? { shippedAt: now } : {}),
     ...(remote.status === ShipmentStatus.DELIVERED && !current.deliveredAt ? { deliveredAt: now } : {}),
   }

@@ -12,6 +12,9 @@ import type { ZipnovaPickupPoint, ZipnovaQuoteResponse, ZipnovaShipment } from '
 export const ZIPNOVA_SOURCE = 'comunicaciones-graficas-web'
 /** "General" product classification (Zipnova reference table). */
 const GENERAL_CLASSIFICATION = 1
+/** Zipnova refuses items lighter than this. */
+const MIN_ITEM_GRAMS = 10
+const PICKUP_POINT = 'pickup_point'
 
 /** Zipnova status codes (docs: referencia/estados-de-envio) grouped into our coarse states. */
 const STATUS_GROUPS: Record<ShipmentStatus, string[]> = {
@@ -55,7 +58,7 @@ function zipnovaItems(items: CarrierItem[]): object[] {
   return items.map(item => ({
     sku: item.sku,
     description: item.description,
-    weight: item.weightGrams,
+    weight: Math.max(MIN_ITEM_GRAMS, item.weightGrams),
     height: item.heightCm,
     width: item.widthCm,
     length: item.lengthCm,
@@ -91,10 +94,14 @@ function pickupPointDescription(point: ZipnovaPickupPoint): string {
   return [point.description, address].filter(Boolean).join(' — ').slice(0, 255)
 }
 
-/** One option per delivery mode, as Zipnova ranked them. Options it marks as not selectable are dropped. */
-export function quoteOptions(response: ZipnovaQuoteResponse): CarrierQuoteOption[] {
-  return Object.values(response.results ?? {})
+/**
+ * One option per delivery mode, as Zipnova ranked them. Options it marks as not selectable are dropped, and so is
+ * branch delivery without branches: it could not be booked (Zipnova needs the branch).
+ */
+export function quoteOptions(response: ZipnovaQuoteResponse | null): CarrierQuoteOption[] {
+  return Object.values(response?.results ?? {})
     .filter(result => result.selectable)
+    .filter(result => result.service_type.code !== PICKUP_POINT || Boolean(result.pickup_points?.length))
     .map(result => ({
       carrierId: result.carrier.id,
       carrier: result.carrier.name,
@@ -149,6 +156,5 @@ export function carrierShipment(shipment: ZipnovaShipment): CarrierShipment {
     carrier: shipment.carrier?.name ?? null,
     trackingNumber: shipment.carrier_tracking_id || null,
     trackingUrl: shipment.tracking || null,
-    cost: typeof shipment.price_incl_tax === 'number' ? shipment.price_incl_tax.toFixed(2) : null,
   }
 }

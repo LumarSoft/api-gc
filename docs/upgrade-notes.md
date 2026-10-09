@@ -28,8 +28,9 @@ npx prisma generate
 ```
 
 Copy the new `ZIPNOVA_*` variables from `.env.example` into `.env`. **Empty credentials keep carrier shipping off**
-(checkout shows it as unavailable), which is fine for local work. To use it, ask Mateo for the development account's
-key and secret, or create your own Zipnova account (free Starter plan) and fill:
+(checkout shows it as unavailable), which is fine for local work. To use it, create your own Zipnova account (free
+Starter plan), or ask Mateo for the development account's key and secret and then **set `ZIPNOVA_REFERENCE_PREFIX`**
+(e.g. `DEV-<your name>-`) so your orders `CG-000001…` never collide with someone else's. Fill:
 
 - `ZIPNOVA_API_KEY`, `ZIPNOVA_API_SECRET`, `ZIPNOVA_ACCOUNT_ID`: Zipnova → Configuración → Integraciones →
   Gestionar credenciales y webhooks.
@@ -40,8 +41,9 @@ Products need weight and measurements (admin → product → variants) to be quo
 
 Production: `npx prisma migrate deploy`, set the variables with the client's Zipnova account, and in Zipnova create a
 webhook with topic `status` and URL `https://<API domain>/shipping/webhooks/<ZIPNOVA_WEBHOOK_SECRET>`. Keep the
-account in Zipnova's test mode until the first bookings have been checked. `npm run doctor` warns about a half
-configuration.
+account in Zipnova's test mode until the first bookings have been checked. Leave `ZIPNOVA_REFERENCE_PREFIX` empty.
+The webhook secret travels in the URL path: exclude `/shipping/webhooks/` from the Nginx access log
+(`location /shipping/webhooks/ { access_log off; ... }`). `npm run doctor` warns about a half configuration.
 
 ---
 

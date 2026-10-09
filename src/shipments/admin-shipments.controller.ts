@@ -19,6 +19,7 @@ import type { AuditActor } from '../common/types/audit-actor'
 import { UserRole } from '../generated/prisma/enums'
 import type { OrderResponseDto } from '../orders/dto/order-response.dto'
 import { ShipmentDocumentParamsDto, ShipmentDocumentQueryDto } from './dto/shipment-input.dto'
+import { ShipmentBookingService } from './shipment-booking.service'
 import { ShipmentsService } from './shipments.service'
 
 /** The carrier shipment of an order. Every route answers with the updated admin order. */
@@ -26,13 +27,16 @@ import { ShipmentsService } from './shipments.service'
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 export class AdminShipmentsController {
-  constructor(private readonly shipments: ShipmentsService) {}
+  constructor(
+    private readonly bookings: ShipmentBookingService,
+    private readonly shipments: ShipmentsService,
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.OK)
   @Header('Cache-Control', 'private, no-store')
   create(@Param() params: IdParamDto, @CurrentAuditActor() actor: AuditActor): Promise<OrderResponseDto> {
-    return this.shipments.create(params.id, actor)
+    return this.bookings.create(params.id, actor)
   }
 
   @Post('cancel')

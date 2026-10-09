@@ -73,32 +73,35 @@ model ShippingQuote {
 
 /// A parcel sent through the carrier provider (CARRIER orders). Pickup and Rosario delivery have no shipment row.
 model Shipment {
-  id             Int            @id @default(autoincrement())
-  orderId        Int
-  method         DeliveryMethod
-  status         ShipmentStatus @default(PENDING)
-  carrier        String?        @db.VarChar(60)
-  service        String?        @db.VarChar(100)
+  id               Int            @id @default(autoincrement())
+  orderId          Int
+  method           DeliveryMethod
+  status           ShipmentStatus @default(PENDING)
+  carrier          String?        @db.VarChar(60)
+  service          String?        @db.VarChar(100)
   /// Selection copied from the chosen ShippingQuote; the provider needs it to create the shipment.
-  carrierId      Int?
-  serviceType    String?        @db.VarChar(40)
-  logisticType   String?        @db.VarChar(40)
-  pickupPointId  Int?
-  pickupPoint    String?        @db.VarChar(255)
+  carrierId        Int?
+  serviceType      String?        @db.VarChar(40)
+  logisticType     String?        @db.VarChar(40)
+  pickupPointId    Int?
+  pickupPoint      String?        @db.VarChar(255)
   /// Status as the carrier words it (e.g. "En camino"), shown as is next to the coarse `status`.
-  carrierStatus  String?        @db.VarChar(100)
-  trackingNumber String?        @db.VarChar(100)
-  trackingUrl    String?        @db.VarChar(500)
+  carrierStatus    String?        @db.VarChar(100)
+  trackingNumber   String?        @db.VarChar(100)
+  trackingUrl      String?        @db.VarChar(500)
   /// Shipment id at the carrier/aggregator.
-  externalId     String?        @unique @db.VarChar(100)
+  externalId       String?        @unique @db.VarChar(100)
+  /// Set while a booking request is in flight (cleared when it ends): a retry soon after an unanswered request only
+  /// looks the shipment up, so a slow provider cannot end up with two bookings.
+  bookingStartedAt DateTime?
   /// What the company pays the carrier (the customer's price is Order.shippingTotal).
-  cost           Decimal?       @db.Decimal(12, 2)
-  currency       Currency       @default(ARS)
-  shippedAt      DateTime?
-  deliveredAt    DateTime?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  deletedAt      DateTime?
+  cost             Decimal?       @db.Decimal(12, 2)
+  currency         Currency       @default(ARS)
+  shippedAt        DateTime?
+  deliveredAt      DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  deletedAt        DateTime?
 
   order Order @relation(fields: [orderId], references: [id])
 

@@ -1,6 +1,7 @@
 import { ConfigService } from '@nestjs/config'
+import { CarrierError } from '../shipping-carrier'
 import { ZipnovaCarrier } from './zipnova.carrier'
-import { ZipnovaClient } from './zipnova.client'
+import { ZipnovaClient, type ZipnovaDownload } from './zipnova.client'
 
 const secret = 'a'.repeat(64)
 const carrier = (env: Record<string, string>): ZipnovaCarrier => {
@@ -36,5 +37,55 @@ describe('Zipnova carrier', () => {
   it('refuses every notification while the secret is missing or too short', () => {
     expect(carrier({ ...full, ZIPNOVA_WEBHOOK_SECRET: '' }).readNotification('', {})).toBe('UNAUTHORIZED')
     expect(carrier({ ...full, ZIPNOVA_WEBHOOK_SECRET: 'x' }).readNotification('x', {})).toBe('UNAUTHORIZED')
+  })
+})
+
+describe('Zipnova carrier requests', () => {
+  const shipment = (id: number, status: string) => ({ id, external_id: 'DEV-CG-000001', status, status_name: status })
+  function withClient(client: Partial<ZipnovaClient>, env: Record<string, string> = full): ZipnovaCarrier {
+    return new ZipnovaCarrier(client as ZipnovaClient, new ConfigService(env))
+  }
+
+  it('prefixes references and only recovers live bookings', async () => {
+    const paths: string[] = []
+    const request = jest.fn((_method: string, path: string) => {
+      paths.push(path)
+      return Promise.resolve(
+        path.startsWith('/shipments?') ? { data: [shipment(1, 'cancelled'), shipment(2, 'new')] } : shipment(2, 'new'),
+      )
+    })
+    const zipnova = withClient({ request } as Partial<ZipnovaClient>, { ...full, ZIPNOVA_REFERENCE_PREFIX: 'DEV-' })
+    expect(await zipnova.findShipment('CG-000001')).toMatchObject({ id: '2' })
+    expect(paths[0]).toContain('external_id=DEV-CG-000001')
+    expect(paths[1]).toBe('/shipments/2')
+  })
+
+  it('reads "not cancellable now" as a refusal, not as Zipnova being down', async () => {
+    const request = jest.fn(() => Promise.reject(new CarrierError('UNAVAILABLE', 'Zipnova answered 401', 401)))
+    await expect(withClient({ request }).cancelShipment('2')).rejects.toMatchObject({
+      kind: 'REJECTED',
+    })
+  })
+
+  it('accepts documents as a raw file or as base64 inside JSON', async () => {
+    const download = (answer: ZipnovaDownload) => withClient({ download: () => Promise.resolve(answer) })
+    const raw = await download({ bytes: Buffer.from('%PDF'), contentType: 'application/pdf' }).document(
+      '2',
+      'label',
+      'pdf',
+    )
+    expect(raw.content.toString()).toBe('%PDF')
+    const json = await download({ json: { content: Buffer.from('^XA').toString('base64') } }).document(
+      '2',
+      'label',
+      'zpl',
+    )
+    expect(json).toMatchObject({ contentType: 'text/plain; charset=utf-8', fileName: 'etiqueta-2.zpl' })
+    expect(json.content.toString()).toBe('^XA')
+    await expect(download({ json: {} }).document('2', 'guide', 'pdf')).rejects.toMatchObject({ kind: 'NOT_READY' })
+  })
+
+  it('never puts a non-numeric id in a provider URL', async () => {
+    await expect(withClient({}).getShipment('../accounts')).rejects.toMatchObject({ kind: 'NOT_FOUND' })
   })
 })

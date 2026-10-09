@@ -38,7 +38,6 @@ export interface ZipnovaShipment {
   carrier_tracking_id?: string | null
   /** Zipnova's public tracking page. */
   tracking?: string | null
-  price_incl_tax?: number | null
 }
 
 export interface ZipnovaShipmentList {

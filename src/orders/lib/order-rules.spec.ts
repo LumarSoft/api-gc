@@ -68,10 +68,12 @@ describe('carrier shipment actions', () => {
     expect(shipmentActions(OrderStatus.PENDING_PAYMENT, pending)).toEqual([])
     expect(shipmentActions(OrderStatus.CONFIRMED, pending)).toEqual(['CREATE'])
     expect(shipmentActions(OrderStatus.PREPARING, pending)).toEqual(['CREATE'])
+    expect(shipmentActions(OrderStatus.SHIPPED, pending)).toEqual(['CREATE'])
     expect(shipmentActions(OrderStatus.CANCELLED, pending)).toEqual([])
+    expect(shipmentActions(OrderStatus.DELIVERED, pending)).toEqual([])
   })
 
-  it('cancels only before the carrier has the parcel', () => {
+  it('cancels only before the carrier has the parcel, and books again after a cancellation', () => {
     const created = { status: ShipmentStatus.PENDING, externalId: '9' }
     expect(shipmentActions(OrderStatus.PREPARING, created)).toEqual(['DOCUMENTS', 'CANCEL', 'REFRESH'])
     expect(shipmentActions(OrderStatus.SHIPPED, { ...created, status: ShipmentStatus.IN_TRANSIT })).toEqual([
@@ -79,6 +81,10 @@ describe('carrier shipment actions', () => {
       'REFRESH',
     ])
     expect(shipmentActions(OrderStatus.PREPARING, { ...created, status: ShipmentStatus.CANCELLED })).toEqual([
+      'CREATE',
+      'REFRESH',
+    ])
+    expect(shipmentActions(OrderStatus.DELIVERED, { ...created, status: ShipmentStatus.CANCELLED })).toEqual([
       'REFRESH',
     ])
   })

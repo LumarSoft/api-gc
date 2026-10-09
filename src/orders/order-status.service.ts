@@ -7,7 +7,7 @@ import {
   PaymentProvider,
   PaymentStatus,
   ReservationStatus,
-  type ShipmentStatus,
+  ShipmentStatus,
 } from '../generated/prisma/enums'
 import { PrismaService } from '../prisma/prisma.service'
 import type { ChangeOrderStatusDto } from './dto/order-input.dto'
@@ -63,13 +63,19 @@ export class OrderStatusService {
             },
           })
         }
-        if (input.status === OrderStatus.CANCELLED || input.status === OrderStatus.EXPIRED)
+        if (input.status === OrderStatus.CANCELLED || input.status === OrderStatus.EXPIRED) {
           await this.stock.resolve(
             tx,
             id,
             input.status === OrderStatus.EXPIRED ? ReservationStatus.EXPIRED : ReservationStatus.RELEASED,
             actor?.userId,
           )
+          // A carrier shipment is only booked once paid, so an unpaid order's shipment never left: close it.
+          await tx.shipment.updateMany({
+            where: { orderId: id, externalId: null, status: ShipmentStatus.PENDING },
+            data: { status: ShipmentStatus.CANCELLED },
+          })
+        }
         const saved = await tx.order.update({
           where: { id },
           data: {

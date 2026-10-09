@@ -125,12 +125,12 @@ Domain rules that apply across modules. When a request contradicts one of these,
   ranks them with the account's selection setting (price by default): home delivery and branch pickup, one choice per
   branch. The price shown is Zipnova's buyer price with VAT and insurance; no free-shipping threshold applies to the
   carrier yet. A quote lasts 30 minutes and only for the quoted cart lines and destination.
-- Carrier delivery needs the recipient's DNI or CUIT and a phone (carriers require them), and every product with
+- Carrier delivery needs the recipient's DNI or CUIT (check digit validated) and a phone (carriers require them), and every product with
   weight and measurements. Bulky items, products without measurements and carts of more than 100 units are shipped
   by arrangement: the option is shown as unavailable with that explanation.
 - The order keeps the chosen option on a pending `Shipment`. Staff book it at Zipnova from the order once it is paid
   (it is charged to the Zipnova balance), print the label (PDF or ZPL) and the dispatch guide, and can cancel it before
-  dispatch. Zipnova's webhook then updates the shipment and moves the order to shipped and delivered on its own.
+  dispatch and book it again. Zipnova's webhook then updates the shipment and moves the order to shipped and delivered on its own.
   Returns, losses and cancellations do not change the order: staff decide what to do.
 - Zipnova emails the buyer the tracking link (its account setting), so the store does not need its own email for it.
 

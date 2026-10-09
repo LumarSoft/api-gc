@@ -1,6 +1,7 @@
 import { Prisma } from '../../generated/prisma/client'
 import { Currency, DeliveryMethod } from '../../generated/prisma/enums'
 import type { MoneyDto } from '../../pricing/pricing.service'
+import { isValidCuit } from '../../wholesale-applications/lib/cuit'
 import type { PreviewCheckoutDto } from '../dto/checkout-input.dto'
 import type { CheckoutDeliveryDto } from '../dto/checkout-response.dto'
 
@@ -78,6 +79,8 @@ export function deliveryInputError(input: PreviewCheckoutDto): string | null {
   if (input.deliveryMethod === DeliveryMethod.CARRIER) {
     if (!address) return 'Completá la dirección de envío.'
     if (!address.taxId) return 'Completá el DNI o CUIT de quien recibe el envío.'
+    if (address.taxId.length === 11 && !isValidCuit(address.taxId))
+      return 'El CUIT de quien recibe no es válido. Revisá los 11 números.'
     if (!input.phone) return 'Completá un teléfono de contacto para el envío.'
     if (!input.shippingQuoteId) return 'Elegí una opción de envío.'
   }

@@ -1585,20 +1585,20 @@ echoed for this response only; later GET requests return `customer: null` and `s
 
 **Request body**
 
-| Field                          | Type   | Required              | Constraints                                                                |
-| ------------------------------ | ------ | --------------------- | -------------------------------------------------------------------------- |
-| `name`                         | string | Yes                   | Trimmed, nonempty, max 200                                                 |
-| `email`                        | string | Yes                   | Valid email, trimmed, max 191                                              |
-| `phone`                        | string | For carrier           | Trimmed, max 30                                                            |
-| `deliveryMethod`               | enum   | Yes                   | `STORE_PICKUP`, `LOCAL_DELIVERY`, `CARRIER`; method must be available      |
-| `shippingAddress`              | object | For local and carrier | Validated nested object; local delivery: city Rosario, Santa Fe            |
-| `shippingAddress.street`       | string | When address supplied | Trimmed, nonempty, max 150                                                 |
-| `shippingAddress.streetNumber` | string | When address supplied | Trimmed, nonempty, max 20                                                  |
-| `shippingAddress.city`         | string | When address supplied | Trimmed, nonempty, max 100                                                 |
-| `shippingAddress.province`     | string | When address supplied | Trimmed, nonempty, max 100                                                 |
-| `shippingAddress.postalCode`   | string | When address supplied | Trimmed, nonempty, max 10                                                  |
-| `shippingAddress.taxId`        | string | For carrier           | DNI or CUIT of the recipient; spaces, dots and dashes removed; 7–11 digits |
-| `shippingQuoteId`              | int    | For carrier           | An option from `POST /cart/checkout/shipping-quotes` for this cart         |
+| Field                          | Type   | Required              | Constraints                                                                                             |
+| ------------------------------ | ------ | --------------------- | ------------------------------------------------------------------------------------------------------- |
+| `name`                         | string | Yes                   | Trimmed, nonempty, max 200                                                                              |
+| `email`                        | string | Yes                   | Valid email, trimmed, max 191                                                                           |
+| `phone`                        | string | For carrier           | Trimmed, max 30                                                                                         |
+| `deliveryMethod`               | enum   | Yes                   | `STORE_PICKUP`, `LOCAL_DELIVERY`, `CARRIER`; method must be available                                   |
+| `shippingAddress`              | object | For local and carrier | Validated nested object; local delivery: city Rosario, Santa Fe                                         |
+| `shippingAddress.street`       | string | When address supplied | Trimmed, nonempty, max 150                                                                              |
+| `shippingAddress.streetNumber` | string | When address supplied | Trimmed, nonempty, max 20                                                                               |
+| `shippingAddress.city`         | string | When address supplied | Trimmed, nonempty, max 100                                                                              |
+| `shippingAddress.province`     | string | When address supplied | Trimmed, nonempty, max 100                                                                              |
+| `shippingAddress.postalCode`   | string | When address supplied | Trimmed, nonempty, max 10                                                                               |
+| `shippingAddress.taxId`        | string | For carrier           | Recipient's DNI (7–8 digits) or CUIT (11, check digit); spaces, dots and dashes removed; empty = absent |
+| `shippingQuoteId`              | int    | For carrier           | An option from `POST /cart/checkout/shipping-quotes` for this cart                                      |
 
 For `CARRIER`, the quote must belong to the current cart, be unexpired (30 minutes), match the address' postal code,
 city and province, and the cart must still have the quoted lines and quantities; otherwise `422` asks to quote again.
@@ -1993,7 +1993,8 @@ Pickup returns null. Carrier orders also return `shipment` (null otherwise):
 ```
 
 `status` is `PENDING`, `IN_TRANSIT`, `READY_FOR_PICKUP` (waiting at a carrier branch), `DELIVERED`, `RETURNED`,
-`CANCELLED` or `LOST`; `carrierStatus` is the carrier's own wording. Admin responses add `shipment.actions`: any of
+`CANCELLED` or `LOST`; `carrierStatus` is the carrier's own wording. Cancelling or expiring an unpaid carrier order
+closes its shipment (`CANCELLED`). Admin responses add `shipment.actions`: any of
 `CREATE`, `DOCUMENTS`, `CANCEL`, `REFRESH` (see the shipment routes). No secrets, actor ids, internal/staff notes or live catalog prices are returned. Each item's `imageUrl` is the
 product's current first image (null without images): a thumbnail only, not part of the purchase snapshot.
 
@@ -2221,11 +2222,15 @@ whose `shipment.actions` lists what is available.
 
 #### POST /admin/orders/:id/shipment
 
-Book the shipment at Zipnova (`CREATE`, only for `CONFIRMED` or `PREPARING` orders). The order number is the
-provider's reference, so a retry after a lost answer finds the same shipment instead of booking another one. Zipnova
-charges it to the account balance; without balance it stays `PENDING` ("Procesando") and its documents are not ready.
+Book the shipment at Zipnova (`CREATE`: paid orders in `CONFIRMED`, `PREPARING` or `SHIPPED` — in case staff marked
+it shipped before booking — whose shipment is not booked, or was cancelled). The provider reference is the order
+number (`CG-000123`; `CG-000123-2` when booked again after a cancellation), so a retry after a lost answer finds the
+same shipment instead of booking another one; while a booking started less than two minutes ago may still be running
+at Zipnova, a retry only looks it up. Zipnova charges it to the account balance; without balance it stays `PENDING`
+("Procesando") and its documents are not ready.
 
-`200 OK` — the order with `shipment.externalId` stored internally and `"actions": ["DOCUMENTS", "CANCEL", "REFRESH"]`.
+`200 OK` — the order with `"actions": ["DOCUMENTS", "CANCEL", "REFRESH"]`.
+`409 Conflict` — a booking is in flight: `{ "message": "El envío se está generando. Esperá un par de minutos y probá de nuevo.", "statusCode": 409 }`.
 `422 Unprocessable Entity` — not available for this order, missing recipient data or product measurements, or
 Zipnova refused the data: `{ "message": "Zipnova rechazó la operación: Destino inexistente en base de datos", "statusCode": 422 }`.
 `503 Service Unavailable` — Zipnova did not answer: `{ "message": "Zipnova no responde. Probá de nuevo en unos minutos.", "statusCode": 503 }`.
@@ -2243,8 +2248,8 @@ Download the dispatch documents (`DOCUMENTS`). `kind`: `label` (one per package;
 
 #### POST /admin/orders/:id/shipment/cancel
 
-Cancel before dispatch (`CANCEL`, only while `PENDING`). The order keeps its status; a cancelled shipment cannot be
-booked again from here (do it in Zipnova's panel). `422` when not available or refused by Zipnova; `503` as above.
+Cancel before dispatch (`CANCEL`, only while `PENDING`). The order keeps its status and can be booked again
+(`CREATE`). `422` when not available or refused by Zipnova (for example, already dispatched); `503` as above.
 
 #### POST /admin/orders/:id/shipment/refresh
 

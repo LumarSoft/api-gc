@@ -73,6 +73,10 @@ describe('Checkout delivery', () => {
     const complete = { ...base, shippingAddress: { ...address, taxId: '30111222' } }
     expect(deliveryInputError(complete)).toMatch(/teléfono/)
     expect(deliveryInputError({ ...complete, phone: '341' })).toBe('Elegí una opción de envío.')
+    const withCuit = (taxId: string) =>
+      deliveryInputError({ ...complete, phone: '341', shippingQuoteId: 3, shippingAddress: { ...address, taxId } })
+    expect(withCuit('20123456786')).toBeNull()
+    expect(withCuit('20123456787')).toMatch(/CUIT/)
     expect(deliveryInputError({ ...complete, phone: '341', shippingQuoteId: 3 })).toBeNull()
     expect(
       deliveryInputError({ ...base, deliveryMethod: DeliveryMethod.LOCAL_DELIVERY, shippingAddress: address }),

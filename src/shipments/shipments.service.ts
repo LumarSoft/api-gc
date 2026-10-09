@@ -4,19 +4,16 @@ import {
   Injectable,
   Logger,
   NotFoundException,
-  ServiceUnavailableException,
   UnprocessableEntityException,
 } from '@nestjs/common'
 import { AuditLogsService } from '../audit-logs/audit-logs.service'
 import type { AuditActor } from '../common/types/audit-actor'
-import { Prisma } from '../generated/prisma/client'
 import { AdminOrdersService } from '../orders/admin-orders.service'
 import type { OrderResponseDto } from '../orders/dto/order-response.dto'
 import { shipmentActions, type ShipmentAction } from '../orders/lib/order-rules'
 import { OrderStatusService } from '../orders/order-status.service'
 import { PrismaService } from '../prisma/prisma.service'
 import {
-  CarrierError,
   SHIPPING_CARRIER,
   type CarrierDocument,
   type CarrierDocumentFormat,
@@ -24,21 +21,11 @@ import {
   type CarrierShipment,
   type ShippingCarrier,
 } from '../shipping/shipping-carrier'
-import { bookingRequest, syncedShipmentData } from './lib/shipment-rules'
+import { carrierFailure } from './lib/carrier-failure'
+import { staleShipmentStatus, syncedShipmentData } from './lib/shipment-rules'
 import { bookingOrderSelect, syncedShipmentSelect, type SyncedShipment } from './lib/shipment-selects'
 
-/** Turns a provider failure into the error staff see. The provider's own validation message helps them fix data. */
-function carrierFailure(error: unknown): never {
-  if (!(error instanceof CarrierError)) throw error
-  if (error.kind === 'REJECTED')
-    throw new UnprocessableEntityException(`Zipnova rechazó la operación: ${error.message}`)
-  if (error.kind === 'NOT_READY')
-    throw new UnprocessableEntityException('Zipnova todavía no generó la documentación. Probá en unos minutos.')
-  if (error.kind === 'NOT_FOUND') throw new NotFoundException('Zipnova no encuentra este envío.')
-  throw new ServiceUnavailableException('Zipnova no responde. Probá de nuevo en unos minutos.')
-}
-
-/** Carrier shipments of orders: booking at the provider, documents, cancellation and status sync. */
+/** Carrier shipments of orders after booking: documents, cancellation and status sync (webhook or by hand). */
 @Injectable()
 export class ShipmentsService {
   private readonly logger = new Logger(ShipmentsService.name)
@@ -50,46 +37,6 @@ export class ShipmentsService {
     private readonly statuses: OrderStatusService,
     private readonly audit: AuditLogsService,
   ) {}
-
-  /**
-   * Books the shipment at the provider under the order lock, so two clicks cannot book it twice. Looking it up by
-   * order number first recovers a booking whose answer was lost.
-   */
-  async create(orderId: number, actor: AuditActor): Promise<OrderResponseDto> {
-    const booked = await this.prisma.$transaction(
-      async tx => {
-        await tx.$queryRaw`SELECT id FROM \`Order\` WHERE id = ${orderId} FOR UPDATE`
-        const order = await tx.order.findUnique({ where: { id: orderId }, select: bookingOrderSelect })
-        if (!order) throw new NotFoundException('Pedido no encontrado.')
-        const shipment = order.shipments[0]
-        if (!shipment || !shipmentActions(order.status, shipment).includes('CREATE'))
-          throw new UnprocessableEntityException('Este pedido no tiene un envío para generar.')
-        const request = bookingRequest(order)
-        if ('error' in request) throw new UnprocessableEntityException(request.error)
-        let remote: CarrierShipment
-        try {
-          remote = (await this.carrier.findShipment(order.number)) ?? (await this.carrier.createShipment(request))
-        } catch (error) {
-          carrierFailure(error)
-        }
-        await tx.shipment.update({ where: { id: shipment.id }, data: syncedShipmentData(shipment, remote) })
-        await this.audit.record(
-          actor,
-          {
-            action: 'shipment.create',
-            entityType: 'Order',
-            entityId: orderId,
-            changes: { shipment: { from: null, to: remote.id } },
-          },
-          tx,
-        )
-        return { remote, carrier: remote.carrier ?? shipment.carrier }
-      },
-      { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted, timeout: 30_000 },
-    )
-    await this.statuses.followShipment(orderId, booked.remote.status, this.note(booked.carrier, booked.remote))
-    return this.orders.read(orderId)
-  }
 
   async cancel(orderId: number, actor: AuditActor): Promise<OrderResponseDto> {
     const shipment = await this.shipment(orderId, 'CANCEL')
@@ -163,10 +110,21 @@ export class ShipmentsService {
     }
   }
 
+  /**
+   * Reads the provider first, then writes under the shipment lock with what is stored now: of two racing
+   * notifications, the one that read an older state cannot move a finished shipment back.
+   */
   private async sync(shipment: SyncedShipment): Promise<void> {
     const remote = await this.carrier.getShipment(shipment.externalId!)
-    await this.prisma.shipment.update({ where: { id: shipment.id }, data: syncedShipmentData(shipment, remote) })
-    await this.statuses.followShipment(shipment.orderId, remote.status, this.note(shipment.carrier, remote))
+    const applied = await this.prisma.$transaction(async tx => {
+      await tx.$queryRaw`SELECT id FROM Shipment WHERE id = ${shipment.id} FOR UPDATE`
+      const current = await tx.shipment.findUniqueOrThrow({ where: { id: shipment.id }, select: syncedShipmentSelect })
+      if (staleShipmentStatus(current.status, remote.status)) return false
+      await tx.shipment.update({ where: { id: shipment.id }, data: syncedShipmentData(current, remote) })
+      return true
+    })
+    if (applied)
+      await this.statuses.followShipment(shipment.orderId, remote.status, this.note(shipment.carrier, remote))
   }
 
   private note(carrier: string | null, remote: CarrierShipment): string {

@@ -59,12 +59,18 @@ export const bookingOrderSelect = {
     take: 1,
     select: {
       ...syncedShipmentSelect,
+      bookingStartedAt: true,
+      service: true,
       carrierId: true,
       serviceType: true,
       logisticType: true,
       pickupPointId: true,
+      pickupPoint: true,
+      cost: true,
+      currency: true,
     },
   },
 } satisfies Prisma.OrderSelect
 
 export type BookingOrder = Prisma.OrderGetPayload<{ select: typeof bookingOrderSelect }>
+export type BookingShipment = BookingOrder['shipments'][number]

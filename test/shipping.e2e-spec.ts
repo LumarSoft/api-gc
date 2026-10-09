@@ -41,7 +41,6 @@ function fakeCarrier() {
       carrier: 'OCA',
       trackingNumber: '4000123',
       trackingUrl: 'https://tracking.example/4000123',
-      cost: '11800.00',
     }
   }
   const carrier: ShippingCarrier = {
@@ -376,13 +375,61 @@ describe('Carrier shipping (local MySQL e2e)', () => {
     await notify(TOKEN, '999999').expect(200)
   })
 
-  it('cancels a booked shipment before dispatch without moving the order', async () => {
+  it('cancels a booked shipment without moving the order, and books it again with a new reference', async () => {
     const order = await paidOrder()
     await admin('post', `${order.id}/shipment/cancel`).expect(422)
     await admin('post', `${order.id}/shipment`).expect(200)
     const cancelled = (await admin('post', `${order.id}/shipment/cancel`).expect(200)).body as OrderResponseDto
     expect(cancelled.status).toBe(OrderStatus.CONFIRMED)
-    expect(cancelled.shipment).toMatchObject({ status: ShipmentStatus.CANCELLED, actions: ['REFRESH'] })
+    expect(cancelled.shipment).toMatchObject({ status: ShipmentStatus.CANCELLED, actions: ['CREATE', 'REFRESH'] })
     await admin('get', `${order.id}/shipment/documents/label`).expect(422)
+
+    const again = (await admin('post', `${order.id}/shipment`).expect(200)).body as OrderResponseDto
+    expect(again.shipment).toMatchObject({
+      status: ShipmentStatus.PENDING,
+      actions: ['DOCUMENTS', 'CANCEL', 'REFRESH'],
+    })
+    expect(fake.booked.at(-1)?.reference).toBe(`${order.number}-2`)
+    const rows = await prisma.shipment.findMany({ where: { orderId: order.id }, orderBy: { id: 'asc' } })
+    expect(rows.map(row => [row.status, row.carrierId, row.bookingStartedAt])).toEqual([
+      [ShipmentStatus.CANCELLED, 208, null],
+      [ShipmentStatus.PENDING, 208, null],
+    ])
+  })
+
+  it('books a shipment marked as shipped by hand, and never twice while a booking is in flight', async () => {
+    const order = await paidOrder()
+    for (const status of [OrderStatus.PREPARING, OrderStatus.SHIPPED])
+      await request(server())
+        .put(`/admin/orders/${order.id}/status`)
+        .set('Cookie', adminCookie)
+        .send({ status })
+        .expect(200)
+    const shipment = await prisma.shipment.findFirstOrThrow({ where: { orderId: order.id } })
+    await prisma.shipment.update({ where: { id: shipment.id }, data: { bookingStartedAt: new Date() } })
+    const booked = fake.booked.length
+    await admin('post', `${order.id}/shipment`).expect(409)
+    expect(fake.booked).toHaveLength(booked)
+    await prisma.shipment.update({
+      where: { id: shipment.id },
+      data: { bookingStartedAt: new Date(Date.now() - 3 * 60_000) },
+    })
+    expect(((await admin('post', `${order.id}/shipment`).expect(200)).body as OrderResponseDto).status).toBe(
+      OrderStatus.SHIPPED,
+    )
+    expect(fake.booked).toHaveLength(booked + 1)
+  })
+
+  it('closes the shipment of an unpaid order that is cancelled', async () => {
+    const cookie = await cart()
+    const order = await place(cookie, (await quote(cookie)).options[0].id)
+    const cancelled = (
+      await request(server())
+        .put(`/admin/orders/${order.id}/status`)
+        .set('Cookie', adminCookie)
+        .send({ status: OrderStatus.CANCELLED })
+        .expect(200)
+    ).body as OrderResponseDto
+    expect(cancelled.shipment).toMatchObject({ status: ShipmentStatus.CANCELLED, actions: [] })
   })
 })

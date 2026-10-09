@@ -75,10 +75,15 @@ export class CheckoutAddressDto {
   @MaxLength(10)
   postalCode: string
 
-  /** DNI or CUIT of whoever receives the parcel, digits only. Carriers require it (CARRIER delivery). */
-  @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.replace(/[\s.-]/g, '') : value))
+  /**
+   * DNI (7–8 digits) or CUIT (11) of whoever receives the parcel; spaces, dots and dashes are dropped and an empty
+   * value counts as absent. Carriers require it (CARRIER delivery); the CUIT check digit is checked with the rest.
+   */
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.replace(/[\s.-]/g, '') || undefined : value,
+  )
   @IsOptional()
-  @Matches(/^\d{7,11}$/, { message: 'taxId must be a DNI or CUIT (7 to 11 digits)' })
+  @Matches(/^(\d{7,8}|\d{11})$/, { message: 'taxId must be a DNI (7 or 8 digits) or a CUIT (11 digits)' })
   taxId?: string
 }
 

@@ -31,20 +31,20 @@ export function carrierOrderStatus(status: OrderStatus, shipment: ShipmentStatus
 
 export type ShipmentAction = 'CREATE' | 'DOCUMENTS' | 'CANCEL' | 'REFRESH'
 
+/** Paid orders whose parcel may still need booking (staff may have marked one shipped before booking it). */
+const BOOKABLE: OrderStatus[] = [OrderStatus.CONFIRMED, OrderStatus.PREPARING, OrderStatus.SHIPPED]
+
 /**
- * What staff can do with an order's carrier shipment. It is created at the provider once the order is paid; labels
- * and cancellation only make sense before the carrier has it.
+ * What staff can do with an order's carrier shipment. It is booked at the provider once the order is paid, and booked
+ * again after a cancellation; labels and cancellation only make sense before the carrier has it.
  */
 export function shipmentActions(
   status: OrderStatus,
   shipment: { status: ShipmentStatus; externalId: string | null },
 ): ShipmentAction[] {
-  if (!shipment.externalId)
-    return shipment.status === ShipmentStatus.PENDING &&
-      (status === OrderStatus.CONFIRMED || status === OrderStatus.PREPARING)
-      ? ['CREATE']
-      : []
-  if (shipment.status === ShipmentStatus.CANCELLED) return ['REFRESH']
+  const bookable = BOOKABLE.includes(status)
+  if (!shipment.externalId) return shipment.status === ShipmentStatus.PENDING && bookable ? ['CREATE'] : []
+  if (shipment.status === ShipmentStatus.CANCELLED) return bookable ? ['CREATE', 'REFRESH'] : ['REFRESH']
   return shipment.status === ShipmentStatus.PENDING ? ['DOCUMENTS', 'CANCEL', 'REFRESH'] : ['DOCUMENTS', 'REFRESH']
 }
 

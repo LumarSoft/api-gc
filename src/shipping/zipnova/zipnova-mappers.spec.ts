@@ -25,6 +25,21 @@ describe('Zipnova mapping', () => {
     expect(shipmentStatus('something_new')).toBe(ShipmentStatus.IN_TRANSIT)
   })
 
+  it('drops branch delivery without branches, which could not be booked', () => {
+    const branchless = result({ service_type: { code: 'pickup_point', name: 'Sucursal' }, pickup_points: [] })
+    expect(quoteOptions({ results: { pickup_point: branchless } })).toEqual([])
+    expect(quoteOptions(null)).toEqual([])
+  })
+
+  it('sends Zipnova at least its minimum item weight', () => {
+    const body = quoteBody(1, 2, {
+      destination: { postalCode: '1414', city: 'CABA', province: 'Capital Federal' },
+      items: [{ ...item, weightGrams: 3 }],
+      declaredValue: '10.00',
+    }) as { items: { weight: number }[] }
+    expect(body.items[0].weight).toBe(10)
+  })
+
   it('keeps the winning option per delivery mode, its branches and prices as decimal strings', () => {
     const options = quoteOptions({
       results: {
@@ -104,7 +119,6 @@ describe('Zipnova mapping', () => {
         carrier: { name: 'OCA' },
         carrier_tracking_id: '4000123',
         tracking: 'https://zipnova.example/t/1',
-        price_incl_tax: 12143,
       }),
     ).toEqual({
       id: '3850099',
@@ -114,7 +128,6 @@ describe('Zipnova mapping', () => {
       carrier: 'OCA',
       trackingNumber: '4000123',
       trackingUrl: 'https://zipnova.example/t/1',
-      cost: '12143.00',
     })
   })
 })
