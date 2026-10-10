@@ -22,6 +22,7 @@ import { FavoritesModule } from './favorites/favorites.module'
 import { WholesaleApplicationsModule } from './wholesale-applications/wholesale-applications.module'
 import { DashboardModule } from './dashboard/dashboard.module'
 import { SettingsModule } from './settings/settings.module'
+import { PaymentsModule } from './payments/payments.module'
 import { ShipmentsModule } from './shipments/shipments.module'
 
 @Module({
@@ -49,6 +50,7 @@ import { ShipmentsModule } from './shipments/shipments.module'
     SettingsModule,
     OrdersModule,
     ShipmentsModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],

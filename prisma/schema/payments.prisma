@@ -57,11 +57,11 @@ model Payment {
   status               PaymentStatus   @default(PENDING)
   amount               Decimal         @db.Decimal(12, 2)
   currency             Currency
+  /// Card installments chosen at Mercado Pago.
   installments         Int?
-  /// Mercado Pago checkout preference id.
-  preferenceId         String?         @db.VarChar(100)
   /// Mercado Pago payment id. Always re-fetched from the MP API; never trusted from the client.
   externalId           String?         @db.VarChar(100)
+  /// Mercado Pago's own status and detail (e.g. "rejected" / "cc_rejected_insufficient_amount"), for staff.
   externalStatus       String?         @db.VarChar(60)
   externalStatusDetail String?         @db.VarChar(120)
   approvedAt           DateTime?
@@ -80,8 +80,8 @@ model Payment {
   @@index([status])
 }
 
-/// Webhook inbox: one row per notification id, so a notification is never processed twice.
-/// Operational log: no deletedAt (see database.md). The raw payload is never stored.
+/// Webhook inbox: one row per notification id, so a notification is never processed twice (a failed one is retried
+/// when the provider sends it again). Operational log: no deletedAt (see database.md). The raw payload is never stored.
 model PaymentNotification {
   id          Int                @id @default(autoincrement())
   provider    PaymentProvider
@@ -90,6 +90,7 @@ model PaymentNotification {
   /// Id of the resource the notification is about (e.g. MP payment id).
   resourceId  String             @db.VarChar(100)
   status      NotificationStatus @default(RECEIVED)
+  /// Why processing failed (our own message, never the provider's payload).
   error       String?            @db.Text
   processedAt DateTime?
   createdAt   DateTime           @default(now())

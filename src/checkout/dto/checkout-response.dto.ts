@@ -1,5 +1,5 @@
 import type { CartResponseDto } from '../../cart/dto/cart-response.dto'
-import type { DeliveryMethod } from '../../generated/prisma/enums'
+import type { DeliveryMethod, PaymentMethod } from '../../generated/prisma/enums'
 import type { MoneyDto } from '../../pricing/pricing.service'
 import type { ShippingQuoteOptionDto } from '../../shipping/dto/shipping-quote-response.dto'
 import type { CheckoutAddressDto } from './checkout-input.dto'
@@ -27,4 +27,11 @@ export interface CheckoutResponseDto {
   canReview: boolean
   reviewToken: string | null
   reservationHours: number
+  /** How the buyer can pay, and how long each holds the stock. Mercado Pago only when it is configured. */
+  paymentOptions: CheckoutPaymentOptionDto[]
+}
+
+export interface CheckoutPaymentOptionDto {
+  method: PaymentMethod
+  reservationMinutes: number
 }

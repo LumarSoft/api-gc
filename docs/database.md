@@ -69,6 +69,10 @@ erDiagram
   `StockMovement`. Reservations are rows with `expiresAt`, released by a scheduled job.
 - **Current account is a ledger.** Debits and credits are `AccountMovement` rows; `CurrentAccount.balance` is updated
   in the same transaction. Partial payments are `PaymentAllocation` rows that reduce a debit's `openAmount`.
+- **Mercado Pago payments now implemented (2026-10-10).** `Payment` stores each Mercado Pago payment of an order
+  (unique `provider` + `externalId`, the operation id) next to manual confirmations; the unused `preferenceId` was
+  dropped (a checkout is created per attempt). `PaymentNotification` is the webhook inbox. `TransferReceipt` and the
+  current-account side of `Payment` stay provisional.
 - **Integrations never block a sale.** Anything sent to or received from Tango has an `ExternalSync` row with status,
   attempts and last error, shown in the admin panel. Mercado Pago webhooks are deduplicated by
   `PaymentNotification (provider, externalId)`.

@@ -5,6 +5,7 @@ import { Prisma } from '../generated/prisma/client'
 import {
   OrderStatus,
   PaymentProvider,
+  PaymentPurpose,
   PaymentStatus,
   ReservationStatus,
   ShipmentStatus,
@@ -13,6 +14,7 @@ import { PrismaService } from '../prisma/prisma.service'
 import type { ChangeOrderStatusDto } from './dto/order-input.dto'
 import type { OrderResponseDto } from './dto/order-response.dto'
 import { carrierOrderStatus, orderTransitions } from './lib/order-rules'
+import { nextPaymentStatus, paysOrder, type ProviderPayment } from './lib/payment-rules'
 import { adminOrderSelect } from './lib/order-selects'
 import { OrderMapper } from './order.mapper'
 import { OrderStockService } from './order-stock.service'
@@ -127,6 +129,65 @@ export class OrderStatusService {
           where: { id },
           data: { status: next, statusHistory: { create: { fromStatus: order.status, toStatus: next, note } } },
         })
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted },
+    )
+  }
+
+  /**
+   * A payment read from an online provider's API (webhook or the buyer's return), with no actor. Records it and, when
+   * it pays the order in time and in full, confirms the order and consumes the reservation like a staff confirmation.
+   * Same order lock as `change`; repeating it with the same payment changes nothing. Returns the order status.
+   */
+  async recordPayment(id: number, payment: ProviderPayment, note: string): Promise<OrderStatus> {
+    return this.prisma.$transaction(
+      async tx => {
+        await tx.$queryRaw`SELECT id FROM \`Order\` WHERE id = ${id} FOR UPDATE`
+        const order = await tx.order.findUnique({
+          where: { id },
+          select: { status: true, expiresAt: true, total: true, currency: true },
+        })
+        if (!order) throw new NotFoundException('Pedido no encontrado.')
+        const where = { provider_externalId: { provider: payment.provider, externalId: payment.externalId } }
+        const saved = await tx.payment.findUnique({ where, select: { status: true, orderId: true } })
+        // A provider payment belongs to one order: never move it to another one.
+        if (saved && saved.orderId !== id) return order.status
+        const status = nextPaymentStatus(saved?.status ?? null, payment.status)
+        // An older reading (status kept) leaves the provider's details as they were too.
+        if (saved && status !== payment.status) return order.status
+        const data = {
+          status,
+          externalStatus: payment.externalStatus,
+          externalStatusDetail: payment.externalStatusDetail,
+          installments: payment.installments,
+          approvedAt: payment.approvedAt,
+        }
+        if (saved) await tx.payment.update({ where, data, select: { id: true } })
+        else
+          await tx.payment.create({
+            data: {
+              ...data,
+              orderId: id,
+              purpose: PaymentPurpose.ORDER,
+              provider: payment.provider,
+              externalId: payment.externalId,
+              amount: payment.amount,
+              currency: order.currency,
+            },
+            select: { id: true },
+          })
+        if (status !== PaymentStatus.APPROVED || !paysOrder(order, payment)) return order.status
+        await this.stock.resolve(tx, id, ReservationStatus.CONSUMED)
+        await tx.order.update({
+          where: { id },
+          data: {
+            status: OrderStatus.CONFIRMED,
+            confirmedAt: new Date(),
+            statusHistory: { create: { fromStatus: order.status, toStatus: OrderStatus.CONFIRMED, note } },
+          },
+          select: { id: true },
+        })
+        return OrderStatus.CONFIRMED
       },
       { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted },
     )

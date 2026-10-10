@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto'
-import { ConflictException, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common'
+import { ConflictException, Inject, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common'
 import { CartOwnerService } from '../cart/cart-owner.service'
 import { CartMapper } from '../cart/cart.mapper'
 import { cartVariantSelect } from '../cart/lib/cart-selects'
@@ -9,13 +9,14 @@ import type { AuthenticatedUser } from '../common/types/authenticated-user'
 import { hashToken } from '../common/utils/secure-token'
 import { Prisma } from '../generated/prisma/client'
 import { AddressType, BuyerType, CartStatus, Currency, DeliveryMethod, PaymentMethod } from '../generated/prisma/enums'
+import { PAYMENT_GATEWAY, type PaymentGateway } from '../mercado-pago/payment-gateway'
 import { PricingService } from '../pricing/pricing.service'
 import { PrismaService } from '../prisma/prisma.service'
 import { ShippingQuotesService } from '../shipping/shipping-quotes.service'
 import type { PlaceOrderDto } from './dto/order-input.dto'
 import type { OrderResponseDto } from './dto/order-response.dto'
 import { orderSelect } from './lib/order-selects'
-import { reservationHours } from './lib/reservation-hours'
+import { reservationMinutes } from './lib/reservation-hours'
 import { OrderMapper } from './order.mapper'
 import { OrderStockService } from './order-stock.service'
 
@@ -29,6 +30,7 @@ export class OrdersService {
     private readonly mapper: OrderMapper,
     private readonly stock: OrderStockService,
     private readonly quotes: ShippingQuotesService,
+    @Inject(PAYMENT_GATEWAY) private readonly gateway: PaymentGateway,
   ) {}
 
   async place(
@@ -37,6 +39,9 @@ export class OrdersService {
     input: PlaceOrderDto,
   ): Promise<OrderResponseDto> {
     const accessTokenHash = hashToken(input.accessToken)
+    const paymentMethod = input.paymentMethod ?? PaymentMethod.MANUAL
+    if (paymentMethod === PaymentMethod.MERCADO_PAGO && !this.gateway.configured)
+      throw new UnprocessableEntityException('El pago con Mercado Pago no está disponible. Elegí pagar en el local.')
     const context = await this.pricing.getContext(user)
     return this.prisma.$transaction(
       async tx => {
@@ -90,8 +95,7 @@ export class OrdersService {
           where: { key: 'reservation.manualHours' },
           select: { value: true, deletedAt: true },
         })
-        const hours = reservationHours(setting)
-        const expiresAt = new Date(Date.now() + hours * 3_600_000)
+        const expiresAt = new Date(Date.now() + reservationMinutes(paymentMethod, setting) * 60_000)
         const order = await tx.order.create({
           data: {
             // Placeholder replaced below once the id exists; never derived from the private access token.
@@ -101,7 +105,7 @@ export class OrdersService {
             buyerType: user?.buyerType ?? BuyerType.RETAIL,
             companyId: user?.buyerType === BuyerType.WHOLESALE ? user.companyId : null,
             priceListId: context.priceListIds[0],
-            paymentMethod: PaymentMethod.MANUAL,
+            paymentMethod,
             deliveryMethod: input.deliveryMethod,
             exchangeRate: rows.some(
               row =>

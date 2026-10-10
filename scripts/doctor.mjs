@@ -82,6 +82,22 @@ if (env) {
   else ok('Carrier shipping (Zipnova) configured')
 }
 
+// 3c. Online payment (Mercado Pago): optional, but without the webhook secret payments only confirm on the buyer's return
+if (env) {
+  if (!env.MERCADO_PAGO_ACCESS_TOKEN) ok('Online payment (Mercado Pago) off: no access token in .env')
+  else if (!env.MERCADO_PAGO_WEBHOOK_SECRET)
+    warn(
+      'MERCADO_PAGO_WEBHOOK_SECRET is empty: Mercado Pago notifications will be refused',
+      'Mercado Pago → Tus integraciones → <app> → Webhooks → Clave secreta  → paste into .env',
+    )
+  else if (env.MERCADO_PAGO_NOTIFICATION_URL && !env.MERCADO_PAGO_NOTIFICATION_URL.startsWith('https://'))
+    warn(
+      'MERCADO_PAGO_NOTIFICATION_URL is not https: Mercado Pago only notifies public https URLs',
+      'leave it empty locally, or set the https URL of POST /payments/webhooks/mercado-pago',
+    )
+  else ok('Online payment (Mercado Pago) configured')
+}
+
 // 4. Prisma client generated from the current schema (compared by content: switching branches changes file dates)
 const schemaDir = join(ROOT, 'prisma', 'schema')
 const generatedClass = join(ROOT, 'src', 'generated', 'prisma', 'internal', 'class.ts')

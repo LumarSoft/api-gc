@@ -1,10 +1,11 @@
-import { reservationHours } from '../orders/lib/reservation-hours'
-import { Injectable, UnprocessableEntityException } from '@nestjs/common'
+import { Inject, Injectable, UnprocessableEntityException } from '@nestjs/common'
 import { CartService } from '../cart/cart.service'
 import type { CartOwner } from '../cart/cart-owner.service'
 import type { CartResponseDto } from '../cart/dto/cart-response.dto'
 import type { AuthenticatedUser } from '../common/types/authenticated-user'
-import { Currency, DeliveryMethod } from '../generated/prisma/enums'
+import { Currency, DeliveryMethod, PaymentMethod } from '../generated/prisma/enums'
+import { PAYMENT_GATEWAY, type PaymentGateway } from '../mercado-pago/payment-gateway'
+import { reservationHours, reservationMinutes } from '../orders/lib/reservation-hours'
 import { PrismaService } from '../prisma/prisma.service'
 import type { ShippingQuotesResponseDto } from '../shipping/dto/shipping-quote-response.dto'
 import type { ShippableLine } from '../shipping/lib/shipping-rules'
@@ -31,6 +32,7 @@ export class CheckoutService {
     private readonly carts: CartService,
     private readonly prisma: PrismaService,
     private readonly quotes: ShippingQuotesService,
+    @Inject(PAYMENT_GATEWAY) private readonly gateway: PaymentGateway,
   ) {}
 
   async preview(
@@ -102,6 +104,9 @@ export class CheckoutService {
         canReview: Boolean(cart.items.length && !cart.hasIssues && cart.subtotal && selected.enabled),
         reviewToken: input && selected.cost ? checkoutReview(cart, input, selected.cost) : null,
         reservationHours: reservationHours(reservation),
+        paymentOptions: [PaymentMethod.MANUAL, ...(this.gateway.configured ? [PaymentMethod.MERCADO_PAGO] : [])].map(
+          method => ({ method, reservationMinutes: reservationMinutes(method, reservation) }),
+        ),
       },
     }
   }

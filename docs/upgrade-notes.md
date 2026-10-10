@@ -16,6 +16,40 @@ npm run doctor             # tells you if anything else is missing
 
 ---
 
+## 2026-10-10 — Online payment with Mercado Pago (migration, env vars)
+
+Checkout can take payments online with Mercado Pago Checkout Pro. `Payment` loses the unused `preferenceId` column, so
+apply the migration and regenerate the client:
+
+```bash
+npx prisma migrate dev
+npx prisma generate
+```
+
+Copy the new `MERCADO_PAGO_*` variables from `.env.example` into `.env`. **An empty access token keeps Mercado Pago
+off** (checkout only offers paying at the store), which is fine for local work. To try it in sandbox:
+
+1. In Mercado Pago Developers (Tus integraciones) create or open the app, then "Cuentas de prueba": create a **seller**
+   and a **buyer** test user (Argentina).
+2. Log in as the seller test user (incognito window), open the app → "Credenciales de producción" and copy the access
+   token (`APP_USR-…`) into `MERCADO_PAGO_ACCESS_TOKEN`. (A `TEST-…` token of your own account also works.)
+3. Set `MERCADO_PAGO_REFERENCE_PREFIX` (e.g. `DEV-<your name>-`) when the test account is shared, so your orders
+   `CG-000001…` never take someone else's payments.
+4. Pay as the buyer test user (another incognito window) with one of Mercado Pago's test cards for Argentina
+   (Developers → "Tarjetas de prueba"); the holder name picks the result: `APRO` approved, `OTHE` rejected.
+
+Locally Mercado Pago cannot reach the webhook, so leave `MERCADO_PAGO_NOTIFICATION_URL` empty: the payment is read
+from Mercado Pago when the buyer comes back to the store (the order's payment page). Mercado Pago only sends the buyer
+back on its own to https sites, so locally open `http://localhost:3000/pedidos/<número>/pago` after paying. To test the webhook, expose the
+API with a tunnel, set the https URL of `POST /payments/webhooks/mercado-pago` and the app's webhook secret
+(`MERCADO_PAGO_WEBHOOK_SECRET`, Webhooks → Clave secreta).
+
+Production: `npx prisma migrate deploy`, the client's production access token, `MERCADO_PAGO_NOTIFICATION_URL` set to
+`https://<api>/payments/webhooks/mercado-pago`, and in the app's Webhooks settings the same URL with the **Pagos**
+event and its secret in `MERCADO_PAGO_WEBHOOK_SECRET`. Leave `MERCADO_PAGO_REFERENCE_PREFIX` empty.
+
+---
+
 ## 2026-10-10 — Weight and measurements required to publish (migration)
 
 The "Voluminoso" flag of variants is removed (large equipment is quoted like any product), so apply the migration:

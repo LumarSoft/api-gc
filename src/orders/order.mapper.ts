@@ -4,6 +4,7 @@ import { AddressType } from '../generated/prisma/enums'
 import type { OrderResponseDto } from './dto/order-response.dto'
 import { dispatchMode } from '../shipping/lib/dispatch-mode'
 import { orderTransitions, shipmentActions } from './lib/order-rules'
+import { refundNeeded } from './lib/payment-rules'
 import type { AdminOrderRow, OrderRow } from './lib/order-selects'
 
 @Injectable()
@@ -60,6 +61,13 @@ export class OrderMapper {
             pickupPoint: row.shipments[0].pickupPoint,
           }
         : null,
+      payment: row.payments[0]
+        ? {
+            provider: row.payments[0].provider,
+            status: row.payments[0].status,
+            at: row.payments[0].updatedAt.toISOString(),
+          }
+        : null,
       history: row.statusHistory.map(event => ({ status: event.toStatus, at: event.createdAt.toISOString() })),
       ...(admin
         ? {
@@ -86,6 +94,15 @@ export class OrderMapper {
             }
           : null,
       guest: row.userId === null,
+      payments: row.payments.map(payment => ({
+        provider: payment.provider,
+        status: payment.status,
+        at: payment.updatedAt.toISOString(),
+        externalId: payment.externalId,
+        amount: { amount: payment.amount.toFixed(2), currency: row.currency },
+        statusDetail: payment.externalStatusDetail,
+      })),
+      refundNeeded: refundNeeded(row.status, row.payments),
       history: row.statusHistory.map(event => ({
         status: event.toStatus,
         at: event.createdAt.toISOString(),

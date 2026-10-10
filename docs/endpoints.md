@@ -1506,7 +1506,7 @@ Hours a pending manual-payment order keeps its stock reserved (`Setting` `reserv
 Browser-only, optional authentication. Guest ownership uses the existing `cg_cart` cookie (path `/cart`);
 authenticated ownership and guest merges follow the cart rules. All responses are `private, no-store`.
 GET and preview prepare a review without persisting contact details or reserving stock. POST orders below confirms
-the purchase and reserves stock; no endpoint initiates an external payment.
+the purchase and reserves stock; Mercado Pago orders are then paid with `POST /orders/:number/mercado-pago`.
 
 ### GET /cart/checkout
 
@@ -1555,9 +1555,16 @@ Read the current cart, available delivery options and initial pickup totals. No 
   "shippingQuote": null,
   "canReview": false,
   "reviewToken": null,
-  "reservationHours": 24
+  "reservationHours": 24,
+  "paymentOptions": [
+    { "method": "MANUAL", "reservationMinutes": 1440 },
+    { "method": "MERCADO_PAGO", "reservationMinutes": 60 }
+  ]
 }
 ```
+
+`paymentOptions` lists how the buyer can pay and how long a new order holds the stock with each: `MANUAL` (coordinated
+with the store, the configured window) always, `MERCADO_PAGO` only while Mercado Pago is configured (one hour).
 
 Local delivery costs come from the active ARS `ShippingMethod` rate and free-shipping threshold. Missing/negative
 rates, negative thresholds, inactive methods and USD rates are unavailable. `CARRIER` is enabled when Zipnova is
@@ -1903,15 +1910,17 @@ Errors: shared `401`, `409`, `429` above.
 
 ## Guest orders and manual management
 
-All responses below use `Cache-Control: private, no-store`. The API makes no outbound payment or email calls; carrier
-shipments are booked at Zipnova only by the admin routes below.
+All responses below use `Cache-Control: private, no-store`. The API sends no emails; carrier shipments are booked at
+Zipnova only by the admin routes below, and Mercado Pago is called only by the online payment routes.
 Money is in immutable ARS snapshots. Tracking returns full order lines as one aggregate, not a collection.
 The private token is a bearer capability; redact request bodies containing `accessToken` in every proxy/logger.
 
 ### POST /cart/checkout/orders
 
 Confirm the owner's reviewed cart in one transaction: reprice, lock stock, create snapshots/reservations/history,
-convert the cart and assign `CG-` plus a padded numeric id. Status starts `PENDING_PAYMENT`, method `MANUAL`.
+convert the cart and assign `CG-` plus a padded numeric id. Status starts `PENDING_PAYMENT` with the chosen payment
+method (`MANUAL` by default). Mercado Pago orders hold the stock for one hour; the buyer is then sent to pay with
+`POST /orders/:number/mercado-pago`.
 
 **Auth required:** No; same optional session and guest-cookie ownership as preview. Invalid sessions return 401.
 
@@ -1927,8 +1936,9 @@ convert the cart and assign `CG-` plus a padded numeric id. Status starts `PENDI
 | `shippingQuoteId` | int    | For carrier       | Same option as the reviewed preview; checked again inside the order transaction                         |
 | `reviewToken`     | string | Yes               | 64 lowercase hex characters from the exact preview being confirmed                                      |
 | `accessToken`     | string | Yes               | 64 lowercase hex characters, generated from 32 secure random bytes before first POST; reused on retries |
+| `paymentMethod`   | enum   | No                | `MANUAL` (default) or `MERCADO_PAGO` (only when `paymentOptions` offers it)                             |
 
-Amounts, ownership, payment method and status cannot be supplied. An existing token returns its original order,
+Amounts, ownership and status cannot be supplied. An existing token returns its original order,
 without another stock/payment operation and without requiring the now-converted cart cookie. Token possession grants
 access; generate it cryptographically, never from an order number, email or timestamp.
 
@@ -1975,8 +1985,17 @@ lines, names, prices, contact, address or shipping changes. `reservationHours` i
       "imageUrl": "http://localhost:3001/files/products/2026/10/foto.webp"
     }
   ],
+  "payment": null,
   "history": [{ "status": "PENDING_PAYMENT", "at": "2026-10-05T18:00:00.000Z" }]
 }
+```
+
+`payment` is the latest payment, null before any: the buyer's last Mercado Pago attempt as read from Mercado Pago, or
+the staff confirmation of a manual payment. `provider` is `MERCADO_PAGO` or `MANUAL`; `status` is `PENDING`,
+`IN_REVIEW`, `APPROVED`, `REJECTED`, `CANCELLED` or `REFUNDED`; `at` is when it last changed:
+
+```json
+{ "provider": "MERCADO_PAGO", "status": "REJECTED", "at": "2026-10-05T18:05:00.000Z" }
 ```
 
 For local delivery and carrier, `shippingAddress` contains `street`, `streetNumber`, `city`, `province`, `postalCode`.
@@ -2006,8 +2025,8 @@ product's current first image (null without images): a thumbnail only, not part 
 `400 Bad Request` — invalid DTO/unknown fields: `{ "message": ["property total should not exist"], "statusCode": 400 }`.
 `401 Unauthorized` — invalid optional session: `{ "message": "Unauthorized", "statusCode": 401 }`.
 `409 Conflict` — stale review: `{ "message": "Tu compra cambió desde la revisión. Revisá los datos y el total de nuevo.", "statusCode": 409 }`.
-`422 Unprocessable Entity` — empty cart, stock/price issue, unavailable delivery/invalid local destination or amount
-outside Decimal(12,2) capacity: `{ "message": "El precio o el stock cambió. Revisá tu carrito.", "statusCode": 422 }`.
+`422 Unprocessable Entity` — empty cart, stock/price issue, unavailable delivery/invalid local destination, Mercado Pago
+chosen while it is not configured, or amount outside Decimal(12,2) capacity: `{ "message": "El precio o el stock cambió. Revisá tu carrito.", "statusCode": 422 }`.
 `429 Too Many Requests` — global browser limit: `{ "message": "ThrottlerException: Too Many Requests", "statusCode": 429 }`.
 
 ### POST /orders/:number/track
@@ -2126,13 +2145,27 @@ original records are retained.
 **Responses**
 
 `200 OK` — each `items` entry has the complete order shape shown above plus the admin fields: `allowedStatuses`
-(e.g. `["CONFIRMED", "CANCELLED"]` for an unexpired pending order), `guest` (placed without an account) and, on each
-`history` event, `note` and `by` (staff name; `null` for the system or the buyer). Tracking never includes them:
+(e.g. `["CONFIRMED", "CANCELLED"]` for an unexpired pending order), `guest` (placed without an account), on each
+`history` event `note` and `by` (staff name; `null` for the system or the buyer), `payments` (every payment, newest
+first, with Mercado Pago's operation id and reason) and `refundNeeded` (an approved payment the order was not paid
+with — approved after the reservation ended, a second payment or another amount — to give back from Mercado Pago).
+Tracking never includes them:
 
 ```json
 {
   "guest": true,
-  "history": [{ "status": "CANCELLED", "at": "2026-10-07T15:00:00.000Z", "note": "Pidió cancelar", "by": "Ana Pérez" }]
+  "history": [{ "status": "CANCELLED", "at": "2026-10-07T15:00:00.000Z", "note": "Pidió cancelar", "by": "Ana Pérez" }],
+  "payments": [
+    {
+      "provider": "MERCADO_PAGO",
+      "status": "REJECTED",
+      "at": "2026-10-07T14:00:00.000Z",
+      "externalId": "1325674089",
+      "amount": { "amount": "12.35", "currency": "ARS" },
+      "statusDetail": "cc_rejected_insufficient_amount"
+    }
+  ],
+  "refundNeeded": false
 }
 ```
 
@@ -2168,7 +2201,8 @@ How many orders wait in each open stage, for the admin navigation badge and list
 
 ### GET /admin/orders/:id
 
-Read one order with the admin fields (`allowedStatuses`, `guest`, history `note` and `by`). Id is a positive integer.
+Read one order with the admin fields (`allowedStatuses`, `guest`, history `note` and `by`, `payments`,
+`refundNeeded`). Id is a positive integer.
 
 **Auth required:** Yes (ADMIN).
 
@@ -2285,6 +2319,89 @@ state is always read from Zipnova's API. Shipments not booked from this store ar
 `200 OK`: `{ "received": true }`.
 `404 Not Found` — wrong or unset secret.
 `503 Service Unavailable` — Zipnova did not answer the status read; Zipnova retries hourly for 12 hours.
+
+## Online payment (Mercado Pago)
+
+Checkout Pro. The buyer is sent to Mercado Pago's checkout and comes back to `<FRONT_URL>/pedidos/<number>/pago`
+whatever the outcome; the front shows the order from `refresh` below, never from the redirect's query string. A
+payment confirms the order (`CONFIRMED`, stock consumed) only when Mercado Pago's API says it was approved before the
+reservation deadline for the exact total. Payments are approved or rejected at once (`binary_mode`), and cash
+vouchers and ATM payments are not offered.
+
+### POST /orders/:number/mercado-pago
+
+Create a Mercado Pago checkout for a pending `MERCADO_PAGO` order and return its URL. Amounts are the order snapshot
+(products and delivery). The checkout stops taking payments 10 minutes before the reservation ends. Before creating it
+the order's payments are read from Mercado Pago, so an approval not notified yet confirms the order instead of being
+paid twice. Each call creates a new checkout (retrying after a rejected card is the same call).
+
+**Auth required:** No; the private access token in the body (as in tracking). **Rate limit:** 10 per minute per IP.
+
+**Request body**
+
+| Field         | Type   | Required | Constraints                                               |
+| ------------- | ------ | -------- | --------------------------------------------------------- |
+| `accessToken` | string | Yes      | 64 lowercase hexadecimal characters from the private link |
+
+```json
+{ "accessToken": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" }
+```
+
+**Responses**
+
+`200 OK`
+
+```json
+{ "checkoutUrl": "https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=..." }
+```
+
+`404 Not Found` — missing order or wrong token: `{ "message": "No encontramos un pedido con este enlace privado.", "statusCode": 404 }`.
+`422 Unprocessable Entity` — not a Mercado Pago order (`"Este pedido se paga coordinando con el local."`), no longer
+pending (`"Este pedido ya no espera un pago."`) or too close to the deadline
+(`"La reserva de este pedido está por vencer. Hacé un pedido nuevo."`).
+`503 Service Unavailable` — Mercado Pago not configured or not answering: `{ "message": "Mercado Pago no responde. Probá de nuevo en unos minutos.", "statusCode": 503 }`.
+`429 Too Many Requests`: `{ "message": "ThrottlerException: Too Many Requests", "statusCode": 429 }`.
+
+### POST /orders/:number/mercado-pago/refresh
+
+Read the order's payments from Mercado Pago's API, record them (confirming the order when one pays it) and return the
+order like `POST /orders/:number/track`. The front calls it once when the buyer comes back from Mercado Pago; it also
+covers a webhook that has not arrived (or cannot, locally). When Mercado Pago does not answer, the stored order is
+returned. Other orders are returned as they are.
+
+**Auth required:** No; the private access token in the body. **Rate limit:** 20 per minute per IP.
+
+**Request body** — same as above.
+
+**Responses**
+
+`200 OK` — the complete order (see `POST /cart/checkout/orders`), with `payment` as read from Mercado Pago.
+`404 Not Found` — missing order or wrong token: `{ "message": "No encontramos un pedido con este enlace privado.", "statusCode": 404 }`.
+`429 Too Many Requests`: `{ "message": "ThrottlerException: Too Many Requests", "statusCode": 429 }`.
+
+### POST /payments/webhooks/mercado-pago
+
+Mercado Pago notifications (app → Webhooks, event **Pagos**, URL `<API URL>/payments/webhooks/mercado-pago`; checkouts
+also send it as `notification_url` when `MERCADO_PAGO_NOTIFICATION_URL` is set). The `x-signature` header is checked
+with `MERCADO_PAGO_WEBHOOK_SECRET` over `data.id` (query string), `x-request-id` and `ts`. Each notification id is
+stored once (`PaymentNotification`) and never processed twice; the payment it names is always read from Mercado Pago's
+API. Topics other than `payment`, payments of other references and unknown payments are acknowledged and ignored.
+
+**Auth required:** No (signed). **Rate limit:** 600 requests per minute per IP.
+
+**Request** — `POST /payments/webhooks/mercado-pago?data.id=1325674089&type=payment`, Mercado Pago's payload (only
+`id`, `type` and `data.id` are read):
+
+```json
+{ "id": 12345678, "type": "payment", "action": "payment.updated", "data": { "id": "1325674089" } }
+```
+
+**Responses**
+
+`200 OK`: `{ "received": true }`.
+`401 Unauthorized` — missing or wrong signature, or no secret configured.
+`503 Service Unavailable` — Mercado Pago did not answer the payment read; the notification is kept as `FAILED` and
+processed when Mercado Pago sends it again.
 
 ## Store activity
 

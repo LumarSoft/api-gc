@@ -1,4 +1,11 @@
-import type { DeliveryMethod, OrderStatus, PaymentMethod, ShipmentStatus } from '../../generated/prisma/enums'
+import type {
+  DeliveryMethod,
+  OrderStatus,
+  PaymentMethod,
+  PaymentProvider,
+  PaymentStatus,
+  ShipmentStatus,
+} from '../../generated/prisma/enums'
 import type { DispatchMode } from '../../shipping/lib/dispatch-mode'
 import type { ShipmentAction } from '../lib/order-rules'
 import type { MoneyDto } from '../../pricing/pricing.service'
@@ -48,6 +55,26 @@ export interface OrderResponseDto {
     /** How the store hands it over (carrier branch, Zipnova's hub or pickup). Only included in admin responses. */
     dispatch?: DispatchMode | null
   } | null
+  /**
+   * The latest payment: the buyer's last Mercado Pago attempt (as read from Mercado Pago) or the staff confirmation.
+   * Null before any.
+   */
+  payment: { provider: PaymentProvider; status: PaymentStatus; at: string } | null
+  /** Every payment, newest first, with Mercado Pago's operation id. Only included in admin responses. */
+  payments?: {
+    provider: PaymentProvider
+    status: PaymentStatus
+    at: string
+    externalId: string | null
+    amount: MoneyDto
+    /** Mercado Pago's reason, e.g. `cc_rejected_insufficient_amount`. */
+    statusDetail: string | null
+  }[]
+  /**
+   * An approved payment the order was not paid with (approved after the reservation ended, a second payment or another
+   * amount): staff give it back from Mercado Pago. Only included in admin responses.
+   */
+  refundNeeded?: boolean
   /** `note` and `by` (staff name, null for the system) only in admin responses. */
   history: { status: OrderStatus; at: string; note?: string | null; by?: string | null }[]
   /** Placed without an account. Only included in admin responses. */
