@@ -46,7 +46,6 @@ export const bookingOrderSelect = {
           lengthMm: true,
           widthMm: true,
           heightMm: true,
-          isBulky: true,
         },
       },
     },

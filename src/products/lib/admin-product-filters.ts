@@ -16,6 +16,7 @@ export function adminProductsWhere(
   }
   if (query.brandId) filters.push({ brandId: query.brandId })
   if (query.stock === 'out') filters.push(outOfStockWhere(reservedField))
+  if (query.shipping === 'missing') filters.push(missingShippingDataWhere)
   if (query.q) {
     // `contains` becomes LIKE: escape % and _ so they are searched literally.
     const term = query.q.trim().replace(/[\\%_]/g, '\\$&')
@@ -24,6 +25,20 @@ export function adminProductsWhere(
     })
   }
   return { AND: filters }
+}
+
+/** Some active variant lacks weight or a measurement (null or zero), the same rule as `hasShippingData`. */
+const missingShippingDataWhere: Prisma.ProductWhereInput = {
+  variants: {
+    some: {
+      deletedAt: null,
+      isActive: true,
+      OR: (['weightGrams', 'lengthMm', 'widthMm', 'heightMm'] as const).flatMap(field => [
+        { [field]: null },
+        { [field]: { lte: 0 } },
+      ]),
+    },
+  },
 }
 
 /** No active variant has stock left once reservations are taken out. Shared by the list and the admin home. */

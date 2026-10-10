@@ -17,6 +17,7 @@ import { OrderStatusService } from '../src/orders/order-status.service'
 import { PrismaService } from '../src/prisma/prisma.service'
 import type { ShippingQuotesResponseDto } from '../src/shipping/dto/shipping-quote-response.dto'
 import {
+  CarrierError,
   SHIPPING_CARRIER,
   type CarrierShipment,
   type CarrierShipmentRequest,
@@ -29,6 +30,7 @@ const TOKEN = 'w'.repeat(40)
 function fakeCarrier() {
   const remote = new Map<string, { reference: string; status: ShipmentStatus; label: string }>()
   const booked: CarrierShipmentRequest[] = []
+  const account = { credit: 50_000, labelsReady: true }
   // Unique per run: the e2e database keeps the shipments of earlier runs and `externalId` is unique.
   let next = Date.now()
   const view = (id: string): CarrierShipment => {
@@ -91,11 +93,14 @@ function fakeCarrier() {
       return Promise.resolve('CANCELLED')
     },
     document: (_id, kind, format) =>
-      Promise.resolve({
-        content: Buffer.from(format === 'zpl' ? '^XA^XZ' : '%PDF-1.7'),
-        contentType: format === 'zpl' ? 'text/plain; charset=utf-8' : 'application/pdf',
-        fileName: `${kind}.${format}`,
-      }),
+      account.labelsReady
+        ? Promise.resolve({
+            content: Buffer.from(format === 'zpl' ? '^XA^XZ' : '%PDF-1.7'),
+            contentType: format === 'zpl' ? 'text/plain; charset=utf-8' : 'application/pdf',
+            fileName: `${kind}.${format}`,
+          })
+        : Promise.reject(new CarrierError('NOT_READY', 'Zipnova has not generated it yet', 409)),
+    availableCredit: () => Promise.resolve(account.credit),
     readNotification: (token, body) => {
       if (token !== TOKEN) return 'UNAUTHORIZED'
       const id = (body as { data?: { shipment_id?: number } }).data?.shipment_id
@@ -105,7 +110,7 @@ function fakeCarrier() {
   const move = (id: string, status: ShipmentStatus, label: string): void => {
     remote.set(id, { ...remote.get(id)!, status, label })
   }
-  return { carrier, booked, move }
+  return { carrier, booked, move, account }
 }
 
 describe('Carrier shipping (local MySQL e2e)', () => {
@@ -284,15 +289,18 @@ describe('Carrier shipping (local MySQL e2e)', () => {
     await preview(cookie, fresh).expect(422)
   })
 
-  it('ships unmeasured or bulky carts by arrangement', async () => {
+  it('quotes large equipment like any product, and explains carts with unmeasured products', async () => {
     const cookie = await cart()
-    await prisma.productVariant.update({ where: { id: variantId }, data: { isBulky: true } })
+    const carrierOption = async (): Promise<unknown> =>
+      (
+        (await request(server()).get('/cart/checkout').set('Cookie', cookie).expect(200)).body as CheckoutResponseDto
+      ).deliveryOptions.find(option => option.code === 'CARRIER')
+    expect(await carrierOption()).toMatchObject({ enabled: true })
+    await prisma.productVariant.update({ where: { id: variantId }, data: { weightGrams: null } })
     try {
-      const checkout = (await request(server()).get('/cart/checkout').set('Cookie', cookie).expect(200))
-        .body as CheckoutResponseDto
-      expect(checkout.deliveryOptions.find(option => option.code === 'CARRIER')).toMatchObject({
+      expect(await carrierOption()).toMatchObject({
         enabled: false,
-        unavailableReason: expect.stringMatching(/a coordinar/) as unknown,
+        unavailableReason: expect.stringMatching(/retirarlos en el local/) as unknown,
       })
       await request(server())
         .post('/cart/checkout/shipping-quotes')
@@ -300,7 +308,27 @@ describe('Carrier shipping (local MySQL e2e)', () => {
         .send({ destination })
         .expect(422)
     } finally {
-      await prisma.productVariant.update({ where: { id: variantId }, data: { isBulky: false } })
+      await prisma.productVariant.update({ where: { id: variantId }, data: { weightGrams: 150 } })
+    }
+  })
+
+  it('says the Zipnova account has no balance before booking and when the label is not ready because of it', async () => {
+    const order = await paidOrder()
+    fake.account.credit = 0
+    const refused = await admin('post', `${order.id}/shipment`).expect(422)
+    expect((refused.body as { message: string }).message).toMatch(/no tiene saldo/)
+    fake.account.credit = 50_000
+    await admin('post', `${order.id}/shipment`).expect(200)
+    fake.account.labelsReady = false
+    try {
+      fake.account.credit = 0
+      const empty = await admin('get', `${order.id}/shipment/documents/label`).expect(422)
+      expect((empty.body as { message: string }).message).toMatch(/no tiene saldo/)
+      fake.account.credit = 50_000
+      const later = await admin('get', `${order.id}/shipment/documents/label`).expect(422)
+      expect((later.body as { message: string }).message).toMatch(/todavía no generó/)
+    } finally {
+      fake.account.labelsReady = true
     }
   })
 

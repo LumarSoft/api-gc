@@ -8,17 +8,26 @@ import {
 
 describe('admin product rules', () => {
   it('lists what a product still needs', () => {
-    expect(productIssues({ imageCount: 2, activeVariants: [{ hasRetailPrice: true }] })).toEqual([])
+    const ready = { hasRetailPrice: true, hasShippingData: true }
+    expect(productIssues({ imageCount: 2, activeVariants: [ready] })).toEqual([])
     expect(productIssues({ imageCount: 0, activeVariants: [] })).toEqual(['NO_ACTIVE_VARIANT', 'NO_IMAGE'])
-    expect(productIssues({ imageCount: 1, activeVariants: [{ hasRetailPrice: false }] })).toEqual(['NO_RETAIL_PRICE'])
+    expect(productIssues({ imageCount: 1, activeVariants: [{ ...ready, hasRetailPrice: false }] })).toEqual([
+      'NO_RETAIL_PRICE',
+    ])
+    expect(
+      productIssues({ imageCount: 1, activeVariants: [ready, { hasRetailPrice: false, hasShippingData: false }] }),
+    ).toEqual(['NO_SHIPPING_DATA'])
   })
 
-  it('blocks publishing without an active priced variant, but only warns about images', () => {
+  it('blocks publishing without an active priced variant or shipping data, but only warns about images', () => {
     expect(publishBlockerMessage(['NO_IMAGE'])).toBeNull()
     expect(publishBlockerMessage(['NO_RETAIL_PRICE', 'NO_IMAGE'])).toBe(
       'Cannot publish: no active variant has a retail price',
     )
     expect(publishBlockerMessage(['NO_ACTIVE_VARIANT'])).toMatch(/no active variant$/)
+    expect(publishBlockerMessage(['NO_SHIPPING_DATA'])).toBe(
+      'Cannot publish: an active variant has no weight or measurements',
+    )
   })
 
   it('names copies and builds unique identifiers within the column length', () => {

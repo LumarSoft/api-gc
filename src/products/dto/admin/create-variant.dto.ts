@@ -61,8 +61,4 @@ export class CreateVariantDto {
   @Min(0)
   @Max(100_000)
   heightMm?: number | null
-
-  @IsOptional()
-  @IsBoolean()
-  isBulky?: boolean
 }

@@ -45,6 +45,12 @@ export class ShipmentBookingService {
    * lost is found again by its reference; while a recent claim may still be running, a retry only looks it up.
    */
   async create(orderId: number, actor: AuditActor): Promise<OrderResponseDto> {
+    // Without balance Zipnova keeps the shipment unprocessed and without a label; say so before booking it.
+    const available = await this.carrier.availableCredit().catch(() => null)
+    if (available !== null && available <= 0)
+      throw new UnprocessableEntityException(
+        'La cuenta de Zipnova no tiene saldo. Cargá crédito en Zipnova y volvé a generar el envío.',
+      )
     const claim = await this.claim(orderId)
     let remote: CarrierShipment | null
     try {

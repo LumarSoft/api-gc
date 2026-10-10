@@ -760,8 +760,9 @@ Archives the tag **and removes it from every product** that had it.
 `/admin/products/*` manage the catalog. Prices are shown **as stored** (amount + currency, never converted) in the
 default retail list. Every write answers the full `AdminProduct` (shape of `GET /admin/products/:id`) and is audited.
 
-`issues` (what a product still needs): `NO_ACTIVE_VARIANT`, `NO_RETAIL_PRICE` (no active variant has a retail price)
-— both block publishing — and `NO_IMAGE` (warning only).
+`issues` (what a product still needs): `NO_ACTIVE_VARIANT`, `NO_RETAIL_PRICE` (no active variant has a retail price),
+`NO_SHIPPING_DATA` (an active variant has no weight or a measurement) — all three block publishing — and `NO_IMAGE`
+(warning only). Each variant summary carries `hasShippingData`.
 
 ### GET /admin/products
 
@@ -771,16 +772,17 @@ Paginated list, any status, archived products excluded.
 
 **Query**
 
-| Param        | Type   | Required | Constraints                                                  |
-| ------------ | ------ | -------- | ------------------------------------------------------------ |
-| `page`       | number | No       | 1–10000, default 1                                           |
-| `pageSize`   | number | No       | 1–100, default 25                                            |
-| `q`          | string | No       | Name or SKU, ≤100 chars                                      |
-| `status`     | enum   | No       | `DRAFT` \| `PUBLISHED` \| `HIDDEN`                           |
-| `categoryId` | number | No       | Includes its subcategories                                   |
-| `brandId`    | number | No       |                                                              |
-| `stock`      | `out`  | No       | Only products without available stock in any active variant  |
-| `sort`       | enum   | No       | `updated` (default, last edited first) \| `name` \| `newest` |
+| Param        | Type      | Required | Constraints                                                          |
+| ------------ | --------- | -------- | -------------------------------------------------------------------- |
+| `page`       | number    | No       | 1–10000, default 1                                                   |
+| `pageSize`   | number    | No       | 1–100, default 25                                                    |
+| `q`          | string    | No       | Name or SKU, ≤100 chars                                              |
+| `status`     | enum      | No       | `DRAFT` \| `PUBLISHED` \| `HIDDEN`                                   |
+| `categoryId` | number    | No       | Includes its subcategories                                           |
+| `brandId`    | number    | No       |                                                                      |
+| `stock`      | `out`     | No       | Only products without available stock in any active variant          |
+| `shipping`   | `missing` | No       | Only products with an active variant missing weight or a measurement |
+| `sort`       | enum      | No       | `updated` (default, last edited first) \| `name` \| `newest`         |
 
 **Responses**
 
@@ -1035,7 +1037,6 @@ tags. Not copied: Tango codes, stock, featured flag and publication date.
   "lengthMm": 375,
   "widthMm": 347,
   "heightMm": 179,
-  "isBulky": false,
   "prices": [
     { "priceListId": 1, "amount": "419999.00", "currency": "ARS", "compareAtAmount": "459999.00", "source": "MANUAL" },
     { "priceListId": 2, "amount": "289.00", "currency": "USD", "compareAtAmount": null, "source": "MANUAL" }
@@ -1070,15 +1071,16 @@ the product's (or is archived).
 | `isActive`                        | boolean        | No       | Default `true`                                                  |
 | `saleUnit`                        | enum           | No       | `UNIT` `BOX` `PACK` `ROLL` `METER` `SQUARE_METER` `LITER` `KIT` |
 | `unitsPerSaleUnit`                | number         | No       | 1–10000                                                         |
-| `weightGrams`                     | number \| null | No       | Shipping data                                                   |
-| `lengthMm`, `widthMm`, `heightMm` | number \| null | No       | Shipping data                                                   |
-| `isBulky`                         | boolean        | No       | Machines and oversized items                                    |
+| `weightGrams`                     | number \| null | No       | Shipping data; required (above 0) on active variants to publish |
+| `lengthMm`, `widthMm`, `heightMm` | number \| null | No       | Shipping data; same rule                                        |
 
 `201 Created`. A new variant is never the default one.
 
 #### PATCH /admin/products/:id/variants/:variantId
 
-Same fields, all optional. `422` when deactivating the default variant (choose another default first).
+Same fields, all optional. `422` when deactivating the default variant (choose another default first), and — here
+and on create — when a published product would get an active variant without weight or measurements:
+`"A published product needs weight and measurements on every active variant"`.
 
 #### PUT /admin/products/:id/variants/:variantId/default
 
@@ -2234,6 +2236,7 @@ at Zipnova, a retry only looks it up. Zipnova charges it to the account balance;
 ("Procesando") and its documents are not ready.
 
 `200 OK` — the order with `"actions": ["DOCUMENTS", "CANCEL", "REFRESH"]`.
+`422` also when the Zipnova account has no balance left (`"La cuenta de Zipnova no tiene saldo. Cargá crédito en Zipnova y volvé a generar el envío."`); if the balance cannot be read, booking goes ahead.
 `409 Conflict` — a booking is in flight: `{ "message": "El envío se está generando. Esperá un par de minutos y probá de nuevo.", "statusCode": 409 }`.
 `422 Unprocessable Entity` — not available for this order, missing recipient data or product measurements, or
 Zipnova refused the data: `{ "message": "Zipnova rechazó la operación: Destino inexistente en base de datos", "statusCode": 422 }`.
@@ -2247,7 +2250,8 @@ Download the dispatch documents (`DOCUMENTS`). `kind`: `label` (one per package;
 
 `200 OK` — the file (`application/pdf` or `text/plain`), `Content-Disposition: attachment`.
 `400 Bad Request` — unknown `kind` or `format`, or a guide in ZPL.
-`422 Unprocessable Entity` — not available, the carrier works without a guide (`"Zipnova rechazó la operación: este
+`422 Unprocessable Entity` — not available, the Zipnova account has no balance (the shipment stays "Procesando":
+`"La cuenta de Zipnova no tiene saldo, …"`), the carrier works without a guide (`"Zipnova rechazó la operación: este
 transporte no usa guía de despacho; alcanza con la etiqueta"`), or Zipnova has not generated it yet:
 `{ "message": "Zipnova todavía no generó la documentación. Probá en unos minutos.", "statusCode": 422 }`.
 

@@ -31,6 +31,8 @@ export class AdminVariantSummaryDto {
   /** On hand minus reserved. Null when stock was never loaded. */
   available: number | null
   availability: Availability
+  /** Weight and the three measurements are loaded (needed to publish and to quote carrier shipping). */
+  hasShippingData: boolean
 }
 
 export class VariantPriceDto {
@@ -63,7 +65,6 @@ export class AdminVariantDto extends AdminVariantSummaryDto {
   lengthMm: number | null
   widthMm: number | null
   heightMm: number | null
-  isBulky: boolean
   prices: VariantPriceDto[]
   /** Null when stock was never loaded for this variant. */
   stock: VariantStockDto | null
