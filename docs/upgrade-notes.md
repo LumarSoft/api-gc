@@ -39,7 +39,8 @@ off** (checkout only offers paying at the store), which is fine for local work. 
    (Developers → "Tarjetas de prueba"); the holder name picks the result: `APRO` approved, `OTHE` rejected.
 
 Locally Mercado Pago cannot reach the webhook, so leave `MERCADO_PAGO_NOTIFICATION_URL` empty: the payment is read
-from Mercado Pago when the buyer comes back to the store (the order's payment page). To test the webhook, expose the
+from Mercado Pago when the buyer comes back to the store (the order's payment page). Mercado Pago only sends the buyer
+back on its own to https sites, so locally open `http://localhost:3000/pedidos/<número>/pago` after paying. To test the webhook, expose the
 API with a tunnel, set the https URL of `POST /payments/webhooks/mercado-pago` and the app's webhook secret
 (`MERCADO_PAGO_WEBHOOK_SECRET`, Webhooks → Clave secreta).
 

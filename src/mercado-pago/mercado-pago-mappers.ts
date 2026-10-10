@@ -24,8 +24,9 @@ export interface PreferenceOptions {
 }
 
 /**
- * Checkout Pro preference. `binary_mode` makes every payment approved or rejected at once (no cash vouchers or
- * manual reviews that resolve days later), so a payment never outlives the stock reservation it pays for.
+ * Checkout Pro preference. `binary_mode` makes every payment approved or rejected at once (no manual reviews that
+ * resolve days later) and cash vouchers and ATM payments are left out (they are paid days later, Mercado Pago still
+ * offers them in binary mode), so a payment never outlives the stock reservation it pays for.
  */
 export function preferenceBody(request: CheckoutRequest, options: PreferenceOptions): object {
   const secure = request.returnUrl.startsWith('https://')
@@ -46,6 +47,7 @@ export function preferenceBody(request: CheckoutRequest, options: PreferenceOpti
     // Only signed webhooks (no legacy IPN, which has no signature).
     ...(options.notificationUrl ? { notification_url: `${options.notificationUrl}?source_news=webhooks` } : {}),
     binary_mode: true,
+    payment_methods: { excluded_payment_types: [{ id: 'ticket' }, { id: 'atm' }] },
     expires: true,
     expiration_date_to: request.expiresAt.toISOString(),
   }

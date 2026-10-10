@@ -99,8 +99,8 @@ Domain rules that apply across modules. When a request contradicts one of these,
   attempt creates a new checkout, so a rejected card is retried from the order page.
 - **Reservation (provisional, revisit with the client): one hour** for Mercado Pago orders, instead of the manual
   window. The checkout stops taking payments 10 minutes before it ends, so the approval reaches us while the stock is
-  still held. Payments are approved or rejected at once (Mercado Pago's binary mode): no cash vouchers (Rapipago, Pago
-  Fácil) or manual reviews that resolve days later.
+  still held. Payments are approved or rejected at once (Mercado Pago's binary mode, cash vouchers and ATM payments
+  left out): no Rapipago / Pago Fácil or manual reviews that resolve days later.
 - The payment status is always read from Mercado Pago's API: by the signed webhook, and when the buyer comes back to
   the store (which covers a late or missing webhook). Never from the redirect or the browser.
 - An approved payment confirms the order only when it was approved before the reservation deadline, for the exact

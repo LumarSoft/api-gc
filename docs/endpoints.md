@@ -2325,7 +2325,8 @@ state is always read from Zipnova's API. Shipments not booked from this store ar
 Checkout Pro. The buyer is sent to Mercado Pago's checkout and comes back to `<FRONT_URL>/pedidos/<number>/pago`
 whatever the outcome; the front shows the order from `refresh` below, never from the redirect's query string. A
 payment confirms the order (`CONFIRMED`, stock consumed) only when Mercado Pago's API says it was approved before the
-reservation deadline for the exact total. Payments are approved or rejected at once (`binary_mode`): no cash vouchers.
+reservation deadline for the exact total. Payments are approved or rejected at once (`binary_mode`), and cash
+vouchers and ATM payments are not offered.
 
 ### POST /orders/:number/mercado-pago
 

@@ -106,6 +106,7 @@ describe('Mercado Pago gateway requests', () => {
       auto_return: 'approved',
       notification_url: `${full.MERCADO_PAGO_NOTIFICATION_URL}?source_news=webhooks`,
       binary_mode: true,
+      payment_methods: { excluded_payment_types: [{ id: 'ticket' }, { id: 'atm' }] },
       expires: true,
       expiration_date_to: '2026-10-10T13:00:00.000Z',
     })
