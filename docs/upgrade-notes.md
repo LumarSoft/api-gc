@@ -35,14 +35,25 @@ off** (checkout only offers paying at the store), which is fine for local work. 
    token (`APP_USR-…`) into `MERCADO_PAGO_ACCESS_TOKEN`. (A `TEST-…` token of your own account also works.)
 3. Set `MERCADO_PAGO_REFERENCE_PREFIX` (e.g. `DEV-<your name>-`) when the test account is shared, so your orders
    `CG-000001…` never take someone else's payments.
-4. Pay as the buyer test user (another incognito window) with one of Mercado Pago's test cards for Argentina
-   (Developers → "Tarjetas de prueba"); the holder name picks the result: `APRO` approved, `OTHE` rejected.
+4. Place the order with an email that has **no Mercado Pago account** (e.g. `comprador@example.test`): the store sends
+   it as the payer, and a real account paying a test seller fails with "Una de las partes con la que intentás hacer el
+   pago es de prueba". Pay in an incognito window without signing in to Mercado Pago or Mercado Libre, as a guest with
+   one of Mercado Pago's test cards for Argentina (Developers → "Tarjetas de prueba"); the holder name picks the result:
+   `APRO` approved, `OTHE` rejected. The sandbox sometimes answers "No pudimos procesar tu pago" without creating a
+   payment: try again (another test card works too).
 
 Locally Mercado Pago cannot reach the webhook, so leave `MERCADO_PAGO_NOTIFICATION_URL` empty: the payment is read
 from Mercado Pago when the buyer comes back to the store (the order's payment page). Mercado Pago only sends the buyer
-back on its own to https sites, so locally open `http://localhost:3000/pedidos/<número>/pago` after paying. To test the webhook, expose the
-API with a tunnel, set the https URL of `POST /payments/webhooks/mercado-pago` and the app's webhook secret
-(`MERCADO_PAGO_WEBHOOK_SECRET`, Webhooks → Clave secreta).
+back on its own to https sites, so locally open `http://localhost:3000/pedidos/<número>/pago` after paying.
+
+**Test payments never send webhooks** (Mercado Pago's rule). To test the webhook: expose the API with a tunnel (e.g.
+`ngrok http 3001`), set the tunnel's https URL of `POST /payments/webhooks/mercado-pago` as the app's test webhook
+(Webhooks → Modo de prueba, event **Pagos**), copy its secret into `MERCADO_PAGO_WEBHOOK_SECRET` and restart the API.
+Then pay an order and use **Simular notificación** in the same Webhooks page with type Pagos and the payment's
+operation number as the data ID: the API checks the signature, reads that payment from Mercado Pago and confirms the
+order (checked on 2026-10-10).
+
+If you change `MERCADO_PAGO_REFERENCE_PREFIX`, payments made before the change are no longer found for their orders.
 
 Production: `npx prisma migrate deploy`, the client's production access token, `MERCADO_PAGO_NOTIFICATION_URL` set to
 `https://<api>/payments/webhooks/mercado-pago`, and in the app's Webhooks settings the same URL with the **Pagos**
