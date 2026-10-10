@@ -16,6 +16,24 @@ npm run doctor             # tells you if anything else is missing
 
 ---
 
+## 2026-10-10 — Weight and measurements required to publish (migration)
+
+The "Voluminoso" flag of variants is removed (large equipment is quoted like any product), so apply the migration:
+
+```bash
+npx prisma migrate dev
+npx prisma generate
+```
+
+Production: `npx prisma migrate deploy` before starting the new build.
+
+From now on a product needs weight and the three measurements on every active variant to be published. Products
+already published without them stay published, but cannot be shipped to the rest of the country until they are
+completed: the admin product list has a "Sin peso o medidas" filter for them (the starter catalog from `db:seed` has
+none, so locally every seeded product shows up there).
+
+---
+
 ## 2026-10-09 — Carrier shipping through Zipnova (migration, env vars)
 
 Checkout can quote and book shipping to the rest of the country through Zipnova (Correo Argentino, OCA and others).

@@ -40,7 +40,6 @@ const SOURCE_SELECT = {
       lengthMm: true,
       widthMm: true,
       heightMm: true,
-      isBulky: true,
       prices: {
         where: { deletedAt: null },
         select: { priceListId: true, amount: true, currency: true, compareAtAmount: true },

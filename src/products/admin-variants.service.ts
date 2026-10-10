@@ -3,8 +3,9 @@ import { AuditLogsService } from '../audit-logs/audit-logs.service'
 import { diffForAudit } from '../audit-logs/lib/audit-diff'
 import type { AuditActor } from '../common/types/audit-actor'
 import { Prisma, type ProductVariant } from '../generated/prisma/client'
-import { DataSource } from '../generated/prisma/enums'
+import { DataSource, ProductStatus } from '../generated/prisma/enums'
 import { PrismaService } from '../prisma/prisma.service'
+import { hasShippingData } from '../shipping/lib/shipping-rules'
 import { AdminProductReader } from './admin-product.reader'
 import { CatalogReferences } from './catalog-references'
 import type { AdminProductDetailDto } from './dto/admin/admin-product-response.dto'
@@ -24,7 +25,6 @@ type VariantFields = Pick<
   | 'lengthMm'
   | 'widthMm'
   | 'heightMm'
-  | 'isBulky'
 >
 
 /** Sellable SKUs of a product: add, edit, choose the default one, archive. */
@@ -41,6 +41,7 @@ export class AdminVariantsService {
     await this.reader.assertExists(productId)
     await this.references.assertSkuFree(dto.sku)
     this.assertOptions(dto.optionValues)
+    await this.assertShippable(productId, dto)
 
     const data = this.toData(dto)
     await this.prisma.$transaction(async tx => {
@@ -81,6 +82,7 @@ export class AdminVariantsService {
     if (dto.isActive === false && current.isDefault) {
       throw new UnprocessableEntityException('Choose another default variant before deactivating this one')
     }
+    await this.assertShippable(productId, dto, current)
 
     const data = { ...this.toData(dto), sku: dto.sku ?? undefined }
     const changes = diffForAudit(current, { ...dto })
@@ -95,6 +97,29 @@ export class AdminVariantsService {
       })
     }
     return this.reader.detail(productId)
+  }
+
+  /**
+   * A published product keeps weight and measurements on every active variant (see admin-product-rules). `current`
+   * fills the fields an update leaves out.
+   */
+  private async assertShippable(productId: number, dto: UpdateVariantDto, current?: ProductVariant): Promise<void> {
+    const pick = <K extends 'isActive' | 'weightGrams' | 'lengthMm' | 'widthMm' | 'heightMm'>(
+      key: K,
+    ): ProductVariant[K] | null => (dto[key] !== undefined ? (dto[key] as ProductVariant[K]) : (current?.[key] ?? null))
+    const active = pick('isActive') ?? true
+    const measured = hasShippingData({
+      weightGrams: pick('weightGrams'),
+      lengthMm: pick('lengthMm'),
+      widthMm: pick('widthMm'),
+      heightMm: pick('heightMm'),
+    })
+    if (!active || measured) return
+    const product = await this.prisma.product.findUnique({ where: { id: productId }, select: { status: true } })
+    if (product?.status === ProductStatus.PUBLISHED)
+      throw new UnprocessableEntityException(
+        'A published product needs weight and measurements on every active variant',
+      )
   }
 
   /** The default variant is the one preselected on the product page. It must be active. */
@@ -169,7 +194,6 @@ export class AdminVariantsService {
       lengthMm: dto.lengthMm,
       widthMm: dto.widthMm,
       heightMm: dto.heightMm,
-      isBulky: dto.isBulky ?? undefined,
     }
   }
 }

@@ -1,26 +1,34 @@
 /** Something a product still needs; shown in the admin list and checked before publishing. */
-export type ProductIssue = 'NO_ACTIVE_VARIANT' | 'NO_RETAIL_PRICE' | 'NO_IMAGE'
+export type ProductIssue = 'NO_ACTIVE_VARIANT' | 'NO_RETAIL_PRICE' | 'NO_SHIPPING_DATA' | 'NO_IMAGE'
 
 export interface ProductCompleteness {
   imageCount: number
-  /** Active (not archived, not deactivated) variants and whether each has a retail price. */
-  activeVariants: { hasRetailPrice: boolean }[]
+  /**
+   * Active (not archived, not deactivated) variants: whether each has a retail price, and weight and measurements
+   * (every active variant can be bought, and the carrier cannot quote a unit without them).
+   */
+  activeVariants: { hasRetailPrice: boolean; hasShippingData: boolean }[]
 }
 
 export function productIssues({ imageCount, activeVariants }: ProductCompleteness): ProductIssue[] {
   const issues: ProductIssue[] = []
   if (activeVariants.length === 0) issues.push('NO_ACTIVE_VARIANT')
   else if (!activeVariants.some(variant => variant.hasRetailPrice)) issues.push('NO_RETAIL_PRICE')
+  if (activeVariants.some(variant => !variant.hasShippingData)) issues.push('NO_SHIPPING_DATA')
   if (imageCount === 0) issues.push('NO_IMAGE')
   return issues
 }
 
-/** Issues that stop a product from being published. A missing image only warns (decision of 2026-10-04). */
-export const PUBLISH_BLOCKERS: readonly ProductIssue[] = ['NO_ACTIVE_VARIANT', 'NO_RETAIL_PRICE']
+/**
+ * Issues that stop a product from being published. A missing image only warns (decision of 2026-10-04); weight and
+ * measurements are required so every published product can be shipped by carrier (decision of 2026-10-09).
+ */
+export const PUBLISH_BLOCKERS: readonly ProductIssue[] = ['NO_ACTIVE_VARIANT', 'NO_RETAIL_PRICE', 'NO_SHIPPING_DATA']
 
 const BLOCKER_MESSAGES: Record<ProductIssue, string> = {
   NO_ACTIVE_VARIANT: 'it has no active variant',
   NO_RETAIL_PRICE: 'no active variant has a retail price',
+  NO_SHIPPING_DATA: 'an active variant has no weight or measurements',
   NO_IMAGE: 'it has no image',
 }
 

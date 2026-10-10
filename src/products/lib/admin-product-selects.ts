@@ -8,6 +8,10 @@ function variantSelect(retailListId: number | null) {
     name: true,
     isDefault: true,
     isActive: true,
+    weightGrams: true,
+    lengthMm: true,
+    widthMm: true,
+    heightMm: true,
     prices: {
       // Without a retail list (not set up yet) no price row can match.
       where: { deletedAt: null, priceListId: retailListId ?? -1 },
@@ -60,7 +64,6 @@ const VARIANT_DETAIL_SELECT = {
   lengthMm: true,
   widthMm: true,
   heightMm: true,
-  isBulky: true,
   prices: {
     where: { deletedAt: null },
     select: { priceListId: true, amount: true, currency: true, compareAtAmount: true, source: true },

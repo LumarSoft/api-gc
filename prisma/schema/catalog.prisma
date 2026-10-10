@@ -142,8 +142,6 @@ model ProductVariant {
   lengthMm         Int?
   widthMm          Int?
   heightMm         Int?
-  /// Machines and oversized items: special shipping rules apply.
-  isBulky          Boolean    @default(false)
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
   deletedAt        DateTime?

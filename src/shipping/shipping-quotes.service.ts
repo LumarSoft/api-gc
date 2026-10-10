@@ -30,7 +30,6 @@ const variantSelect = {
   lengthMm: true,
   widthMm: true,
   heightMm: true,
-  isBulky: true,
 } satisfies Prisma.ProductVariantSelect
 
 const selectedQuoteSelect = {

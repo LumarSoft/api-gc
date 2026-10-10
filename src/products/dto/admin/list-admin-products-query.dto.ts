@@ -51,6 +51,11 @@ export class ListAdminProductsQueryDto {
   @IsIn(['out'])
   stock?: 'out'
 
+  /** `missing`: an active variant has no weight or measurements (cannot be published nor shipped by carrier). */
+  @IsOptional()
+  @IsIn(['missing'])
+  shipping?: 'missing'
+
   @IsOptional()
   @IsIn(ADMIN_PRODUCT_SORTS)
   sort: AdminProductSort = 'updated'

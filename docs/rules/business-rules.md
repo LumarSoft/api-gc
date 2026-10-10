@@ -126,9 +126,13 @@ Domain rules that apply across modules. When a request contradicts one of these,
   ranks them with the account's selection setting (price by default): home delivery and branch pickup, one choice per
   branch. The price shown is Zipnova's buyer price with VAT and insurance; no free-shipping threshold applies to the
   carrier yet. A quote lasts 30 minutes and only for the quoted cart lines and destination.
-- Carrier delivery needs the recipient's DNI or CUIT (check digit validated) and a phone (carriers require them), and every product with
-  weight and measurements. Bulky items, products without measurements and carts of more than 100 units are shipped
-  by arrangement: the option is shown as unavailable with that explanation.
+- Carrier delivery needs the recipient's DNI or CUIT (check digit validated) and a phone (carriers require them).
+- **No "envío a coordinar" (agreed 2026-10-09):** every product is quoted by weight and measurements, large equipment
+  included (Zipnova picks carriers that take large parcels). Up to 1,000 units per order (technical bound of the
+  per-unit quote). Weight and measurements are required to publish (see Products), so only products published before
+  that rule can lack them: the carrier option then says pickup is available, and the admin lists them to complete.
+- When the Zipnova account has no balance, a booked shipment stays "Procesando" without a label. The admin refuses to
+  book with that explanation, and says so too if a label is requested for a shipment stuck that way.
 - The order keeps the chosen option on a pending `Shipment`. Staff book it at Zipnova from the order once it is paid
   (it is charged to the Zipnova balance), print the label (PDF or ZPL) and the dispatch guide, and can cancel it before
   dispatch and book it again. Zipnova's webhook then updates the shipment and moves the order to shipped and delivered on its own.
@@ -142,10 +146,12 @@ Domain rules that apply across modules. When a request contradicts one of these,
 
 - Products can come from Tango or be created manually. Price can come from Tango or be set manually.
 - Out-of-stock behavior is configurable per product: show, hide, or allow inquiry.
-- Weight and dimensions may be missing in Tango and completed from the admin panel.
+- Weight and dimensions may be missing in Tango and completed from the admin panel ("Sin peso o medidas" filter).
 - A product is created as a **draft** with one default variant. It can be **published** only when at least one active
-  variant has a price in the default retail list; a product without images can be published (the admin sees a
-  warning). Agreed on 2026-10-04 as a starting point; revisit with the client.
+  variant has a price in the default retail list and **every active variant has weight and the three measurements**
+  (added 2026-10-09, so every published product can be shipped); a product without images can be published (the admin
+  sees a warning). A published product cannot get an active variant without them. Agreed on 2026-10-04 as a starting
+  point; revisit with the client.
 - Prices are set per variant and price list (retail, "clientes frecuentes"), each in ARS or USD. A price edited in the
   panel becomes `MANUAL`. USD prices are shown and charged in ARS at the exchange rate in effect.
 - The USD exchange rate history is append-only: a new rate can start now or later, never in the past.

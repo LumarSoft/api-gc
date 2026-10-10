@@ -107,6 +107,8 @@ export interface ShippingCarrier {
   cancelShipment(id: string): Promise<'CANCELLED' | 'RESCUE_REQUESTED'>
   document(id: string, kind: CarrierDocumentKind, format: CarrierDocumentFormat): Promise<CarrierDocument>
   readNotification(token: string, body: unknown): CarrierNotification
+  /** Balance plus credit left in the provider account (ARS), or null when it cannot be read. */
+  availableCredit(): Promise<number | null>
 }
 
 /**

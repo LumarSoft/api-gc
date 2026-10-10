@@ -143,6 +143,11 @@ export class ZipnovaCarrier implements ShippingCarrier {
     return { shipmentId: String(shipmentId) }
   }
 
+  async availableCredit(): Promise<number | null> {
+    const billing = await this.client.request<{ available?: unknown }>('GET', `/accounts/${this.accountId}/billing`)
+    return typeof billing.available === 'number' ? billing.available : null
+  }
+
   private reference(reference: string): string {
     return `${this.referencePrefix}${reference}`.slice(0, 30)
   }

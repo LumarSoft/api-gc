@@ -1,4 +1,11 @@
-import { MAX_QUOTED_UNITS, carrierItems, itemsHash, sameDestination, shippabilityIssue } from './shipping-rules'
+import {
+  MAX_QUOTED_UNITS,
+  carrierItems,
+  hasShippingData,
+  itemsHash,
+  sameDestination,
+  shippabilityIssue,
+} from './shipping-rules'
 
 const variant = {
   id: 1,
@@ -7,7 +14,6 @@ const variant = {
   lengthMm: 61,
   widthMm: 60,
   heightMm: 150,
-  isBulky: false,
 }
 
 describe('Shipping rules', () => {
@@ -25,10 +31,10 @@ describe('Shipping rules', () => {
     expect(itemsHash([{ variantId: 1, quantity: 4 }])).not.toBe(a)
   })
 
-  it('ships by arrangement bulky items, unmeasured items and very large orders', () => {
+  it('quotes every measured cart up to the unit limit', () => {
     const line = { variantId: 1, quantity: 1 }
     expect(shippabilityIssue([line], [variant])).toBeNull()
-    expect(shippabilityIssue([line], [{ ...variant, isBulky: true }])).toBe('BULKY')
+    expect(shippabilityIssue([{ ...line, quantity: MAX_QUOTED_UNITS }], [variant])).toBeNull()
     expect(shippabilityIssue([line], [{ ...variant, weightGrams: null }])).toBe('MISSING_MEASUREMENTS')
     expect(shippabilityIssue([line], [{ ...variant, heightMm: 0 }])).toBe('MISSING_MEASUREMENTS')
     expect(shippabilityIssue([{ variantId: 9, quantity: 1 }], [variant])).toBe('MISSING_MEASUREMENTS')
@@ -52,5 +58,11 @@ describe('Shipping rules', () => {
     const quoted = { postalCode: '5000', city: 'Córdoba', province: 'Córdoba' }
     expect(sameDestination(quoted, { postalCode: ' 5000', city: 'cordoba', province: 'CÓRDOBA ' })).toBe(true)
     expect(sameDestination(quoted, { ...quoted, postalCode: '5001' })).toBe(false)
+  })
+
+  it('needs weight and all three measurements above zero', () => {
+    expect(hasShippingData(variant)).toBe(true)
+    expect(hasShippingData({ ...variant, lengthMm: null })).toBe(false)
+    expect(hasShippingData({ ...variant, weightGrams: 0 })).toBe(false)
   })
 })

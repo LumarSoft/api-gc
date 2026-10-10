@@ -6,6 +6,7 @@ import type {
   AdminVariantDto,
   AdminVariantSummaryDto,
 } from './dto/admin/admin-product-response.dto'
+import { hasShippingData } from '../shipping/lib/shipping-rules'
 import { productIssues } from './lib/admin-product-rules'
 import type { AdminDetailRow, AdminListRow, AdminVariantDetailRow, AdminVariantRow } from './lib/admin-product-selects'
 import { availabilityOf, bestAvailability } from './lib/product-rules'
@@ -88,7 +89,6 @@ export class AdminProductMapper {
       lengthMm: variant.lengthMm,
       widthMm: variant.widthMm,
       heightMm: variant.heightMm,
-      isBulky: variant.isBulky,
       prices: variant.prices.map(price => ({
         priceListId: price.priceListId,
         amount: price.amount.toFixed(2),
@@ -111,13 +111,14 @@ export class AdminProductMapper {
       retailPrice: price ? { amount: price.amount.toFixed(2), currency: price.currency } : null,
       available: variant.inventory ? variant.inventory.onHand - variant.inventory.reserved : null,
       availability: availabilityOf(variant.inventory),
+      hasShippingData: hasShippingData(variant),
     }
   }
 
   private issues(imageCount: number, variants: AdminVariantSummaryDto[]): AdminProductListItemDto['issues'] {
     const activeVariants = variants
       .filter(variant => variant.isActive)
-      .map(variant => ({ hasRetailPrice: variant.retailPrice !== null }))
+      .map(variant => ({ hasRetailPrice: variant.retailPrice !== null, hasShippingData: variant.hasShippingData }))
     return productIssues({ imageCount, activeVariants })
   }
 }

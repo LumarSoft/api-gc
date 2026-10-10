@@ -3,8 +3,8 @@ import type { CarrierItem } from '../shipping-carrier'
 
 /** How long a buyer can use a quote before quoting again (prices and branches can change). */
 export const QUOTE_TTL_MINUTES = 30
-/** The provider packs unit by unit; larger orders are shipped by arrangement (and keep the request small). */
-export const MAX_QUOTED_UNITS = 100
+/** The provider packs unit by unit, so the request carries one item per unit; this keeps it a sane size. */
+export const MAX_QUOTED_UNITS = 1000
 
 export interface ShippableVariant {
   id: number
@@ -13,7 +13,6 @@ export interface ShippableVariant {
   lengthMm: number | null
   widthMm: number | null
   heightMm: number | null
-  isBulky: boolean
 }
 
 export interface ShippableLine {
@@ -21,13 +20,28 @@ export interface ShippableLine {
   quantity: number
 }
 
-/** Why a cart cannot be quoted. Bulky items and items without measurements are shipped by arrangement. */
-export type ShippabilityIssue = 'BULKY' | 'MISSING_MEASUREMENTS' | 'TOO_MANY_UNITS'
+/**
+ * Why a cart cannot be quoted. Publishing a product requires weight and measurements, so a missing one only happens
+ * with data edited after publishing or products published before that rule.
+ */
+export type ShippabilityIssue = 'MISSING_MEASUREMENTS' | 'TOO_MANY_UNITS'
 
 export const SHIPPABILITY_MESSAGES: Record<ShippabilityIssue, string> = {
-  BULKY: 'Tu carrito tiene equipos que enviamos a coordinar. Escribinos y te pasamos el costo.',
-  MISSING_MEASUREMENTS: 'Todavía no podemos cotizar el envío de algunos productos. Escribinos y te pasamos el costo.',
-  TOO_MANY_UNITS: 'Para pedidos de tantas unidades coordinamos el envío. Escribinos y te pasamos el costo.',
+  MISSING_MEASUREMENTS:
+    'Algunos productos de tu carrito todavía no tienen envío al resto del país. Podés retirarlos en el local.',
+  TOO_MANY_UNITS: 'El envío se cotiza hasta 1.000 unidades por pedido. Dividí la compra en varios pedidos.',
+}
+
+/** Weight and the three sides, all above zero: what the carrier needs to quote a unit. */
+export function hasShippingData(variant: {
+  weightGrams: number | null
+  lengthMm: number | null
+  widthMm: number | null
+  heightMm: number | null
+}): boolean {
+  return [variant.weightGrams, variant.lengthMm, variant.widthMm, variant.heightMm].every(
+    value => value !== null && value > 0,
+  )
 }
 
 /** Identifies what was quoted; prices are left out because they do not change what is shipped. */
@@ -38,13 +52,12 @@ export function itemsHash(lines: ShippableLine[]): string {
 
 /** Null when every line can be quoted; `carrierItems` may only be called then. */
 export function shippabilityIssue(lines: ShippableLine[], variants: ShippableVariant[]): ShippabilityIssue | null {
-  const lineVariants = lines.map(line => variants.find(variant => variant.id === line.variantId))
-  if (lineVariants.some(variant => variant?.isBulky)) return 'BULKY'
   if (lines.reduce((units, line) => units + line.quantity, 0) > MAX_QUOTED_UNITS) return 'TOO_MANY_UNITS'
-  const measured = (variant: ShippableVariant | undefined): boolean =>
-    Boolean(variant) &&
-    [variant!.weightGrams, variant!.lengthMm, variant!.widthMm, variant!.heightMm].every(value => value && value > 0)
-  return lineVariants.every(measured) ? null : 'MISSING_MEASUREMENTS'
+  const measured = lines.every(line => {
+    const variant = variants.find(candidate => candidate.id === line.variantId)
+    return Boolean(variant && hasShippingData(variant))
+  })
+  return measured ? null : 'MISSING_MEASUREMENTS'
 }
 
 /**

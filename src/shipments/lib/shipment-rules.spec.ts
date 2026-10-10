@@ -32,7 +32,6 @@ const order = (patch: Partial<BookingOrder> = {}): BookingOrder => ({
         lengthMm: 60,
         widthMm: 60,
         heightMm: 150,
-        isBulky: false,
       },
     },
   ],
@@ -83,7 +82,7 @@ describe('Shipment booking', () => {
       order({ items: [{ ...line, variant: { ...line.variant, weightGrams: null } }] }),
       'CG-000123',
     )
-    expect('error' in unmeasured && unmeasured.error).toMatch(/peso y las medidas/)
+    expect('error' in unmeasured && unmeasured.error).toMatch(/no tiene peso o medidas/)
   })
 
   it('stamps the dispatch and delivery dates the first time only', () => {

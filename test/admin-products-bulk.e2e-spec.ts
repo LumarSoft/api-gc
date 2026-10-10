@@ -38,6 +38,11 @@ describe('Admin bulk product actions (local MySQL e2e)', () => {
         variants: {
           create: {
             sku: `BULK-${key}`.toUpperCase(),
+            // Publishing needs weight and measurements; "blocked" fixtures fail on the missing price instead.
+            weightGrams: 150,
+            lengthMm: 60,
+            widthMm: 60,
+            heightMm: 150,
             isDefault: true,
             ...(withPrice ? { prices: { create: { priceListId, amount: '10.00', currency: 'ARS' } } } : {}),
           },
@@ -151,5 +156,41 @@ describe('Admin bulk product actions (local MySQL e2e)', () => {
     ).toBe(2)
     const again = (await bulk({ ids: [first], action: 'HIDE' }).expect(200)).body as BulkProductsResultDto
     expect(again.skipped).toEqual([{ id: first, reason: 'NOT_FOUND' }])
+  })
+
+  it('requires weight and measurements to publish, lists products missing them and keeps them on published ones', async () => {
+    const unmeasured = await product(ProductStatus.DRAFT, true)
+    const variant = await prisma.productVariant.findFirstOrThrow({
+      where: { productId: unmeasured },
+      select: { id: true },
+    })
+    await prisma.productVariant.update({ where: { id: variant.id }, data: { weightGrams: null } })
+    const result = (await bulk({ ids: [unmeasured], action: 'PUBLISH' }).expect(200)).body as BulkProductsResultDto
+    expect(result.skipped).toEqual([expect.objectContaining({ id: unmeasured, issues: ['NO_SHIPPING_DATA'] })])
+    const listed = await request(app.getHttpServer())
+      .get(`/admin/products?shipping=missing&q=${encodeURIComponent(`Bulk ${suffix}`)}&pageSize=100`)
+      .set('Cookie', adminCookie)
+      .expect(200)
+    const ids = (listed.body as { items: { id: number }[] }).items.map(item => item.id)
+    expect(ids).toContain(unmeasured)
+    expect(ids).not.toContain(productIds[0])
+
+    const published = await product(ProductStatus.PUBLISHED, true, new Date())
+    const publishedVariant = await prisma.productVariant.findFirstOrThrow({
+      where: { productId: published },
+      select: { id: true },
+    })
+    const patch = (body: object): request.Test =>
+      request(app.getHttpServer())
+        .patch(`/admin/products/${published}/variants/${publishedVariant.id}`)
+        .set('Cookie', adminCookie)
+        .send(body)
+    await patch({ weightGrams: null }).expect(422)
+    await patch({ name: 'Negro' }).expect(200)
+    await request(app.getHttpServer())
+      .post(`/admin/products/${published}/variants`)
+      .set('Cookie', adminCookie)
+      .send({ sku: `BULK-${suffix}-NEW`.toUpperCase() })
+      .expect(422)
   })
 })

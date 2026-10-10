@@ -14,6 +14,7 @@ import { shipmentActions, type ShipmentAction } from '../orders/lib/order-rules'
 import { OrderStatusService } from '../orders/order-status.service'
 import { PrismaService } from '../prisma/prisma.service'
 import {
+  CarrierError,
   SHIPPING_CARRIER,
   type CarrierDocument,
   type CarrierDocumentFormat,
@@ -68,6 +69,10 @@ export class ShipmentsService {
     try {
       document = await this.carrier.document(shipment.externalId!, kind, format)
     } catch (error) {
+      if (error instanceof CarrierError && error.kind === 'NOT_READY' && (await this.outOfCredit()))
+        throw new UnprocessableEntityException(
+          'La cuenta de Zipnova no tiene saldo, por eso el envío sigue en "Procesando" y todavía no tiene etiqueta. Cargá crédito en Zipnova y volvé a descargarla.',
+        )
       carrierFailure(error)
     }
     // Downloading moves the shipment to "ready to ship" at the provider; mirror it without failing the download.
@@ -88,6 +93,12 @@ export class ShipmentsService {
       select: syncedShipmentSelect,
     })
     if (shipment) await this.syncOrFail(shipment)
+  }
+
+  /** Without balance the provider keeps the shipment unprocessed; a failed read never hides the original error. */
+  private async outOfCredit(): Promise<boolean> {
+    const available = await this.carrier.availableCredit().catch(() => null)
+    return available !== null && available <= 0
   }
 
   private async shipment(orderId: number, action: ShipmentAction): Promise<SyncedShipment> {
