@@ -44,13 +44,19 @@ export function preferenceBody(request: CheckoutRequest, options: PreferenceOpti
     back_urls: { success: request.returnUrl, pending: request.returnUrl, failure: request.returnUrl },
     // Mercado Pago only redirects on its own to https URLs; locally the buyer uses "Volver al sitio".
     ...(secure ? { auto_return: 'approved' } : {}),
-    // Only signed webhooks (no legacy IPN, which has no signature).
-    ...(options.notificationUrl ? { notification_url: `${options.notificationUrl}?source_news=webhooks` } : {}),
+    ...(options.notificationUrl ? { notification_url: webhookUrl(options.notificationUrl) } : {}),
     binary_mode: true,
     payment_methods: { excluded_payment_types: [{ id: 'ticket' }, { id: 'atm' }] },
     expires: true,
     expiration_date_to: request.expiresAt.toISOString(),
   }
+}
+
+/** Our webhook URL asking for signed webhooks only (no legacy IPN, which has no signature). */
+function webhookUrl(base: string): string {
+  const url = new URL(base)
+  url.searchParams.set('source_news', 'webhooks')
+  return url.toString()
 }
 
 /** Our view of a Mercado Pago payment; references with another environment's prefix are not ours. */

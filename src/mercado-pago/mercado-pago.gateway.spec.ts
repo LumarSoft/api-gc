@@ -123,6 +123,15 @@ describe('Mercado Pago gateway requests', () => {
     expect((request.mock.calls[0] as unknown[])[2]).not.toHaveProperty('auto_return')
   })
 
+  it('asks for signed webhooks only, keeping a query the notification URL already has', async () => {
+    const request = jest.fn().mockResolvedValue({ init_point: 'https://mp.example/live' })
+    const env = { ...full, MERCADO_PAGO_NOTIFICATION_URL: 'https://api.example.test/hook?env=staging' }
+    await withClient(request, env).createCheckout(checkout)
+    expect((request.mock.calls[0] as Record<string, unknown>[])[2].notification_url).toBe(
+      'https://api.example.test/hook?env=staging&source_news=webhooks',
+    )
+  })
+
   it('maps payments and keeps only our references', async () => {
     const payment = {
       id: 999001,
