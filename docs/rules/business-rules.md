@@ -55,8 +55,9 @@ Domain rules that apply across modules. When a request contradicts one of these,
   `ShippingMethod`; its destination must be Rosario, Santa Fe. Carrier delivery (rest of the country) is described in
   "Shipping" below.
 
-- **Current scope (requested 2026-10-05):** guest completion is enabled; no external payment, email or Tango
-  integrations are activated (carrier shipping: see "Shipping"). Orders use `MANUAL` payment, pending until an admin explicitly verifies receipt of the
+- **Current scope (requested 2026-10-05):** guest completion is enabled; no email or Tango integrations are
+  activated (carrier shipping: see "Shipping"; online payment: see "Online payment" below). Orders paid at the store use
+  `MANUAL` payment, pending until an admin explicitly verifies receipt of the
   full amount. Confirmation records an approved manual `Payment`, consumes the reservation and records stock sale
   movements and an audit entry. This does not move money, issue an invoice or charge a wholesale current account.
 - `Order.userId` is nullable. A guest never gets a synthetic account. A cryptographically random 256-bit browser token
@@ -86,13 +87,33 @@ Domain rules that apply across modules. When a request contradicts one of these,
 - An order line stores a **snapshot** of product name, unit price and currency at purchase time. An order is never
   recalculated with current prices.
 - Order state changes go through `OrderStatusService`, which validates every transition (staff changes, reservation
-  expiry and carrier updates).
+  expiry, carrier updates and Mercado Pago payments).
 - Orders are never deleted — they are cancelled.
+
+## Online payment
+
+- **Mercado Pago Checkout Pro (added 2026-10-10)**, offered at checkout next to paying at the store ("Pago a coordinar
+  con el local", which stays). It is off until its access token is in the environment.
+- A Mercado Pago order is created like any other (`PENDING_PAYMENT`, stock reserved) and the buyer is sent to Mercado
+  Pago's checkout for the order total computed by the backend (products and delivery, from the order snapshot). Each
+  attempt creates a new checkout, so a rejected card is retried from the order page.
+- **Reservation (provisional, revisit with the client): one hour** for Mercado Pago orders, instead of the manual
+  window. The checkout stops taking payments 10 minutes before it ends, so the approval reaches us while the stock is
+  still held. Payments are approved or rejected at once (Mercado Pago's binary mode): no cash vouchers (Rapipago, Pago
+  Fácil) or manual reviews that resolve days later.
+- The payment status is always read from Mercado Pago's API: by the signed webhook, and when the buyer comes back to
+  the store (which covers a late or missing webhook). Never from the redirect or the browser.
+- An approved payment confirms the order only when it was approved before the reservation deadline, for the exact
+  total in ARS, while the order still waits for payment. It records the `Payment` (Mercado Pago operation id, status,
+  installments), consumes the reservation and leaves a history note. A rejected payment keeps the order pending until
+  the reservation expires. An approved payment that does not pay the order (late, a second one, another amount) is
+  kept and flagged to staff to refund from Mercado Pago; refunds are not automated yet.
+- Staff can still mark a Mercado Pago order as paid by hand (e.g. the buyer paid at the store).
 
 ## Stock
 
-- Stock is reserved when checkout starts. Reservations expire: payment window for Mercado Pago, **24 hours** for
-  pending bank transfers; current manual orders use the provisional configured window above.
+- Stock is reserved when checkout starts. Reservations expire: one hour for Mercado Pago (see "Online payment"),
+  **24 hours** for pending bank transfers; current manual orders use the provisional configured window above.
 - Cancellation releases stock in the transition transaction. The local expiration job runs every minute, up to 100
   overdue orders per pass, with order locks and idempotent ledger writes. Multiple API instances may run it safely.
   No payment may be confirmed after the deadline, even before the job runs. Job failures are logged without secrets and

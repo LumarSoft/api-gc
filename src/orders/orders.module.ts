@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common'
 import { CartModule } from '../cart/cart.module'
+import { MercadoPagoModule } from '../mercado-pago/mercado-pago.module'
 import { PricingModule } from '../pricing/pricing.module'
 import { ShippingModule } from '../shipping/shipping.module'
 import { OrdersService } from './orders.service'
@@ -14,7 +15,7 @@ import { CustomerOrdersController } from './customer-orders.controller'
 import { CustomerOrdersService } from './customer-orders.service'
 
 @Module({
-  imports: [CartModule, PricingModule, ShippingModule],
+  imports: [CartModule, MercadoPagoModule, PricingModule, ShippingModule],
   providers: [
     OrdersService,
     AdminOrdersService,

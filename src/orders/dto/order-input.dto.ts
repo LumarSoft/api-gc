@@ -1,7 +1,7 @@
 import { Transform, Type } from 'class-transformer'
 import { Equals, IsEnum, IsIn, IsInt, IsOptional, IsString, Matches, Max, MaxLength, Min } from 'class-validator'
 import { PreviewCheckoutDto } from '../../checkout/dto/checkout-input.dto'
-import { OrderStatus } from '../../generated/prisma/enums'
+import { OrderStatus, PaymentMethod } from '../../generated/prisma/enums'
 import { ORDER_STAGE_NAMES, type OrderStage } from '../lib/order-rules'
 
 export class PlaceOrderDto extends PreviewCheckoutDto {
@@ -11,6 +11,11 @@ export class PlaceOrderDto extends PreviewCheckoutDto {
 
   @Matches(/^[a-f0-9]{64}$/)
   reviewToken: string
+
+  /** How the buyer pays: coordinated with the store (default) or online with Mercado Pago. */
+  @IsOptional()
+  @IsIn([PaymentMethod.MANUAL, PaymentMethod.MERCADO_PAGO])
+  paymentMethod?: typeof PaymentMethod.MANUAL | typeof PaymentMethod.MERCADO_PAGO
 }
 
 export class TrackOrderDto {

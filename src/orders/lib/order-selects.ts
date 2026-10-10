@@ -59,6 +59,8 @@ export const orderSelect = {
       pickupPoint: true,
     },
   },
+  // The latest payment: the buyer's last Mercado Pago attempt, or the staff confirmation.
+  payments: { orderBy: { id: 'desc' }, take: 1, select: { provider: true, status: true, updatedAt: true } },
 } satisfies Prisma.OrderSelect
 
 export type OrderRow = Prisma.OrderGetPayload<{ select: typeof orderSelect }>
@@ -74,6 +76,12 @@ export const adminOrderSelect = {
   shipments: {
     ...orderSelect.shipments,
     select: { ...orderSelect.shipments.select, externalId: true, logisticType: true },
+  },
+  // Every payment, so staff see the Mercado Pago operations and any that must be given back (an order has a few).
+  payments: {
+    orderBy: { id: 'desc' },
+    take: 20,
+    select: { ...orderSelect.payments.select, externalId: true, amount: true, externalStatusDetail: true },
   },
 } satisfies Prisma.OrderSelect
 

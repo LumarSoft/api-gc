@@ -30,6 +30,8 @@ api-gc/
 │   ├── settings/                  # /admin/settings: Rosario delivery rate and reservation window
 │   ├── shipping/                  # Carrier provider behind SHIPPING_CARRIER (zipnova/ adapter) + cart shipping quotes
 │   ├── shipments/                 # Carrier shipments of orders: admin booking/labels/cancel + provider webhook
+│   ├── mercado-pago/              # Online payment provider behind PAYMENT_GATEWAY (Mercado Pago Checkout Pro)
+│   ├── payments/                  # Paying orders online: checkout link, buyer's return refresh, Mercado Pago webhook
 │   ├── inventory/                 # StockService: stock levels + movement ledger (manual adjustment, TODO(tango))
 │   ├── pricing/                   # Price resolution + /admin/price-lists and /admin/exchange-rates
 │   ├── tags/                      # GET /tags (catalog filters) + /admin/tags
@@ -68,24 +70,26 @@ api-gc/
 
 ## Module overview
 
-| Module           | Path              | Responsibility                                            |
-| ---------------- | ----------------- | --------------------------------------------------------- |
-| AppModule        | `src/`            | Root module, health check                                 |
-| PrismaModule     | `src/prisma/`     | Global DB access (PrismaService)                          |
-| MailModule       | `src/mail/`       | Global transactional email                                |
-| AuthModule       | `src/auth/`       | Sessions, passwords, email check                          |
-| OrdersModule     | `src/orders/`     | Guest orders, tracking, manual lifecycle and reservations |
-| CartModule       | `src/cart/`       | Cookie-owned carts, merge, prices and stock               |
-| AuditLogsModule  | `src/audit-logs/` | Global audit log of admin changes                         |
-| FilesModule      | `src/files/`      | Global file storage + image upload                        |
-| PricingModule    | `src/pricing/`    | Price list per buyer, USD → ARS, admin rates              |
-| InventoryModule  | `src/inventory/`  | Stock levels and movements                                |
-| CategoriesModule | `src/categories/` | Category tree (public + admin)                            |
-| BrandsModule     | `src/brands/`     | Brands (public + admin)                                   |
-| ProductsModule   | `src/products/`   | Public catalog + admin products                           |
-| TagsModule       | `src/tags/`       | Tags for filters (public + admin)                         |
-| DashboardModule  | `src/dashboard/`  | Admin home metrics (read-only aggregates)                 |
-| AnalyticsModule  | `src/analytics/`  | Admin stats page (read-only aggregates)                   |
-| ActivityModule   | `src/activity/`   | Anonymous store activity for stats                        |
-| ShippingModule   | `src/shipping/`   | Carrier provider (Zipnova) and cart shipping quotes       |
-| ShipmentsModule  | `src/shipments/`  | Order shipments: booking, documents, status webhook       |
+| Module            | Path                | Responsibility                                            |
+| ----------------- | ------------------- | --------------------------------------------------------- |
+| AppModule         | `src/`              | Root module, health check                                 |
+| PrismaModule      | `src/prisma/`       | Global DB access (PrismaService)                          |
+| MailModule        | `src/mail/`         | Global transactional email                                |
+| AuthModule        | `src/auth/`         | Sessions, passwords, email check                          |
+| OrdersModule      | `src/orders/`       | Guest orders, tracking, manual lifecycle and reservations |
+| CartModule        | `src/cart/`         | Cookie-owned carts, merge, prices and stock               |
+| AuditLogsModule   | `src/audit-logs/`   | Global audit log of admin changes                         |
+| FilesModule       | `src/files/`        | Global file storage + image upload                        |
+| PricingModule     | `src/pricing/`      | Price list per buyer, USD → ARS, admin rates              |
+| InventoryModule   | `src/inventory/`    | Stock levels and movements                                |
+| CategoriesModule  | `src/categories/`   | Category tree (public + admin)                            |
+| BrandsModule      | `src/brands/`       | Brands (public + admin)                                   |
+| ProductsModule    | `src/products/`     | Public catalog + admin products                           |
+| TagsModule        | `src/tags/`         | Tags for filters (public + admin)                         |
+| DashboardModule   | `src/dashboard/`    | Admin home metrics (read-only aggregates)                 |
+| AnalyticsModule   | `src/analytics/`    | Admin stats page (read-only aggregates)                   |
+| ActivityModule    | `src/activity/`     | Anonymous store activity for stats                        |
+| ShippingModule    | `src/shipping/`     | Carrier provider (Zipnova) and cart shipping quotes       |
+| ShipmentsModule   | `src/shipments/`    | Order shipments: booking, documents, status webhook       |
+| MercadoPagoModule | `src/mercado-pago/` | Payment provider (Mercado Pago) behind `PAYMENT_GATEWAY`  |
+| PaymentsModule    | `src/payments/`     | Online payment of orders and the Mercado Pago webhook     |
