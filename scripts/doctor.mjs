@@ -10,7 +10,7 @@
  */
 import { execSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 // fileURLToPath keeps Windows paths valid (C:\...).
@@ -177,7 +177,7 @@ if (env?.DATABASE_URL && databaseReachable) {
 }
 
 // 7. Starter catalog loaded (its images are copied into storage)
-const productImages = join(ROOT, env?.STORAGE_DIR || 'storage', 'public', 'products')
+const productImages = resolve(ROOT, env?.STORAGE_DIR || 'storage', 'public', 'products')
 if (existsSync(productImages) && readdirSync(productImages).length > 0) ok('Starter catalog loaded')
 else warn('Starter catalog not loaded (the store will look empty)', 'npm run db:seed')
 

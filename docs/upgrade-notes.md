@@ -16,6 +16,16 @@ npm run doctor             # tells you if anything else is missing
 
 ---
 
+## 2026-10-15 — Linux deployment behind Nginx
+
+1. Add `HOST=0.0.0.0` to development environments (it is the default). On a server where Nginx runs in front of the
+   API, set `HOST=127.0.0.1` so the API port is not reachable from outside.
+2. Front and API share a parent domain (`gc.lumarsoft.com` and `api.gc.lumarsoft.com`): set `COOKIE_DOMAIN=.gc.lumarsoft.com`,
+   `COOKIE_SECURE=true`, `TRUST_PROXY=1`, `CORS_ORIGIN`/`FRONT_URL` to the front URL and `PUBLIC_FILES_URL` to
+   `<API URL>/files`.
+3. Keep `STORAGE_DIR` outside the checkout (e.g. `/var/lib/api-gc/storage`) so uploaded images survive redeploys.
+   `npm run doctor` now accepts absolute `STORAGE_DIR` paths.
+
 ## 2026-10-10 — Online payment with Mercado Pago (migration, env vars)
 
 Checkout can take payments online with Mercado Pago Checkout Pro. `Payment` loses the unused `preferenceId` column, so
