@@ -1,5 +1,7 @@
 import {
   ConflictException,
+  HttpException,
+  HttpStatus,
   Inject,
   Injectable,
   Logger,
@@ -20,6 +22,7 @@ import type { SendAssistantMessageDto } from './dto/send-assistant-message.dto'
 import { chatHistory } from './lib/assistant-history'
 import { toolStatus } from './lib/tool-status'
 import { assistantLimits, conversationLimitProblem, MAX_TURN_STEPS, type AssistantLimits } from './lib/assistant-limits'
+import { VISITOR_LIMIT_MESSAGE, VisitorBudget, visitorKeys } from './lib/visitor-budget'
 
 const UNAVAILABLE = 'El asesor no está disponible en este momento. Probá de nuevo más tarde.'
 const ANSWER_FAILED = 'No pude terminar la respuesta. Probá de nuevo en un momento.'
@@ -34,6 +37,7 @@ export class AssistantService {
   /** Conversations answering right now: one answer at a time per conversation. Single API instance. */
   private readonly answering = new Set<number>()
   private dailyUsage: { tokens: number; day: string; readAt: number } | null = null
+  private readonly visitors: VisitorBudget
 
   constructor(
     @Inject(ASSISTANT_MODEL) private readonly model: AssistantModel,
@@ -44,18 +48,28 @@ export class AssistantService {
     config: ConfigService,
   ) {
     this.limits = assistantLimits(key => config.get<string>(key))
+    this.visitors = new VisitorBudget(this.limits.dailyTokens)
   }
 
   /**
    * Every check that can refuse the message, before the answer starts streaming (so they are plain HTTP errors).
    * On success the conversation is reserved until `answer` finishes: always call it next.
    */
-  async open(input: SendAssistantMessageDto, user: AuthenticatedUser | undefined): Promise<OpenConversation> {
+  async open(
+    input: SendAssistantMessageDto,
+    user: AuthenticatedUser | undefined,
+    ip: string | undefined,
+  ): Promise<OpenTurn> {
     if (!this.model.configured) throw new ServiceUnavailableException(UNAVAILABLE)
     if ((await this.tokensToday()) >= this.limits.dailyTokens) {
       this.logger.warn(`Daily token limit reached (${this.limits.dailyTokens}): the assistant is paused until tomorrow`)
       throw new ServiceUnavailableException(UNAVAILABLE)
     }
+    const visitor = visitorKeys(ip, user?.id)
+    const now = Date.now()
+    const day = argentineDay(new Date(now))
+    if (!this.visitors.allows(visitor, !input.conversation, day, now))
+      throw new HttpException(VISITOR_LIMIT_MESSAGE, HttpStatus.TOO_MANY_REQUESTS)
     const conversation = await this.conversations.open(input.conversation, user)
     const problem = conversationLimitProblem(
       { tokens: conversation.tokens, customerMessages: conversation.customerMessages },
@@ -65,11 +79,12 @@ export class AssistantService {
     if (this.answering.has(conversation.id)) throw new ConflictException('Esperá a que termine la respuesta anterior.')
     // Reserved in the same step as the check, so two simultaneous messages cannot both pass. `answer` releases it.
     this.answering.add(conversation.id)
-    return conversation
+    if (conversation.newToken) this.visitors.started(visitor, day, now)
+    return { ...conversation, visitor }
   }
 
   async *answer(
-    conversation: OpenConversation,
+    conversation: OpenTurn,
     input: SendAssistantMessageDto,
     user: AuthenticatedUser | undefined,
     signal: AbortSignal,
@@ -125,6 +140,8 @@ export class AssistantService {
       yield { type: 'done' }
     } finally {
       // Also when the customer leaves mid-answer: the tokens were used all the same.
+      const tokens = answer.inputTokens + answer.outputTokens
+      this.visitors.spent(conversation.visitor, tokens, argentineDay(new Date()), Date.now())
       await this.record(conversation.id, answer)
       this.answering.delete(conversation.id)
     }
@@ -150,3 +167,6 @@ export class AssistantService {
 }
 
 type RecordedTurn = { text: string; productIds: number[]; inputTokens: number; outputTokens: number }
+
+/** An opened conversation and the visitor sending the message, whose usage the answer adds to. */
+export type OpenTurn = OpenConversation & { visitor: string[] }
