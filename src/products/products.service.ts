@@ -7,9 +7,8 @@ import { PrismaService } from '../prisma/prisma.service'
 import { ListProductsQueryDto, type ProductSort } from './dto/list-products-query.dto'
 import type { PaginatedProductsDto, ProductDetailDto, ProductSummaryDto } from './dto/product-response.dto'
 import { compareByPrice } from './lib/product-rules'
-import type { RankedSearch } from './lib/product-search-rules'
 import { detailSelect, summarySelect } from './lib/product-selects'
-import { ProductSearchService } from './product-search.service'
+import { ProductSearchService, type SearchMatch } from './product-search.service'
 import { ProductMapper } from './product.mapper'
 
 @Injectable()
@@ -26,9 +25,13 @@ export class ProductsService {
     let where = await this.buildWhere(query, context.priceListIds)
     const select = summarySelect(context.priceListIds)
     const priceSort = query.sort === 'price-asc' || query.sort === 'price-desc'
-    // Free text narrows to the products that match every word; "relevance" then shows the best matches first.
-    const match = query.q && this.search.hasWords(query.q) ? await this.search.rank(query.q, where, false) : null
+    // Free text narrows to the products that match every word (or, when none has them all, the most of them);
+    // "relevance" then shows the best matches first.
+    const match = query.q && this.search.hasWords(query.q) ? await this.search.rank(query.q, where, true) : null
     if (match) where = { AND: [where, { id: { in: match.ids } }] }
+    const search = match
+      ? { correctedQuery: match.correctedQuery, partial: !match.complete && match.ids.length > 0 }
+      : undefined
     const byRelevance = match !== null && query.sort === 'relevance'
 
     // Price and offers depend on the buyer and the exchange rate, so they are resolved after pricing.
@@ -43,7 +46,7 @@ export class ProductsService {
         items.sort((a, b) => (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0))
       }
       const start = (query.page - 1) * query.pageSize
-      return this.page(items.slice(start, start + query.pageSize), items.length, query)
+      return { ...this.page(items.slice(start, start + query.pageSize), items.length, query), search }
     }
 
     const [rows, total] = await Promise.all([
@@ -56,11 +59,14 @@ export class ProductsService {
       }),
       this.prisma.product.count({ where }),
     ])
-    return this.page(
-      rows.map(row => this.mapper.toSummary(row, context)),
-      total,
-      query,
-    )
+    return {
+      ...this.page(
+        rows.map(row => this.mapper.toSummary(row, context)),
+        total,
+        query,
+      ),
+      search,
+    }
   }
 
   /** Visible products among `ids`, as cards for this buyer, in the order of `ids`. Unknown or hidden ids are skipped. */
@@ -83,7 +89,7 @@ export class ProductsService {
     text: string | null,
     filters: Prisma.ProductWhereInput[],
     options: { partial: boolean; limit: number },
-  ): Promise<RankedSearch> {
+  ): Promise<SearchMatch> {
     const where: Prisma.ProductWhereInput = { AND: [this.visibleWhere(), ...filters] }
     if (text && this.search.hasWords(text)) {
       const match = await this.search.rank(text, where, options.partial)
@@ -95,7 +101,7 @@ export class ProductsService {
       orderBy: this.orderBy('relevance'),
       take: options.limit,
     })
-    return { ids: rows.map(row => row.id), complete: true }
+    return { ids: rows.map(row => row.id), complete: true, correctedQuery: null }
   }
 
   async isVisible(id: number): Promise<boolean> {

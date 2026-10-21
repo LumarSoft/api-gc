@@ -7,7 +7,7 @@ import type { App } from 'supertest/types'
 import type { NestExpressApplication } from '@nestjs/platform-express'
 import { AppModule } from '../src/app.module'
 import { PrismaExceptionFilter } from '../src/common/filters/prisma-exception.filter'
-import type { PaginatedProductsDto } from '../src/products/dto/product-response.dto'
+import type { PaginatedProductsDto, ProductSuggestionsDto } from '../src/products/dto/product-response.dto'
 import { PrismaService } from '../src/prisma/prisma.service'
 
 describe('Catalog search (local MySQL e2e)', () => {
@@ -20,6 +20,13 @@ describe('Catalog search (local MySQL e2e)', () => {
   let word: string
   let code: string
   const names: Record<string, string> = {}
+
+  async function searchPage(query: string): Promise<PaginatedProductsDto> {
+    const response = await request(server())
+      .get(`/products?q=${encodeURIComponent(query)}&pageSize=24`)
+      .expect(200)
+    return response.body as PaginatedProductsDto
+  }
 
   async function search(query: string): Promise<string[]> {
     const response = await request(server())
@@ -93,14 +100,15 @@ describe('Catalog search (local MySQL e2e)', () => {
     expect(await search(`${word} wifi`)).toEqual(expected)
     expect(await search(`impresoras ${word} con wi fi`)).toEqual(expected)
     expect(await search(`${word} inalámbricas`)).toEqual(expected)
-    // Only in the link to its spec sheet (z and q never appear in the random hex word): not a match.
-    expect(await search(`${word} zq9`)).toEqual([])
+    // Only in the link to its spec sheet (z and q never appear in the random hex word): no product has both words.
+    expect((await searchPage(`${word} zq9`)).search?.partial).toBe(true)
   })
 
   it('needs every word, in any order', async () => {
     expect(await search(`dúplex ${word}`)).toEqual([names.scanner])
     expect(await search(`${word} escaner`)).toEqual([names.scanner])
-    expect(await search(`${word} plotter`)).toEqual([])
+    // No product has both: the closest ones, flagged as such.
+    expect((await searchPage(`${word} plotter`)).search?.partial).toBe(true)
   })
 
   it('finds model codes written with or without separators', async () => {
@@ -122,5 +130,45 @@ describe('Catalog search (local MySQL e2e)', () => {
       [names.usb, names.wifiSpec, names.wireless, names.receipts].sort((a, b) => a.localeCompare(b, 'es')),
     )
     expect(page.total).toBe(4)
+  })
+
+  it('corrects a misspelled word and says what it searched', async () => {
+    const response = await request(server())
+      .get(`/products?q=${encodeURIComponent(`impresra ${word}`)}&pageSize=24`)
+      .expect(200)
+    const page = response.body as PaginatedProductsDto
+    expect(page.items.map(item => item.name)).toEqual(
+      expect.arrayContaining([names.wireless, names.wifiSpec, names.usb, names.receipts]),
+    )
+    expect(page.search).toEqual({ correctedQuery: `impresora ${word}`, partial: false })
+  })
+
+  it('shows the closest products when none has every word, and says so', async () => {
+    const page = (
+      await request(server())
+        .get(`/products?q=${encodeURIComponent(`${word} heladera`)}`)
+        .expect(200)
+    ).body as PaginatedProductsDto
+    expect(page.total).toBe(5)
+    expect(page.search).toEqual({ correctedQuery: null, partial: true })
+    const none = (await request(server()).get(`/products?q=zqzq${code}heladera`).expect(200))
+      .body as PaginatedProductsDto
+    expect(none).toMatchObject({ total: 0, search: { correctedQuery: null, partial: false } })
+  })
+
+  it('suggests the first products and their categories while the customer types', async () => {
+    const response = await request(server())
+      .get(`/products/suggest?q=${encodeURIComponent(`${word} wifi`)}`)
+      .expect(200)
+    const suggestions = response.body as ProductSuggestionsDto
+    expect(suggestions).toMatchObject({ query: `${word} wifi`, correctedQuery: null, partial: false, total: 2 })
+    expect(suggestions.products.map(product => product.name)).toEqual([names.wireless, names.wifiSpec])
+    expect(suggestions.categories).toEqual([
+      { slug: expect.stringMatching(/^search-/) as string, name: 'Search test', count: 2 },
+    ])
+    await request(server()).get('/products/suggest').expect(400)
+    await request(server())
+      .get(`/products/suggest?q=${'a'.repeat(101)}`)
+      .expect(400)
   })
 })

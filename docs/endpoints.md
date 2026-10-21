@@ -343,8 +343,11 @@ oficina" → "impresora", "oficina") and in singular. A product matches a word i
 category, brand, a use tag or a specification value. Each word is also searched with the catalog's names for it
 (`wifi` → "Wi-Fi", "inalámbrica"; `comandera`/`ticket` → "recibo", "puntos de venta"; `plotter` → "gran formato";
 `multifuncion` → "multifuncional"; `doble faz` → "dúplex"…), and a model code with or without separators
-(`L-3250`, `L 3250`, `tmt20` → "TM-T20IV"). With `sort=relevance` the best matches come first: more words in the name,
-SKU, category, brand or tags before matches only in the specifications, then the usual order.
+(`L-3250`, `L 3250`, `tmt20` → "TM-T20IV"). A word that finds nothing is searched again as the catalog word it most
+likely misspells (one letter wrong up to 6 letters, two from 7; never numbers or model codes): `ecotnak` → "ecotank",
+`epsom` → "epson", `impresra` → "impresora". When no product has every word, the ones with the most of them are shown
+(`search.partial`). With `sort=relevance` the best matches come first: more words, found in the name or a SKU before
+the summary, category, brand or tags, and those before matches only in the specifications; then the usual order.
 
 **Responses**
 
@@ -373,10 +376,13 @@ SKU, category, brand or tags before matches only in the specifications, then the
   "page": 1,
   "pageSize": 24,
   "total": 39,
-  "totalPages": 2
+  "totalPages": 2,
+  "search": { "correctedQuery": "ecotank", "partial": false }
 }
 ```
 
+- `search`: only when `q` had words to search. `correctedQuery` is the text actually searched when a word was corrected
+  (`null` otherwise); `partial` is `true` when no product had every word and the results have the most of them.
 - `price` / `compareAtPrice`: lowest-priced variant for this buyer. `price` is `null` when no variant has a price.
 - `badge`: `OFFER` (has a previous price), `NEW` (published in the last 45 days) or `null`.
 - `availability`: `IN_STOCK` | `LOW_STOCK` (≤ 3 units, or the variant's own threshold) | `OUT_OF_STOCK`.
@@ -389,6 +395,45 @@ SKU, category, brand or tags before matches only in the specifications, then the
 ```
 
 `404 Not Found` — unknown `category`
+
+### GET /products/suggest
+
+Live search for the store's search box: the same search as `GET /products?q=` (corrections, closest products), with
+its first six products, how many there are and the four categories with the most of them. The browser calls it while
+the customer types (debounced).
+
+**Auth required:** No. A session is read when present (prices for that buyer). Rate limited per IP: 240 requests per
+minute (unlike the rest of `/products`, which the front's server calls).
+
+**Query**
+
+| Field | Type   | Required | Constraints               |
+| ----- | ------ | -------- | ------------------------- |
+| `q`   | string | Yes      | 1–100 characters, trimmed |
+
+**Responses**
+
+`200 OK` — `products` have the card shape of `GET /products`, best match first; `categories`, most matches first.
+
+```json
+{
+  "query": "ecotnak",
+  "correctedQuery": "ecotank",
+  "partial": false,
+  "total": 17,
+  "products": [
+    {
+      "id": 3,
+      "slug": "impresora-multifuncional-inalambrica-ecotank-l3250",
+      "name": "Impresora Multifuncional Inalámbrica EcoTank L3250",
+      "…": "…"
+    }
+  ],
+  "categories": [{ "slug": "impresoras-hogar", "name": "Para el hogar", "count": 7 }]
+}
+```
+
+Nothing found: `total` 0 and empty lists. `400 Bad Request` without `q` or longer than 100. `429 Too Many Requests`.
 
 ### GET /products/:slug
 
@@ -2449,6 +2494,21 @@ fire and forget. Rate limited to 60 requests per minute per IP.
 `400 Bad Request`: `{ "message": ["productId must be an integer number"], "error": "Bad Request", "statusCode": 400 }`.
 `404 Not Found`: `{ "message": "Product 999 not found", "error": "Not Found", "statusCode": 404 }`.
 `429 Too Many Requests`: `{ "message": "ThrottlerException: Too Many Requests", "statusCode": 429 }`.
+
+### GET /activity/popular-searches
+
+What visitors search for most, for the store's search box: the last 30 days' searches that found products, typed by
+at least three different visitors (so no one's own text is shown to others), most visitors first, at most 8. Searches
+that look like personal data (an `@`, six or more digits in a row, more than 40 characters) are left out. Refreshed
+every 10 minutes.
+
+**Auth required:** No. Called from the browser; `Cache-Control: public, max-age=600`.
+
+`200 OK` — empty until enough visitors searched.
+
+```json
+{ "searches": ["ecotank", "tinta l3250", "plotter"] }
+```
 
 ## Favorites
 

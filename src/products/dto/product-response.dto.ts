@@ -70,10 +70,37 @@ export class ProductDetailDto extends ProductSummaryDto {
   compatibleConsumables: ProductSummaryDto[]
 }
 
+/** What a free-text search did, so the store can say it. */
+export class ProductSearchInfoDto {
+  /** The text actually searched when a misspelled word was corrected ("ecotank" for "ecotnak"); null otherwise. */
+  correctedQuery: string | null
+  /** No product had every word: the results are the ones with the most of them. */
+  partial: boolean
+}
+
 export class PaginatedProductsDto {
   items: ProductSummaryDto[]
   page: number
   pageSize: number
   total: number
   totalPages: number
+  /** Only when `q` had words to search. */
+  search?: ProductSearchInfoDto
+}
+
+export class CategorySuggestionDto {
+  slug: string
+  name: string
+  /** Matching products in this category. */
+  count: number
+}
+
+/** Live search: the best few products for what the customer is typing, and where the rest are. */
+export class ProductSuggestionsDto extends ProductSearchInfoDto {
+  query: string
+  /** All the matching products; `products` has the first few. */
+  total: number
+  products: ProductSummaryDto[]
+  /** Categories with the most matches, most first. */
+  categories: CategorySuggestionDto[]
 }

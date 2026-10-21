@@ -15,6 +15,8 @@ import { CatalogReferences } from './catalog-references'
 import { ProductsController } from './products.controller'
 import { ProductMapper } from './product.mapper'
 import { ProductSearchService } from './product-search.service'
+import { ProductSearchVocabulary } from './product-search-vocabulary.service'
+import { ProductSuggestionsService } from './product-suggestions.service'
 import { ProductsService } from './products.service'
 
 @Module({
@@ -23,6 +25,8 @@ import { ProductsService } from './products.service'
   providers: [
     ProductsService,
     ProductSearchService,
+    ProductSearchVocabulary,
+    ProductSuggestionsService,
     ProductMapper,
     AdminProductsService,
     AdminProductBulkService,

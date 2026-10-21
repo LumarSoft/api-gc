@@ -180,6 +180,11 @@ Domain rules that apply across modules. When a request contradicts one of these,
 - A product is an **offer** when its lowest price for the current buyer is below that variant's previous price
   (`compareAtAmount`). The `OFFER` badge and `GET /products?onSale=true` ("Ofertas") use the same rule, so a
   frequent customer may see different offers than a retail visitor.
+- **Search (2026-10-21):** the store's search and the assistant's share one search: every word must match (name,
+  summary, SKU, category, brand, use or a specification), with the catalog's names for common words (wifi →
+  inalámbrica…), model codes with or without separators, and misspelled words corrected to the closest catalog word.
+  When nothing has every word, the closest products are shown and the store says so. The search box shows the first
+  products while the customer types (`GET /products/suggest`).
 - **Duplicating** a product creates a draft copy with new slug and SKUs (`-copia` / `-COPIA`). Tango codes and stock
   are never copied: they belong to the original articles.
 
@@ -195,6 +200,9 @@ Domain rules that apply across modules. When a request contradicts one of these,
 - A cart with products, never ordered and untouched for **24 hours** counts as abandoned (stats definition, not a
   status change: there is no abandoned-cart job or email yet).
 - No retention limit yet: events are append-only. Revisit (purge or aggregate old events) if the table grows large.
+- **Popular searches (added 2026-10-21):** the store's search box suggests the searches most visitors made in the last
+  30 days, only those that found products and that at least three different visitors typed, and never ones that look
+  like personal data (`@`, long numbers, long texts). That is the only activity data shown to visitors.
 
 ## AI sales assistant
 
