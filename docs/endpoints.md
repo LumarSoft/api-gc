@@ -2,6 +2,9 @@
 
 Every endpoint must be documented here in the same commit that introduces it. Format: `docs/rules/documentation.md`.
 
+Ids in paths, query strings and bodies (`:id`, `*Id`, `ids`) are integers from 1 to 2,147,483,647 (MySQL INT); anything
+else answers `400 Bad Request`.
+
 ## Health
 
 ### GET /health

@@ -1,4 +1,5 @@
-import { IsInt, IsOptional, IsString, Matches, MaxLength, Min, MinLength } from 'class-validator'
+import { IsInt, IsOptional, IsString, Matches, Max, MaxLength, Min, MinLength } from 'class-validator'
+import { MAX_INT_ID } from '../../../common/constants/database'
 import { SLUG_PATTERN } from '../../../common/utils/slug'
 
 /** SKU of the default variant: letters, numbers, dots, dashes and underscores (Tango-style codes). */
@@ -20,11 +21,13 @@ export class CreateProductDto {
 
   @IsInt()
   @Min(1)
+  @Max(MAX_INT_ID)
   categoryId: number
 
   @IsOptional()
   @IsInt()
   @Min(1)
+  @Max(MAX_INT_ID)
   brandId?: number | null
 
   @IsString()

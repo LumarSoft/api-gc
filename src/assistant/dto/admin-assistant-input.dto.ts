@@ -11,6 +11,7 @@ import {
   MaxLength,
   Min,
 } from 'class-validator'
+import { MAX_INT_ID } from '../../common/constants/database'
 import { DateRangeQueryDto } from '../../common/dto/date-range-query.dto'
 import { ConversationStatus, QuestionStatus } from '../../generated/prisma/enums'
 
@@ -82,8 +83,7 @@ export class ChangeQuestionStatusDto {
   @ArrayMaxSize(QUESTION_STATUS_MAX)
   @IsInt({ each: true })
   @Min(1, { each: true })
-  // INT column: a larger id would reach the database as a 500 instead of a 400.
-  @Max(2_147_483_647, { each: true })
+  @Max(MAX_INT_ID, { each: true })
   ids: number[]
 
   @IsEnum(QuestionStatus)

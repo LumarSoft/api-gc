@@ -1,16 +1,29 @@
 import { Type } from 'class-transformer'
-import { ArrayMaxSize, IsArray, IsInt, IsOptional, IsString, MaxLength, Min, ValidateNested } from 'class-validator'
+import {
+  ArrayMaxSize,
+  IsArray,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+  ValidateNested,
+} from 'class-validator'
+import { MAX_INT_ID } from '../../../common/constants/database'
 
 export class ProductImageInputDto {
   /** Existing image row; omit for a new one. */
   @IsOptional()
   @IsInt()
   @Min(1)
+  @Max(MAX_INT_ID)
   id?: number
 
   /** Id returned by POST /admin/files/images. */
   @IsInt()
   @Min(1)
+  @Max(MAX_INT_ID)
   fileId: number
 
   @IsOptional()
@@ -22,6 +35,7 @@ export class ProductImageInputDto {
   @IsOptional()
   @IsInt()
   @Min(1)
+  @Max(MAX_INT_ID)
   variantId?: number | null
 }
 

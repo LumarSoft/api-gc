@@ -1,4 +1,5 @@
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsIn, IsInt, Min } from 'class-validator'
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsIn, IsInt, Max, Min } from 'class-validator'
+import { MAX_INT_ID } from '../../../common/constants/database'
 import type { ProductIssue } from '../../lib/admin-product-rules'
 import {
   BULK_PRODUCT_ACTIONS,
@@ -13,6 +14,7 @@ export class BulkProductsDto {
   @ArrayMaxSize(BULK_PRODUCTS_MAX)
   @IsInt({ each: true })
   @Min(1, { each: true })
+  @Max(MAX_INT_ID, { each: true })
   ids: number[]
 
   @IsIn(BULK_PRODUCT_ACTIONS)

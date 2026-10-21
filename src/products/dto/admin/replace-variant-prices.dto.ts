@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer'
-import { ArrayMaxSize, IsArray, IsDecimal, IsIn, IsInt, IsOptional, Min, ValidateNested } from 'class-validator'
+import { ArrayMaxSize, IsArray, IsDecimal, IsIn, IsInt, IsOptional, Max, Min, ValidateNested } from 'class-validator'
+import { MAX_INT_ID } from '../../../common/constants/database'
 import { Currency } from '../../../generated/prisma/enums'
 
 const MONEY = { decimal_digits: '0,2', force_decimal: false } as const
@@ -7,6 +8,7 @@ const MONEY = { decimal_digits: '0,2', force_decimal: false } as const
 export class VariantPriceInputDto {
   @IsInt()
   @Min(1)
+  @Max(MAX_INT_ID)
   priceListId: number
 
   /** Decimal string, up to 2 decimals: "419999" or "419999.90". */

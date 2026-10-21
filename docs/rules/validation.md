@@ -7,6 +7,9 @@
 - Use `class-validator` decorators to validate all fields.
 - Always type the return value of service methods.
 - Never trust client data without validation.
+- Ids (route params, `*Id` fields, `ids` arrays): `@IsInt()`, `@Min(1)` and `@Max(MAX_INT_ID)`
+  (`src/common/constants/database.ts`). Without the cap, an id beyond the INT columns reaches the database and answers
+  500 instead of 400.
 
 ## Naming
 

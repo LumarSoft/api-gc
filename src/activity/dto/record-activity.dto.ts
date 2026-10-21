@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer'
 import { IsIn, IsInt, IsString, IsUUID, Max, MaxLength, Min, MinLength, ValidateIf } from 'class-validator'
+import { MAX_INT_ID } from '../../common/constants/database'
 import { ActivityType } from '../../generated/prisma/enums'
 import { PRODUCT_EVENTS } from '../lib/activity-rules'
 
@@ -16,6 +17,7 @@ export class RecordActivityDto {
   @Type(() => Number)
   @IsInt()
   @Min(1)
+  @Max(MAX_INT_ID)
   productId?: number
 
   @ValidateIf((dto: RecordActivityDto) => dto.type === ActivityType.SEARCH)

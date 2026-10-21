@@ -1,4 +1,5 @@
 import { IsBoolean, IsIn, IsInt, IsOptional, IsString, Matches, Max, MaxLength, Min, MinLength } from 'class-validator'
+import { MAX_INT_ID } from '../../../common/constants/database'
 import { SLUG_PATTERN } from '../../../common/utils/slug'
 import { OutOfStockBehavior } from '../../../generated/prisma/enums'
 
@@ -19,11 +20,13 @@ export class UpdateProductDto {
   @IsOptional()
   @IsInt()
   @Min(1)
+  @Max(MAX_INT_ID)
   categoryId?: number
 
   @IsOptional()
   @IsInt()
   @Min(1)
+  @Max(MAX_INT_ID)
   brandId?: number | null
 
   @IsOptional()
