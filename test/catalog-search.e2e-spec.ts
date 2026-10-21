@@ -46,7 +46,7 @@ describe('Catalog search (local MySQL e2e)', () => {
       {
         key: 'usb',
         name: `Impresora Básica ${word}`,
-        specs: ['USB de alta velocidad', 'https://example.com/ficha-wifi-a3.pdf'],
+        specs: ['USB de alta velocidad', 'https://example.com/ficha-wifi-zq9.pdf'],
       },
       { key: 'scanner', name: `Escáner Dúplex ${word}`, specs: [] },
       { key: 'receipts', name: `Impresora Térmica de Recibos QZ-T${code}III ${word}`, specs: [] },
@@ -93,8 +93,8 @@ describe('Catalog search (local MySQL e2e)', () => {
     expect(await search(`${word} wifi`)).toEqual(expected)
     expect(await search(`impresoras ${word} con wi fi`)).toEqual(expected)
     expect(await search(`${word} inalámbricas`)).toEqual(expected)
-    // Only in the link to its spec sheet: not a match.
-    expect(await search(`${word} a3`)).toEqual([])
+    // Only in the link to its spec sheet (z and q never appear in the random hex word): not a match.
+    expect(await search(`${word} zq9`)).toEqual([])
   })
 
   it('needs every word, in any order', async () => {
