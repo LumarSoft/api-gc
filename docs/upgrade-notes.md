@@ -16,6 +16,21 @@ npm run doctor             # tells you if anything else is missing
 
 ---
 
+## 2026-10-21 — Assistant answer trace and cart adds (migration)
+
+The assistant now records how each answer went (outcome, duration, the tools it used) and the products added to the
+cart from its cards (`POST /assistant/cart-adds`), for the admin's "Asesor IA". It adds columns to `AssistantMessage`,
+the `AssistantCartAdd` table and an index:
+
+```bash
+npx prisma migrate dev && npx prisma generate
+```
+
+Production: `npx prisma migrate deploy` before starting the new build (the API refuses to start without it). Deploy
+the API before the front: the front's cart-add call and admin pages need it.
+
+---
+
 ## 2026-10-21 — AI sales assistant (env vars, new dependency)
 
 The store's chat ("¿Dudas? Te ayudamos a elegir") now answers with an AI sales assistant (`POST /assistant/messages`,

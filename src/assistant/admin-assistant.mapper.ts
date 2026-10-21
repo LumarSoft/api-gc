@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { FilesService } from '../files/files.service'
 import type {
+  AdminCartAddDto,
   AdminConversationDto,
   AdminConversationListItemDto,
   AdminShownProductDto,
@@ -13,8 +14,12 @@ import type {
   QuestionRow,
   ShownProductRow,
 } from './lib/admin-assistant-selects'
-import { excerpt } from './lib/admin-assistant-rules'
+import { answerProblems, excerpt } from './lib/admin-assistant-rules'
+import { storedTraces } from './lib/answer-trace'
 import { storedProductIds } from './lib/assistant-history'
+
+/** Per conversation of a list page: answers to look at and products added to the cart from its cards. */
+export type ConversationCounts = { problemAnswers: number; cartAdds: number }
 
 type Person = { id: number; firstName: string; lastName: string }
 
@@ -23,7 +28,11 @@ type Person = { id: number; firstName: string; lastName: string }
 export class AdminAssistantMapper {
   constructor(private readonly files: FilesService) {}
 
-  listItem(row: ConversationListRow, firstQuestion: string | undefined): AdminConversationListItemDto {
+  listItem(
+    row: ConversationListRow,
+    firstQuestion: string | undefined,
+    counts: ConversationCounts | undefined,
+  ): AdminConversationListItemDto {
     return {
       id: row.id,
       status: row.status,
@@ -33,6 +42,8 @@ export class AdminAssistantMapper {
       openQuestions: row._count.unansweredQuestions,
       escalationReason: row.escalationReason,
       tokens: row.inputTokens + row.outputTokens,
+      problemAnswers: counts?.problemAnswers ?? 0,
+      cartAdds: counts?.cartAdds ?? 0,
       createdAt: row.createdAt.toISOString(),
       lastMessageAt: row.lastMessageAt.toISOString(),
     }
@@ -58,9 +69,17 @@ export class AdminAssistantMapper {
         inputTokens: message.inputTokens,
         outputTokens: message.outputTokens,
         products: storedProductIds(message.recommendedProducts).flatMap(id => cards.get(id) ?? []),
+        outcome: message.outcome,
+        durationMs: message.durationMs,
+        tools: storedTraces(message.toolCalls),
+        problems: answerProblems(message),
         createdAt: message.createdAt.toISOString(),
       })),
       questions: row.unansweredQuestions.map(question => this.question(question)),
+      cartAdds: row.cartAdds.flatMap((add): AdminCartAddDto[] => {
+        const product = cards.get(add.productId)
+        return product ? [{ product, variantId: add.variantId, createdAt: add.createdAt.toISOString() }] : []
+      }),
     }
   }
 

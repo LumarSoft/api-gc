@@ -223,6 +223,13 @@ Domain rules that apply across modules. When a request contradicts one of these,
   questions are marked answered once the missing data is loaded where it belongs (product sheet, catalog, settings), or
   dismissed; it is only a status (the assistant does not read a knowledge base yet). Usage shows conversations and
   tokens per day, the current month and today against the daily limit; no cost in money.
+- **Where it fails, and what it sells (added 2026-10-21):** every answer records how it ended (answered, failed, cut
+  because the customer left), how long it took and the tools it used (what it searched, how many products it found,
+  the sheets it read, the cards it showed), never the tools' whole output. Staff filter the conversations with answers
+  to look at (failed, cut, 30 s or more, a search that found nothing) and see the searches that found nothing, by
+  text. Products added to the cart from the chat's cards are recorded with their conversation (only products it
+  showed), so the metrics say how many conversations led to the cart. It is part of the conversation the store already
+  keeps, not the anonymous activity tracking, so Do Not Track does not apply.
 
 ## Favorites
 

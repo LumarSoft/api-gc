@@ -1,10 +1,12 @@
-import { Body, Controller, Ip, Post, Res, UseGuards } from '@nestjs/common'
+import { Body, Controller, HttpCode, HttpStatus, Ip, Post, Res, UseGuards } from '@nestjs/common'
 import { Throttle } from '@nestjs/throttler'
 import type { Response } from 'express'
 import { OptionalUser } from '../common/decorators/optional-user.decorator'
 import { OptionalJwtAuthGuard } from '../common/guards/optional-jwt-auth.guard'
 import type { AuthenticatedUser } from '../common/types/authenticated-user'
+import { AssistantConversationsService } from './assistant-conversations.service'
 import { AssistantService } from './assistant.service'
+import { RecordCartAddDto } from './dto/record-cart-add.dto'
 import { SendAssistantMessageDto } from './dto/send-assistant-message.dto'
 
 /**
@@ -14,7 +16,10 @@ import { SendAssistantMessageDto } from './dto/send-assistant-message.dto'
 @Controller('assistant')
 @UseGuards(OptionalJwtAuthGuard)
 export class AssistantController {
-  constructor(private readonly assistant: AssistantService) {}
+  constructor(
+    private readonly assistant: AssistantService,
+    private readonly conversations: AssistantConversationsService,
+  ) {}
 
   @Post('messages')
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
@@ -41,5 +46,13 @@ export class AssistantController {
       if (!response.destroyed) response.write(`${JSON.stringify(event)}\n`)
     }
     response.end()
+  }
+
+  /** The customer added a product to the cart from one of the chat's cards: what the assistant sold, for the admin. */
+  @Post('cart-adds')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
+  recordCartAdd(@Body() input: RecordCartAddDto): Promise<void> {
+    return this.conversations.recordCartAdd(input.conversation, input.productId, input.variantId)
   }
 }

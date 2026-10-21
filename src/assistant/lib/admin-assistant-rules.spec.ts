@@ -1,4 +1,5 @@
-import { excerpt, monthStart, searchedId, sumUsage, usageDays } from './admin-assistant-rules'
+import { AnswerOutcome } from '../../generated/prisma/enums'
+import { answerProblems, excerpt, monthStart, searchedId, sumUsage, usageDays } from './admin-assistant-rules'
 
 describe('admin assistant rules', () => {
   it('puts the first question on one line and cuts it with an ellipsis', () => {
@@ -26,15 +27,44 @@ describe('admin assistant rules', () => {
     const days = usageDays(
       ['2026-10-19', '2026-10-20', '2026-10-21'],
       new Map([
-        ['2026-10-19', { conversations: 2, customerMessages: 5, inputTokens: 1000, outputTokens: 100 }],
-        ['2026-10-21', { customerMessages: 1, inputTokens: 300, outputTokens: 30 }],
+        ['2026-10-19', { conversations: 2, customerMessages: 5, inputTokens: 1000, outputTokens: 100, cartAdds: 2 }],
+        ['2026-10-21', { customerMessages: 1, inputTokens: 300, outputTokens: 30, cartConversations: 1 }],
       ]),
     )
+    const none = { answers: 0, problemAnswers: 0, cartAdds: 0, cartConversations: 0 }
     expect(days).toEqual([
-      { day: '2026-10-19', conversations: 2, customerMessages: 5, inputTokens: 1000, outputTokens: 100 },
-      { day: '2026-10-20', conversations: 0, customerMessages: 0, inputTokens: 0, outputTokens: 0 },
-      { day: '2026-10-21', conversations: 0, customerMessages: 1, inputTokens: 300, outputTokens: 30 },
+      {
+        day: '2026-10-19',
+        conversations: 2,
+        customerMessages: 5,
+        inputTokens: 1000,
+        outputTokens: 100,
+        ...none,
+        cartAdds: 2,
+      },
+      { day: '2026-10-20', conversations: 0, customerMessages: 0, inputTokens: 0, outputTokens: 0, ...none },
+      {
+        day: '2026-10-21',
+        conversations: 0,
+        customerMessages: 1,
+        inputTokens: 300,
+        outputTokens: 30,
+        ...none,
+        cartConversations: 1,
+      },
     ])
-    expect(sumUsage(days)).toEqual({ conversations: 2, customerMessages: 6, inputTokens: 1300, outputTokens: 130 })
+    const totals = { conversations: 2, customerMessages: 6, inputTokens: 1300, outputTokens: 130, ...none, cartAdds: 2 }
+    expect(sumUsage(days)).toEqual({ ...totals, cartConversations: 1 })
+    // The distinct count of the whole period replaces the sum of the days.
+    expect(sumUsage(days, 3)).toEqual({ ...totals, cartConversations: 3 })
+  })
+
+  it('says why an answer is worth a look', () => {
+    const answer = { outcome: AnswerOutcome.ANSWERED, durationMs: 5000, emptySearches: 0 }
+    expect(answerProblems(answer)).toEqual([])
+    expect(answerProblems({ ...answer, durationMs: 30_000, emptySearches: 2 })).toEqual(['SLOW', 'EMPTY_SEARCH'])
+    expect(answerProblems({ ...answer, outcome: AnswerOutcome.FAILED })).toEqual(['FAILED'])
+    expect(answerProblems({ ...answer, outcome: AnswerOutcome.INTERRUPTED })).toEqual(['INTERRUPTED'])
+    expect(answerProblems({ outcome: null, durationMs: null, emptySearches: null })).toEqual([])
   })
 })

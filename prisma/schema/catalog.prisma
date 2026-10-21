@@ -113,6 +113,7 @@ model Product {
   knowledgeDocuments    KnowledgeDocument[]
   promotionTargets      PromotionTarget[]
   activityEvents        ActivityEvent[]
+  assistantCartAdds     AssistantCartAdd[]
 
   @@index([brandId])
   @@index([categoryId])
@@ -159,6 +160,7 @@ model ProductVariant {
   includedInBundles BundleItem[]       @relation("BundleComponent")
   cartItems         CartItem[]
   orderItems        OrderItem[]
+  assistantCartAdds AssistantCartAdd[]
 
   @@index([productId])
 }

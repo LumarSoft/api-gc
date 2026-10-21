@@ -1,4 +1,12 @@
-import { ConversationStatus, MessageRole, ProductStatus, QuestionStatus } from '../../generated/prisma/enums'
+import {
+  AnswerOutcome,
+  ConversationStatus,
+  MessageRole,
+  ProductStatus,
+  QuestionStatus,
+} from '../../generated/prisma/enums'
+import type { ToolTrace } from '../lib/answer-trace'
+import type { AnswerProblem } from '../lib/admin-assistant-rules'
 
 /** The signed-in customer who wrote; null in the DTOs below for a guest. */
 export class AssistantCustomerDto {
@@ -19,6 +27,10 @@ export class AdminConversationListItemDto {
   escalationReason: string | null
   /** Input + output tokens of the whole conversation. */
   tokens: number
+  /** Answers to look at (failed, cut, slow, searches that found nothing). */
+  problemAnswers: number
+  /** Products added to the cart from this conversation's cards. */
+  cartAdds: number
   createdAt: string
   lastMessageAt: string
 }
@@ -51,6 +63,19 @@ export class AdminAssistantMessageDto {
   outputTokens: number | null
   /** Cards shown with this answer, in order. */
   products: AdminShownProductDto[]
+  /** Answers only; null for the customer's messages and answers recorded before 2026-10-21. */
+  outcome: AnswerOutcome | null
+  durationMs: number | null
+  /** The tools the model used for this answer, in order: what it searched and found, the sheets it read… */
+  tools: ToolTrace[]
+  problems: AnswerProblem[]
+  createdAt: string
+}
+
+/** A product the customer added to the cart from one of the conversation's cards. */
+export class AdminCartAddDto {
+  product: AdminShownProductDto
+  variantId: number | null
   createdAt: string
 }
 
@@ -79,6 +104,8 @@ export class AdminConversationDto {
   messages: AdminAssistantMessageDto[]
   /** Questions it could not answer in this conversation. */
   questions: AdminUnansweredQuestionDto[]
+  /** Products added to the cart from its cards, oldest first. */
+  cartAdds: AdminCartAddDto[]
 }
 
 export class UnansweredQuestionsPageDto {
@@ -105,6 +132,21 @@ export class AssistantUsageTotalsDto {
   customerMessages: number
   inputTokens: number
   outputTokens: number
+  /** Answers recorded with their outcome (from 2026-10-21) and, of them, the ones to look at. */
+  answers: number
+  problemAnswers: number
+  /** Products added to the cart from the assistant's cards, and the conversations they came from. */
+  cartAdds: number
+  cartConversations: number
+}
+
+/** A search of the assistant that found nothing, by its text: a product to load or a word the search misses. */
+export class AssistantEmptySearchDto {
+  text: string
+  searches: number
+  conversations: number
+  /** The latest conversation with it, to read. */
+  lastConversationId: number
 }
 
 export class AssistantUsageDayDto extends AssistantUsageTotalsDto {
@@ -121,4 +163,6 @@ export class AssistantUsageDto {
   month: AssistantUsageTotalsDto & { from: string }
   /** Tokens used today against `ASSISTANT_DAILY_TOKEN_LIMIT`; past it the assistant pauses until midnight. */
   today: { tokens: number; dailyLimit: number }
+  /** The searches of the period that found nothing, most repeated first (top 20). */
+  emptySearches: AssistantEmptySearchDto[]
 }

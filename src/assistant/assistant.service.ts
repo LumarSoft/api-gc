@@ -10,15 +10,21 @@ import {
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import type { AuthenticatedUser } from '../common/types/authenticated-user'
+import { AnswerOutcome } from '../generated/prisma/enums'
 import { argentineDay } from '../common/utils/report-period'
 import { hashToken } from '../common/utils/secure-token'
 import { AssistantCatalogService } from './assistant-catalog.service'
 import { AssistantContextService } from './assistant-context.service'
-import { AssistantConversationsService, type OpenConversation } from './assistant-conversations.service'
+import {
+  AssistantConversationsService,
+  type OpenConversation,
+  type RecordedAnswer,
+} from './assistant-conversations.service'
 import { ASSISTANT_MODEL, AssistantModelError, type AssistantModel } from './assistant-model'
 import { AssistantToolsService } from './assistant-tools.service'
 import type { AssistantStreamEvent } from './dto/assistant-stream.dto'
 import type { SendAssistantMessageDto } from './dto/send-assistant-message.dto'
+import { answerTrace, traceTool, type ToolTrace } from './lib/answer-trace'
 import { chatHistory } from './lib/assistant-history'
 import { toolStatus } from './lib/tool-status'
 import { assistantLimits, conversationLimitProblem, MAX_TURN_STEPS, type AssistantLimits } from './lib/assistant-limits'
@@ -90,6 +96,9 @@ export class AssistantService {
     signal: AbortSignal,
   ): AsyncGenerator<AssistantStreamEvent> {
     const answer: RecordedTurn = { text: '', productIds: [], inputTokens: 0, outputTokens: 0 }
+    const startedAt = Date.now()
+    const traces: ToolTrace[] = []
+    let outcome: AnswerOutcome = AnswerOutcome.ANSWERED
     try {
       if (conversation.newToken) yield { type: 'conversation', token: conversation.newToken }
       // From here on the stream has started: every failure ends it with an error line, never a hung response.
@@ -107,7 +116,11 @@ export class AssistantService {
           instructions,
           history: chatHistory(stored, shown),
           tools: this.tools.definitions(),
-          runTool: (name, args) => this.tools.run(name, args, { conversationId: conversation.id, user }),
+          runTool: async (name, args) => {
+            const result = await this.tools.run(name, args, { conversationId: conversation.id, user })
+            traces.push(traceTool(name, args, result.output))
+            return result
+          },
           maxSteps: MAX_TURN_STEPS,
           maxOutputTokens: this.limits.maxOutputTokens,
           safetyId: hashToken(`assistant-conversation-${conversation.id}`).slice(0, 32),
@@ -129,27 +142,38 @@ export class AssistantService {
             answer.productIds.push(...event.display.items.map(item => item.id))
           yield event.type === 'text' ? event : event.display
         }
-        if (!answer.text.trim() && !answer.productIds.length) yield { type: 'error', message: ANSWER_FAILED }
+        if (!answer.text.trim() && !answer.productIds.length) {
+          outcome = AnswerOutcome.FAILED
+          yield { type: 'error', message: ANSWER_FAILED }
+        }
       } catch (error) {
         if (!signal.aborted) {
           if (!(error instanceof AssistantModelError))
             this.logger.error(`Answer failed: ${error instanceof Error ? error.message : String(error)}`)
+          outcome = AnswerOutcome.FAILED
           yield { type: 'error', message: ANSWER_FAILED }
         }
       }
+      // Before `done`: a customer who leaves once the answer is complete did not interrupt it.
+      if (signal.aborted) outcome = AnswerOutcome.INTERRUPTED
       yield { type: 'done' }
     } finally {
       // Also when the customer leaves mid-answer: the tokens were used all the same.
       const tokens = answer.inputTokens + answer.outputTokens
       this.visitors.spent(conversation.visitor, tokens, argentineDay(new Date()), Date.now())
-      await this.record(conversation.id, answer)
+      await this.record(conversation.id, {
+        ...answer,
+        outcome,
+        durationMs: Date.now() - startedAt,
+        ...answerTrace(traces),
+      })
       this.answering.delete(conversation.id)
     }
   }
 
-  private async record(conversationId: number, answer: RecordedTurn): Promise<void> {
+  /** Every answer is recorded, also one that failed or was cut before writing anything: staff review those. */
+  private async record(conversationId: number, answer: Omit<RecordedAnswer, 'model'>): Promise<void> {
     if (this.dailyUsage) this.dailyUsage.tokens += answer.inputTokens + answer.outputTokens
-    if (!answer.text.trim() && !answer.productIds.length && !answer.inputTokens) return
     try {
       await this.conversations.recordAnswer(conversationId, { ...answer, model: this.model.name })
     } catch (error) {

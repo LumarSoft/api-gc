@@ -1,5 +1,6 @@
 import { Prisma } from '../../generated/prisma/client'
-import { MessageRole, QuestionStatus } from '../../generated/prisma/enums'
+import { AnswerOutcome, MessageRole, QuestionStatus } from '../../generated/prisma/enums'
+import { SLOW_ANSWER_MS } from './answer-trace'
 
 const customerSelect = { select: { id: true, firstName: true, lastName: true, email: true } } as const
 
@@ -19,6 +20,16 @@ export const conversationListSelect = {
     },
   },
 } satisfies Prisma.AssistantConversationSelect
+
+/** Answers staff should look at: they failed, the customer left, took 30 s or more, or a search found nothing. */
+export const problemAnswerWhere = {
+  role: MessageRole.ASSISTANT,
+  OR: [
+    { outcome: { in: [AnswerOutcome.FAILED, AnswerOutcome.INTERRUPTED] } },
+    { durationMs: { gte: SLOW_ANSWER_MS } },
+    { emptySearches: { gt: 0 } },
+  ],
+} satisfies Prisma.AssistantMessageWhereInput
 
 export type ConversationListRow = Prisma.AssistantConversationGetPayload<{ select: typeof conversationListSelect }>
 
@@ -55,10 +66,15 @@ export const conversationDetailSelect = {
       inputTokens: true,
       outputTokens: true,
       recommendedProducts: true,
+      outcome: true,
+      durationMs: true,
+      toolCalls: true,
+      emptySearches: true,
       createdAt: true,
     },
   },
   unansweredQuestions: { where: { deletedAt: null }, orderBy: { id: 'asc' }, select: questionSelect },
+  cartAdds: { orderBy: { id: 'asc' }, select: { id: true, productId: true, variantId: true, createdAt: true } },
 } satisfies Prisma.AssistantConversationSelect
 
 export type ConversationDetailRow = Prisma.AssistantConversationGetPayload<{ select: typeof conversationDetailSelect }>

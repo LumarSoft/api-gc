@@ -19,7 +19,7 @@ import type {
 import { PrismaExceptionFilter } from '../src/common/filters/prisma-exception.filter'
 import { argentineDay } from '../src/common/utils/report-period'
 import { hashToken } from '../src/common/utils/secure-token'
-import { ConversationStatus, MessageRole, UserRole } from '../src/generated/prisma/enums'
+import { AnswerOutcome, ConversationStatus, MessageRole, UserRole } from '../src/generated/prisma/enums'
 import { PrismaService } from '../src/prisma/prisma.service'
 
 describe('Admin assistant (local MySQL e2e)', () => {
@@ -64,7 +64,13 @@ describe('Admin assistant (local MySQL e2e)', () => {
   /** A stored conversation: messages in order, the last answer showing `shown` as cards. */
   async function conversation(
     data: { userId?: number; status?: ConversationStatus; escalationReason?: string; createdAt?: Date },
-    messages: { role: MessageRole; content: string; shown?: number[]; tokens?: [number, number] }[],
+    messages: {
+      role: MessageRole
+      content: string
+      shown?: number[]
+      tokens?: [number, number]
+      trace?: { outcome: AnswerOutcome; durationMs: number; toolCalls?: object[]; emptySearches?: number }
+    }[],
   ): Promise<number> {
     const createdAt = data.createdAt ?? new Date()
     const created = await prisma.assistantConversation.create({
@@ -91,6 +97,10 @@ describe('Admin assistant (local MySQL e2e)', () => {
           inputTokens: message.tokens?.[0] ?? null,
           outputTokens: message.tokens?.[1] ?? null,
           recommendedProducts: message.shown,
+          outcome: message.trace?.outcome,
+          durationMs: message.trace?.durationMs,
+          toolCalls: message.trace?.toolCalls,
+          emptySearches: message.trace?.emptySearches,
           createdAt: new Date(createdAt.getTime() + index * 1000),
         },
       })
@@ -150,14 +160,39 @@ describe('Admin assistant (local MySQL e2e)', () => {
     }
 
     // Two conversations on a past day, either side of Argentine midnight (03:00 UTC).
+    // The second one took 40 s and searched for something the catalog does not have, then sold a product.
     await conversation({ createdAt: new Date(`${pastYear}-03-02T02:30:00Z`) }, [
       { role: MessageRole.USER, content: 'Hola' },
-      { role: MessageRole.ASSISTANT, content: 'Hola, ¿qué buscás?', tokens: [100, 10] },
+      {
+        role: MessageRole.ASSISTANT,
+        content: 'Hola, ¿qué buscás?',
+        tokens: [100, 10],
+        trace: { outcome: AnswerOutcome.ANSWERED, durationMs: 2000 },
+      },
     ])
-    await conversation({ createdAt: new Date(`${pastYear}-03-02T03:30:00Z`) }, [
+    const slow = await conversation({ createdAt: new Date(`${pastYear}-03-02T03:30:00Z`) }, [
       { role: MessageRole.USER, content: 'Tintas' },
-      { role: MessageRole.ASSISTANT, content: 'Estas son.', tokens: [200, 20] },
+      {
+        role: MessageRole.ASSISTANT,
+        content: 'Estas son.',
+        shown: [productIds[0]],
+        tokens: [200, 20],
+        trace: {
+          outcome: AnswerOutcome.ANSWERED,
+          durationMs: 40_000,
+          toolCalls: [
+            { tool: 'search_products', text: 'Plotter', results: 0, partial: false },
+            { tool: 'search_products', text: 'plot-ter', results: 0, partial: false },
+            { tool: 'search_products', text: 'tinta', results: 3, partial: false },
+            { tool: 'show_products', results: 1, missing: [] },
+          ],
+          emptySearches: 1,
+        },
+      },
     ])
+    await prisma.assistantCartAdd.create({
+      data: { conversationId: slow, productId: productIds[0], createdAt: new Date(`${pastYear}-03-02T04:00:00Z`) },
+    })
   })
 
   afterAll(async () => {
@@ -165,6 +200,7 @@ describe('Admin assistant (local MySQL e2e)', () => {
       const now = new Date()
       // The past-day fixtures would add up on every run: messages are append-only, so they are removed for real.
       await prisma.unansweredQuestion.deleteMany({ where: { id: { in: questionIds } } })
+      await prisma.assistantCartAdd.deleteMany({ where: { conversationId: { in: conversationIds } } })
       await prisma.assistantMessage.deleteMany({ where: { conversationId: { in: conversationIds } } })
       await prisma.assistantConversation.deleteMany({ where: { id: { in: conversationIds } } })
       await prisma.product.updateMany({ where: { id: { in: productIds } }, data: { deletedAt: now } })
@@ -221,6 +257,12 @@ describe('Admin assistant (local MySQL e2e)', () => {
     expect(await ids(`q=${word}&from=${today}&to=${today}`)).toHaveLength(2)
     expect(await ids(`from=${pastYear}-03-01&to=${pastYear}-03-01`)).toEqual([conversationIds[2]])
     expect(await ids(`from=${pastYear}-03-02&to=${pastYear}-03-02`)).toEqual([conversationIds[3]])
+    // Only the one with an answer to look at (slow, and a search that found nothing).
+    expect(await ids(`from=${pastYear}-03-01&to=${pastYear}-03-03&problems=true`)).toEqual([conversationIds[3]])
+    const [item] = (
+      await get<AdminConversationsPageDto>(`/admin/assistant/conversations?from=${pastYear}-03-02&to=${pastYear}-03-02`)
+    ).items
+    expect(item).toMatchObject({ problemAnswers: 1, cartAdds: 1 })
     await get(`/admin/assistant/conversations?from=${today}`, 400)
     await get('/admin/assistant/conversations?status=LOST', 400)
   })
@@ -241,6 +283,21 @@ describe('Admin assistant (local MySQL e2e)', () => {
     const escalated = await get<AdminConversationDto>(`/admin/assistant/conversations/${conversationIds[1]}`)
     expect(escalated).toMatchObject({ status: 'ESCALATED', inputTokens: 1100, outputTokens: 110 })
     expect(escalated.questions.map(question => question.id)).toEqual(questionIds)
+    const slow = await get<AdminConversationDto>(`/admin/assistant/conversations/${conversationIds[3]}`)
+    expect(slow.messages[1]).toMatchObject({
+      outcome: 'ANSWERED',
+      durationMs: 40_000,
+      problems: ['SLOW', 'EMPTY_SEARCH'],
+      tools: [
+        { tool: 'search_products', text: 'Plotter', results: 0 },
+        { tool: 'search_products', text: 'plot-ter', results: 0 },
+        { tool: 'search_products', text: 'tinta', results: 3 },
+        { tool: 'show_products', results: 1 },
+      ],
+    })
+    expect(slow.messages[0]).toMatchObject({ outcome: null, durationMs: null, tools: [], problems: [] })
+    expect(slow.cartAdds.map(add => [add.product.id, add.variantId])).toEqual([[productIds[0], null]])
+    expect(detail.cartAdds).toEqual([])
     await get('/admin/assistant/conversations/999999999', 404)
     await get('/admin/assistant/conversations/2147483648', 400)
     await get('/admin/assistant/conversations/abc', 400)
@@ -295,15 +352,55 @@ describe('Admin assistant (local MySQL e2e)', () => {
   it('adds up conversations and tokens per Argentine day, the month and today against the limit', async () => {
     const usage = await get<AssistantUsageDto>(`/admin/assistant/usage?from=${pastYear}-03-01&to=${pastYear}-03-03`)
     expect(usage.period).toEqual({ from: `${pastYear}-03-01`, to: `${pastYear}-03-03` })
+    const none = { answers: 0, problemAnswers: 0, cartAdds: 0, cartConversations: 0 }
     expect(usage.days).toEqual([
-      { day: `${pastYear}-03-01`, conversations: 1, customerMessages: 1, inputTokens: 100, outputTokens: 10 },
-      { day: `${pastYear}-03-02`, conversations: 1, customerMessages: 1, inputTokens: 200, outputTokens: 20 },
-      { day: `${pastYear}-03-03`, conversations: 0, customerMessages: 0, inputTokens: 0, outputTokens: 0 },
+      {
+        day: `${pastYear}-03-01`,
+        conversations: 1,
+        customerMessages: 1,
+        inputTokens: 100,
+        outputTokens: 10,
+        ...none,
+        answers: 1,
+      },
+      {
+        day: `${pastYear}-03-02`,
+        conversations: 1,
+        customerMessages: 1,
+        inputTokens: 200,
+        outputTokens: 20,
+        answers: 1,
+        problemAnswers: 1,
+        cartAdds: 1,
+        cartConversations: 1,
+      },
+      { day: `${pastYear}-03-03`, conversations: 0, customerMessages: 0, inputTokens: 0, outputTokens: 0, ...none },
     ])
-    expect(usage.totals).toEqual({ conversations: 2, customerMessages: 2, inputTokens: 300, outputTokens: 30 })
+    expect(usage.totals).toEqual({
+      conversations: 2,
+      customerMessages: 2,
+      inputTokens: 300,
+      outputTokens: 30,
+      answers: 2,
+      problemAnswers: 1,
+      cartAdds: 1,
+      cartConversations: 1,
+    })
+    expect(usage.emptySearches).toEqual([
+      // "Plotter" and "plot-ter" are the same search.
+      { text: 'plot-ter', searches: 2, conversations: 1, lastConversationId: conversationIds[3] },
+    ])
     // The window itself starts and ends at Argentine midnight: 23:30 of the 1st counts, 00:30 of the 2nd does not.
     const oneDay = await get<AssistantUsageDto>(`/admin/assistant/usage?from=${pastYear}-03-01&to=${pastYear}-03-01`)
-    expect(oneDay.totals).toEqual({ conversations: 1, customerMessages: 1, inputTokens: 100, outputTokens: 10 })
+    expect(oneDay.totals).toEqual({
+      conversations: 1,
+      customerMessages: 1,
+      inputTokens: 100,
+      outputTokens: 10,
+      ...none,
+      answers: 1,
+    })
+    expect(oneDay.emptySearches).toEqual([])
 
     const today = argentineDay(new Date())
     const recent = await get<AssistantUsageDto>('/admin/assistant/usage')
