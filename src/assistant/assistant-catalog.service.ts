@@ -8,12 +8,15 @@ import { compareByPrice } from '../products/lib/product-rules'
 import { ProductsService } from '../products/products.service'
 import type { AssistantProductCardDto } from './dto/assistant-stream.dto'
 import type { SearchArguments } from './lib/assistant-tools'
-import { productLine, productSheet, searchWords, withinBudget } from './lib/catalog-search-rules'
+import { productLine, productSheet, withinBudget } from './lib/catalog-search-rules'
 
 /** Results the model reads per search: enough to compare, short enough to keep the call cheap. */
 const SEARCH_RESULTS = 8
-/** Candidates priced per search, before the budget and offer filters. */
-const SEARCH_CANDIDATES = 60
+/**
+ * Best matches priced per search, before the budget, offer and price-order filters: all of them in a catalog this
+ * size, so "la más barata" is the cheapest of every match.
+ */
+const SEARCH_CANDIDATES = 200
 
 export interface SearchResult {
   total: number
@@ -34,22 +37,21 @@ export class AssistantCatalogService {
   ) {}
 
   async search(search: SearchArguments, user: AuthenticatedUser | undefined): Promise<SearchResult> {
-    const filters = await this.filters(search)
-    const words = search.text ? searchWords(search.text) : []
-    let partialMatch = false
-    let ids = await this.candidateIds([...filters, ...words.map(word => ({ OR: this.wordMatch(word) }))])
-    // "impresora fotográfica wifi a3": when no product has every word, the ones with some of them still help.
-    if (!ids.length && words.length > 1) {
-      partialMatch = true
-      ids = await this.candidateIds([...filters, { OR: words.flatMap(word => this.wordMatch(word)) }])
-    }
-
-    let items = (await this.products.findSummariesByIds(ids, user)).filter(
+    // "impresora fotográfica wifi a3": when no product has every word, the ones with the most of them still help.
+    const match = await this.products.searchIds(search.text, await this.filters(search), {
+      partial: true,
+      limit: SEARCH_CANDIDATES,
+    })
+    let items = (await this.products.findSummariesByIds(match.ids, user)).filter(
       item => withinBudget(item.price, search.maxPrice) && (!search.onSale || item.badge === 'OFFER'),
     )
     if (search.sort !== 'relevance')
       items = items.sort((a, b) => compareByPrice(a, b, search.sort === 'price-asc' ? 1 : -1))
-    return { total: items.length, partialMatch, products: items.slice(0, SEARCH_RESULTS).map(productLine) }
+    return {
+      total: items.length,
+      partialMatch: !match.complete,
+      products: items.slice(0, SEARCH_RESULTS).map(productLine),
+    }
   }
 
   async sheet(slug: string, user: AuthenticatedUser | undefined): Promise<ReturnType<typeof productSheet> | null> {
@@ -94,16 +96,6 @@ export class AssistantCatalogService {
     return product && (await this.products.isVisible(product.id)) ? product.name : null
   }
 
-  private async candidateIds(filters: Prisma.ProductWhereInput[]): Promise<number[]> {
-    const rows = await this.prisma.product.findMany({
-      where: { AND: [{ status: ProductStatus.PUBLISHED, deletedAt: null }, ...filters] },
-      select: { id: true },
-      orderBy: [{ isFeatured: 'desc' }, { publishedAt: 'desc' }, { id: 'desc' }],
-      take: SEARCH_CANDIDATES,
-    })
-    return rows.map(row => row.id)
-  }
-
   /** Category (with its subcategories) and use filters. Unknown slugs are an error the model can correct. */
   private async filters(search: SearchArguments): Promise<Prisma.ProductWhereInput[]> {
     const filters: Prisma.ProductWhereInput[] = []
@@ -118,20 +110,6 @@ export class AssistantCatalogService {
     }
     if (search.use) filters.push({ tags: { some: { tag: { slug: search.use, deletedAt: null } } } })
     return filters
-  }
-
-  /** A word matches the name, summary, a SKU, the category, the brand or a tag. */
-  private wordMatch(word: string): Prisma.ProductWhereInput[] {
-    // `contains` becomes LIKE: escape % and _ so they are searched literally.
-    const term = word.replace(/[\\%_]/g, '\\$&')
-    return [
-      { name: { contains: term } },
-      { shortDescription: { contains: term } },
-      { variants: { some: { sku: { contains: term }, deletedAt: null } } },
-      { category: { name: { contains: term } } },
-      { brand: { name: { contains: term } } },
-      { tags: { some: { tag: { name: { contains: term }, deletedAt: null } } } },
-    ]
   }
 
   /** The only active variant of each product that has exactly one: the card can add it to the cart directly. */
