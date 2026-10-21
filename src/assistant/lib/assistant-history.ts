@@ -20,3 +20,8 @@ export function chatHistory(messages: StoredMessage[], shown: Map<number, string
     })
     .filter(message => message.text)
 }
+
+/** `AssistantMessage.recommendedProducts` holds product ids, e.g. [12, 48]; anything else reads as none. */
+export function storedProductIds(value: unknown): number[] {
+  return Array.isArray(value) ? value.filter((id): id is number => Number.isInteger(id)) : []
+}

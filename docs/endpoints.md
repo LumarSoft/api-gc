@@ -2653,3 +2653,212 @@ Requests`. `503 Service Unavailable` no `OPENAI_API_KEY`, or the store's daily t
 ```json
 { "statusCode": 503, "message": "El asesor no está disponible en este momento. Probá de nuevo más tarde.", "error": "Service Unavailable" }
 ```
+
+### GET /admin/assistant/conversations
+
+What customers asked the assistant, for the admin "Asesor IA" page. Read-only: staff do not answer from the admin (a
+person takes over by WhatsApp). Most recent activity first.
+
+**Auth required:** Yes (ADMIN).
+
+**Query**
+
+| Field      | Type    | Required | Constraints                                                                                          |
+| ---------- | ------- | -------- | ---------------------------------------------------------------------------------------------------- |
+| `page`     | integer | No       | 1–10000, default 1                                                                                   |
+| `pageSize` | integer | No       | 1–100, default 25                                                                                    |
+| `status`   | string  | No       | `OPEN` \| `ESCALATED` (offered WhatsApp) \| `RESOLVED` \| `CLOSED`                                   |
+| `q`        | string  | No       | Max 100, trimmed: partial match on any message (customer's or assistant's), the customer's name or email; `12` or `#12` also matches that id. `%` and `_` are literal |
+| `from`     | string  | No       | Calendar day `YYYY-MM-DD` (Argentina): conversations **started** from that day. With `to`            |
+| `to`       | string  | No       | Last day included; not after today; at most 366 days in total. Without both: every day               |
+
+**Responses**
+
+`200 OK` — `firstQuestion` is the customer's first message on one line, cut to 200 characters (`null` if none);
+`customer` is `null` for a guest; `openQuestions` counts this conversation's unanswered questions still `OPEN`;
+`tokens` is input + output of the whole conversation.
+
+```json
+{
+  "items": [
+    {
+      "id": 41,
+      "status": "ESCALATED",
+      "firstQuestion": "¿Tienen la L3250 en cuotas?",
+      "customer": { "id": 7, "name": "Ana Pérez", "email": "ana@example.com" },
+      "customerMessages": 3,
+      "openQuestions": 1,
+      "escalationReason": "Pide hablar con una persona",
+      "tokens": 18450,
+      "createdAt": "2026-10-21T14:02:11.000Z",
+      "lastMessageAt": "2026-10-21T14:05:40.000Z"
+    }
+  ],
+  "page": 1,
+  "pageSize": 25,
+  "total": 1,
+  "totalPages": 1
+}
+```
+
+`400 Bad Request` invalid query or period (same messages as `GET /admin/dashboard`, e.g. only one of `from`/`to`).
+`401 Unauthorized`, `403 Forbidden` (customers), `429 Too Many Requests`.
+
+### GET /admin/assistant/conversations/:id
+
+One conversation with every message, oldest first (a conversation takes at most 40 customer messages, so it is not
+paginated), and the questions it could not answer.
+
+**Auth required:** Yes (ADMIN).
+
+**Responses**
+
+`200 OK` — `model`, `inputTokens` and `outputTokens` are set on the assistant's answers (`null` on the customer's
+messages). `products` are the cards an answer showed, in order, as the product is **now**: `archived: true` when it was
+archived since, and `status` its current publication status (the admin page links to the product). Products deleted
+from the database are left out.
+
+```json
+{
+  "id": 41,
+  "status": "ESCALATED",
+  "customer": { "id": 7, "name": "Ana Pérez", "email": "ana@example.com" },
+  "escalatedAt": "2026-10-21T14:05:39.000Z",
+  "escalationReason": "Pide hablar con una persona",
+  "inputTokens": 16800,
+  "outputTokens": 1650,
+  "createdAt": "2026-10-21T14:02:11.000Z",
+  "lastMessageAt": "2026-10-21T14:05:40.000Z",
+  "messages": [
+    {
+      "id": 301,
+      "role": "USER",
+      "content": "¿Tienen la L3250 en cuotas?",
+      "model": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "products": [],
+      "createdAt": "2026-10-21T14:02:11.000Z"
+    },
+    {
+      "id": 302,
+      "role": "ASSISTANT",
+      "content": "Sí, la **L3250** está disponible…",
+      "model": "gpt-6-luna",
+      "inputTokens": 5400,
+      "outputTokens": 520,
+      "products": [
+        {
+          "id": 3,
+          "name": "Impresora Multifuncional Epson EcoTank L3250",
+          "slug": "impresora-multifuncional-epson-ecotank-l3250",
+          "status": "PUBLISHED",
+          "archived": false,
+          "imageUrl": "http://localhost:3001/files/products/l3250.jpg"
+        }
+      ],
+      "createdAt": "2026-10-21T14:02:19.000Z"
+    }
+  ],
+  "questions": [
+    {
+      "id": 9,
+      "question": "¿Cuál es la dirección del local?",
+      "status": "OPEN",
+      "conversationId": 41,
+      "resolvedBy": null,
+      "resolvedAt": null,
+      "createdAt": "2026-10-21T14:05:38.000Z"
+    }
+  ]
+}
+```
+
+`400 Bad Request` invalid id. `404 Not Found`:
+
+```json
+{ "statusCode": 404, "message": "Conversación no encontrada.", "error": "Not Found" }
+```
+
+### GET /admin/assistant/questions
+
+Questions the assistant could not answer (it records them while answering), so staff complete the missing data where
+it belongs (product sheet, catalog, store settings) and mark them answered, or dismiss them. The assistant does not
+read these rows. Newest first.
+
+**Auth required:** Yes (ADMIN). Query `page` (1–10000, default 1), `pageSize` (1–100, default 25), `status` (`OPEN`,
+`ANSWERED`, `DISMISSED`) and `q` (max 100, trimmed: partial match on the question). `400` invalid query.
+
+`200 OK` — `{ items, page, pageSize, total, totalPages }`; each item is a question as in the conversation detail
+above. `resolvedBy`/`resolvedAt` say who marked it answered or dismissed and when (`null` while `OPEN`).
+
+### GET /admin/assistant/questions/counts
+
+How many questions are in each status, for the list views and the admin navigation badge.
+
+**Auth required:** Yes (ADMIN).
+
+`200 OK`
+
+```json
+{ "OPEN": 4, "ANSWERED": 12, "DISMISSED": 3 }
+```
+
+### POST /admin/assistant/questions/status
+
+Marks one question (row action) or a selection answered or dismissed, or opens them again.
+
+**Auth required:** Yes (ADMIN, audited per question as `assistant-question.answer` · `.dismiss` · `.reopen`).
+
+**Request body**
+
+| Field    | Type      | Required | Constraints                                   |
+| -------- | --------- | -------- | --------------------------------------------- |
+| `ids`    | integer[] | Yes      | 1–100 question ids (repeated ids count once)  |
+| `status` | string    | Yes      | `ANSWERED` \| `DISMISSED` \| `OPEN` (reopen)  |
+
+```json
+{ "ids": [9, 10], "status": "DISMISSED" }
+```
+
+**Responses**
+
+`200 OK` — `updated`: questions whose status changed (answered/dismissed ones record the admin and the time; reopened
+ones clear them); `unchanged`: already in that status.
+
+```json
+{ "updated": [9], "unchanged": [10] }
+```
+
+`400 Bad Request` invalid body. `404 Not Found` any id that does not exist (nothing is changed):
+
+```json
+{ "statusCode": 404, "message": "Pregunta no encontrada.", "error": "Not Found" }
+```
+
+### GET /admin/assistant/usage
+
+What the assistant consumes, to keep it within the monthly allowance: conversations started, customer messages and
+tokens per Argentine calendar day. Tokens count every answer, also those of conversations removed later.
+
+**Auth required:** Yes (ADMIN). Query `from`/`to` as in `GET /admin/analytics` (by default the last 30 days, today
+included). `400` for the same period errors.
+
+**Responses**
+
+`200 OK` — `days` has one row per day of the period, oldest first (zeros on days without activity), and `totals` adds
+them up. `month` is the current calendar month up to now, whatever the period. `today.tokens` is what counts against
+`today.dailyLimit` (`ASSISTANT_DAILY_TOKEN_LIMIT`): past it the assistant pauses until midnight.
+
+```json
+{
+  "period": { "from": "2026-09-22", "to": "2026-10-21" },
+  "days": [
+    { "day": "2026-09-22", "conversations": 0, "customerMessages": 0, "inputTokens": 0, "outputTokens": 0 },
+    { "day": "2026-10-21", "conversations": 12, "customerMessages": 41, "inputTokens": 210400, "outputTokens": 18950 }
+  ],
+  "totals": { "conversations": 12, "customerMessages": 41, "inputTokens": 210400, "outputTokens": 18950 },
+  "month": { "from": "2026-10-01", "conversations": 12, "customerMessages": 41, "inputTokens": 210400, "outputTokens": 18950 },
+  "today": { "tokens": 229350, "dailyLimit": 5000000 }
+}
+```
