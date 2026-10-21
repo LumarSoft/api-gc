@@ -130,6 +130,7 @@ describe('Favorites and offers (local MySQL e2e)', () => {
 
   it('rejects unknown or unpublished products and hides favorites that stop being visible', async () => {
     await request(server()).put('/favorites/999999999').set('Cookie', customerCookie).expect(404)
+    await request(server()).put('/favorites/99999999999999999999').set('Cookie', customerCookie).expect(400)
     await request(server()).put('/favorites/abc').set('Cookie', customerCookie).expect(400)
     await prisma.product.update({ where: { id: offerId }, data: { status: 'DRAFT' } })
     await request(server()).put(`/favorites/${offerId}`).set('Cookie', customerCookie).expect(404)

@@ -8,10 +8,12 @@ import {
   IsOptional,
   IsString,
   Matches,
+  Max,
   MaxLength,
   Min,
   ValidateNested,
 } from 'class-validator'
+import { MAX_INT_ID } from '../../common/constants/database'
 import { DeliveryMethod } from '../../generated/prisma/enums'
 
 const trim = ({ value }: { value: unknown }): unknown => (typeof value === 'string' ? value.trim() : value)
@@ -118,5 +120,6 @@ export class PreviewCheckoutDto {
   @IsOptional()
   @IsInt()
   @Min(1)
+  @Max(MAX_INT_ID)
   shippingQuoteId?: number
 }

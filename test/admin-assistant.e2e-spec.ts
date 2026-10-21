@@ -242,6 +242,7 @@ describe('Admin assistant (local MySQL e2e)', () => {
     expect(escalated).toMatchObject({ status: 'ESCALATED', inputTokens: 1100, outputTokens: 110 })
     expect(escalated.questions.map(question => question.id)).toEqual(questionIds)
     await get('/admin/assistant/conversations/999999999', 404)
+    await get('/admin/assistant/conversations/2147483648', 400)
     await get('/admin/assistant/conversations/abc', 400)
   })
 

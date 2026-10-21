@@ -1,4 +1,5 @@
-import { IsBoolean, IsInt, IsOptional, IsString, Matches, MaxLength, Min, MinLength } from 'class-validator'
+import { IsBoolean, IsInt, IsOptional, IsString, Matches, Max, MaxLength, Min, MinLength } from 'class-validator'
+import { MAX_INT_ID } from '../../common/constants/database'
 import { SLUG_PATTERN } from '../../common/utils/slug'
 
 export class CreateBrandDto {
@@ -18,6 +19,7 @@ export class CreateBrandDto {
   @IsOptional()
   @IsInt()
   @Min(1)
+  @Max(MAX_INT_ID)
   logoFileId?: number | null
 
   @IsOptional()
