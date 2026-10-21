@@ -37,6 +37,8 @@ export interface TurnRequest<D> {
 
 export type TurnEvent<D> =
   | { type: 'text'; delta: string }
+  /** The model decided to call a tool, before it runs: the customer can be told what is happening. */
+  | { type: 'tool'; name: string; args: unknown }
   | { type: 'display'; display: D }
   /** After every model call, so an interrupted turn still counts what it used. */
   | { type: 'usage'; inputTokens: number; outputTokens: number }

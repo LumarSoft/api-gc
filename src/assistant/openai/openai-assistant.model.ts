@@ -110,6 +110,9 @@ export class OpenAiAssistantModel implements AssistantModel {
             yield { type: 'text', delta: '\n\n' }
           }
           yield { type: 'text', delta: event.delta }
+        } else if (event.type === 'response.output_item.done' && event.item.type === 'function_call') {
+          // As soon as each call is decided, not when the whole step ends: the wait that follows is what to explain.
+          yield { type: 'tool', name: event.item.name, args: parseArguments(event.item.arguments) }
         } else if (event.type === 'response.completed' || event.type === 'response.incomplete') {
           // Incomplete = the output token cap was reached: keep what was written.
           finished = event.response

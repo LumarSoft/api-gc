@@ -2622,6 +2622,7 @@ user). Expired session → `401` (refresh and retry, like the catalog). Rate lim
 | `type`         | Fields                       | Meaning                                                                         |
 | -------------- | ---------------------------- | ------------------------------------------------------------------------------- |
 | `conversation` | `token`                      | Only for a new conversation, first line                                         |
+| `status`       | `text`                       | Shown while it works ("Buscando tintas…"); the next one or the text replaces it |
 | `text`         | `delta`                      | Next piece of the answer (plain text with `**bold**`, `- ` lists, `[t](/path)`) |
 | `products`     | `items`                      | Product cards to show at this point of the answer                               |
 | `handoff`      | `url`                        | WhatsApp link with the customer's message written (`ASSISTANT_WHATSAPP_NUMBER`) |
@@ -2633,6 +2634,7 @@ to add to the cart directly, or `null` when the product has options to choose on
 
 ```
 {"type":"conversation","token":"Qm9…"}
+{"type":"status","text":"Buscando impresoras para fotos…"}
 {"type":"text","delta":"Para fotos te conviene una EcoTank de seis colores. "}
 {"type":"products","items":[{"id":9,"slug":"impresora-multifuncional-epson-ecotank-l8180","name":"Impresora Multifuncional Epson EcoTank L8180","price":{"amount":"1399999.00","currency":"ARS"},"variantId":9,"…":"…"}]}
 {"type":"text","delta":"La **L8180** imprime hasta A3+…"}

@@ -18,6 +18,7 @@ import { AssistantToolsService } from './assistant-tools.service'
 import type { AssistantStreamEvent } from './dto/assistant-stream.dto'
 import type { SendAssistantMessageDto } from './dto/send-assistant-message.dto'
 import { chatHistory } from './lib/assistant-history'
+import { toolStatus } from './lib/tool-status'
 import { assistantLimits, conversationLimitProblem, MAX_TURN_STEPS, type AssistantLimits } from './lib/assistant-limits'
 
 const UNAVAILABLE = 'El asesor no está disponible en este momento. Probá de nuevo más tarde.'
@@ -101,6 +102,11 @@ export class AssistantService {
           if (event.type === 'usage') {
             answer.inputTokens += event.inputTokens
             answer.outputTokens += event.outputTokens
+            continue
+          }
+          if (event.type === 'tool') {
+            const text = toolStatus(event.name, event.args)
+            if (text) yield { type: 'status', text }
             continue
           }
           if (event.type === 'text') answer.text += event.delta

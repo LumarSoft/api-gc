@@ -38,7 +38,9 @@ class FakeModel implements AssistantModel {
     if (this.fail) throw new AssistantModelError('down')
     if (this.delay) await new Promise(resolve => setTimeout(resolve, this.delay))
     const question = request.history[request.history.length - 1].text
-    const found = (await request.runTool('search_products', { text: question, sort: 'price-asc' })).output as {
+    const search = { status: 'Buscando lo que pediste', text: question, sort: 'price-asc' }
+    yield { type: 'tool', name: 'search_products', args: search }
+    const found = (await request.runTool('search_products', search)).output as {
       products: { slug: string }[]
     }
     yield { type: 'usage', inputTokens: 100, outputTokens: 10 }
@@ -152,7 +154,8 @@ describe('Assistant (local MySQL e2e)', () => {
 
   it('streams the answer with cards of published products, priced for the buyer, and records it', async () => {
     const events = await ask({ message: `  Busco una ${word}  ` })
-    expect(events.map(event => event.type)).toEqual(['conversation', 'text', 'text', 'products', 'done'])
+    expect(events.map(event => event.type)).toEqual(['conversation', 'status', 'text', 'text', 'products', 'done'])
+    expect(events[1]).toEqual({ type: 'status', text: 'Buscando lo que pediste…' })
     const cards = events.find(event => event.type === 'products')
     expect(cards?.type === 'products' && cards.items.map(item => [item.name, item.price?.amount])).toEqual([
       [`Barata ${word}`, '100.00'],
