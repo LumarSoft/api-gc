@@ -5,6 +5,7 @@ describe('product search rules', () => {
     expect(searchWords('Quiero una impresora para la oficina')).toEqual(['impresora', 'oficina'])
     expect(searchWords('impresoras fotográficas')).toEqual(['impresora', 'fotográfica'])
     expect(searchWords('escáneres y papeles')).toEqual(['escáner', 'papel'])
+    expect(searchWords('la más barata con wifi')).toEqual(['wifi'])
   })
 
   it('keeps model codes and SKUs whole, joining a code typed apart', () => {
@@ -12,7 +13,7 @@ describe('product search rules', () => {
     expect(searchWords('tinta T544 cyan')).toEqual(['tinta', 't544', 'cyan'])
     expect(searchWords('TM-T20IV-SP')).toEqual(['tm-t20iv-sp'])
     expect(searchWords('la L 3250 o la ES 400')).toEqual(['l3250', 'es400'])
-    expect(searchWords('menos de 300 mil')).toEqual(['meno', '300', 'mil'])
+    expect(searchWords('menos de 300 mil')).toEqual(['300', 'mil'])
     expect(searchWords('es 400 mil')).toEqual(['400', 'mil'])
   })
 

@@ -1,7 +1,11 @@
-/** Words that say nothing about the product ("una impresora para la oficina" → "impresora", "oficina"). */
+/**
+ * Words that say nothing about the product ("una impresora para la oficina" → "impresora", "oficina"), including how
+ * good or cheap it should be ("la más barata"): no product is named that way, and price has its own sort.
+ */
 const STOP_WORDS = new Set([
   ...'a al algo alguna alguno busco con como cual de del el en es esa ese esta este la las lo los'.split(' '),
   ...'me mi mis necesito o para por que quiero se su sus tiene un una uno unos unas y'.split(' '),
+  ...'más mas menos muy mejor buena bueno barata barato económica económico'.split(' '),
 ])
 /** Searched words are few: more would only narrow the results to nothing. */
 const MAX_WORDS = 5
