@@ -2686,6 +2686,37 @@ Requests` more than 10 messages in a minute, or the visitor's own daily or hourl
 }
 ```
 
+### POST /assistant/cart-adds
+
+The customer added a product to the cart from one of the chat's cards (the cart itself is changed by `POST /cart/items`
+as usual): it records what the assistant sold, for the admin's metrics. The browser sends it after the cart accepted
+the product. Only products the conversation showed as cards count.
+
+**Auth required:** No. Rate limit: 30 requests/min per IP.
+
+**Request body**
+
+| Field          | Type    | Required | Constraints                                                        |
+| -------------- | ------- | -------- | ------------------------------------------------------------------ |
+| `conversation` | string  | Yes      | The token `POST /assistant/messages` returned (64 characters)      |
+| `productId`    | integer | Yes      | 1–2147483647. A product the conversation showed as a card          |
+| `variantId`    | integer | No       | 1–2147483647. The variant the card added (`variantId` of the card) |
+
+```json
+{ "conversation": "Qm9…", "productId": 3, "variantId": 3 }
+```
+
+**Responses**
+
+`204 No Content` recorded. `400 Bad Request` invalid body. `404 Not Found` unknown conversation token.
+`422 Unprocessable Entity` the conversation did not show that product, or the variant is not that product's:
+
+```json
+{ "statusCode": 422, "message": "Ese producto no se mostró en esta conversación.", "error": "Unprocessable Entity" }
+```
+
+`429 Too Many Requests`.
+
 ### GET /admin/assistant/conversations
 
 What customers asked the assistant, for the admin "Asesor IA" page. Read-only: staff do not answer from the admin (a
@@ -2700,6 +2731,7 @@ person takes over by WhatsApp). Most recent activity first.
 | `page`     | integer | No       | 1–10000, default 1                                                                                                                                                    |
 | `pageSize` | integer | No       | 1–100, default 25                                                                                                                                                     |
 | `status`   | string  | No       | `OPEN` \| `ESCALATED` (offered WhatsApp) \| `RESOLVED` \| `CLOSED`                                                                                                    |
+| `problems` | boolean | No       | `true`: only conversations with an answer to look at (see "Answers to look at" below)                                                                                 |
 | `q`        | string  | No       | Max 100, trimmed: partial match on any message (customer's or assistant's), the customer's name or email; `12` or `#12` also matches that id. `%` and `_` are literal |
 | `from`     | string  | No       | Calendar day `YYYY-MM-DD` (Argentina): conversations **started** from that day. With `to`                                                                             |
 | `to`       | string  | No       | Last day included; not after today; at most 366 days in total. Without both: every day                                                                                |
@@ -2708,7 +2740,12 @@ person takes over by WhatsApp). Most recent activity first.
 
 `200 OK` — `firstQuestion` is the customer's first message on one line, cut to 200 characters (`null` if none);
 `customer` is `null` for a guest; `openQuestions` counts this conversation's unanswered questions still `OPEN`;
-`tokens` is input + output of the whole conversation.
+`tokens` is input + output of the whole conversation; `problemAnswers` counts its answers to look at and `cartAdds`
+the products added to the cart from its cards.
+
+**Answers to look at** (`problems`, `problemAnswers`, `problemAnswers` of the usage): answers recorded from 2026-10-21
+that failed (`FAILED`: the customer saw an error), were cut because the customer left (`INTERRUPTED`), took 30 s or
+more, or made a product search that found nothing.
 
 ```json
 {
@@ -2722,6 +2759,8 @@ person takes over by WhatsApp). Most recent activity first.
       "openQuestions": 1,
       "escalationReason": "Pide hablar con una persona",
       "tokens": 18450,
+      "problemAnswers": 1,
+      "cartAdds": 0,
       "createdAt": "2026-10-21T14:02:11.000Z",
       "lastMessageAt": "2026-10-21T14:05:40.000Z"
     }
@@ -2750,6 +2789,14 @@ messages). `products` are the cards an answer showed, in order, as the product i
 archived since, and `status` its current publication status (the admin page links to the product). Products deleted
 from the database are left out.
 
+Answers recorded from 2026-10-21 also say how they went (`null`/empty before, and on the customer's messages):
+`outcome` (`ANSWERED`, `FAILED`, `INTERRUPTED`), `durationMs`, `problems` (`FAILED`, `INTERRUPTED`, `SLOW`,
+`EMPTY_SEARCH`) and `tools`, the tools the model used in order. Each one has `tool` and only its own fields:
+`search_products` → `text`, `category`, `use`, `maxPrice`, `sort`, `results` (products found) and `partial` (no product
+had every word); `get_product` → `slug`; `show_products` → `results` (cards shown) and `missing` (slugs not published);
+any of them → `error: true` when it answered with an error. `cartAdds` are the products added to the cart from the
+conversation's cards, oldest first (`variantId` `null` when the card did not add one directly).
+
 ```json
 {
   "id": 41,
@@ -2770,6 +2817,10 @@ from the database are left out.
       "inputTokens": null,
       "outputTokens": null,
       "products": [],
+      "outcome": null,
+      "durationMs": null,
+      "tools": [],
+      "problems": [],
       "createdAt": "2026-10-21T14:02:11.000Z"
     },
     {
@@ -2789,6 +2840,22 @@ from the database are left out.
           "imageUrl": "http://localhost:3001/files/products/l3250.jpg"
         }
       ],
+      "outcome": "ANSWERED",
+      "durationMs": 8240,
+      "tools": [
+        {
+          "tool": "search_products",
+          "text": "L3250",
+          "category": null,
+          "use": null,
+          "maxPrice": null,
+          "sort": "relevance",
+          "results": 1,
+          "partial": false
+        },
+        { "tool": "show_products", "results": 1, "missing": [] }
+      ],
+      "problems": [],
       "createdAt": "2026-10-21T14:02:19.000Z"
     }
   ],
@@ -2801,6 +2868,20 @@ from the database are left out.
       "resolvedBy": null,
       "resolvedAt": null,
       "createdAt": "2026-10-21T14:05:38.000Z"
+    }
+  ],
+  "cartAdds": [
+    {
+      "product": {
+        "id": 3,
+        "name": "Impresora Multifuncional Epson EcoTank L3250",
+        "slug": "impresora-multifuncional-epson-ecotank-l3250",
+        "status": "PUBLISHED",
+        "archived": false,
+        "imageUrl": "http://localhost:3001/files/products/l3250.jpg"
+      },
+      "variantId": 3,
+      "createdAt": "2026-10-21T14:03:02.000Z"
     }
   ]
 }
@@ -2870,8 +2951,9 @@ ones clear them); `unchanged`: already in that status.
 
 ### GET /admin/assistant/usage
 
-What the assistant consumes, to keep it within the monthly allowance: conversations started, customer messages and
-tokens per Argentine calendar day. Tokens count every answer, also those of conversations removed later.
+What the assistant consumes and how it does: conversations started, customer messages and tokens per Argentine calendar
+day (for the monthly allowance), its answers to look at, the products added to the cart from its cards and the
+searches that found nothing. Tokens count every answer, also those of conversations removed later.
 
 **Auth required:** Yes (ADMIN). Query `from`/`to` as in `GET /admin/analytics` (by default the last 30 days, today
 included). `400` for the same period errors.
@@ -2880,23 +2962,62 @@ included). `400` for the same period errors.
 
 `200 OK` — `days` has one row per day of the period, oldest first (zeros on days without activity), and `totals` adds
 them up. `month` is the current calendar month up to now, whatever the period. `today.tokens` is what counts against
-`today.dailyLimit` (`ASSISTANT_DAILY_TOKEN_LIMIT`): past it the assistant pauses until midnight.
+`today.dailyLimit` (`ASSISTANT_DAILY_TOKEN_LIMIT`): past it the assistant pauses until midnight. `answers` counts the
+answers recorded with their outcome (from 2026-10-21) and `problemAnswers` the ones to look at (see the conversations
+list). `cartAdds` counts products added to the cart from the assistant's cards and `cartConversations` the
+conversations they came from (in `totals` and `month`, each conversation once). `emptySearches` lists the period's
+product searches that found nothing, by text (case aside), most repeated first, at most 20, with the latest
+conversation that made it.
 
 ```json
 {
   "period": { "from": "2026-09-22", "to": "2026-10-21" },
   "days": [
-    { "day": "2026-09-22", "conversations": 0, "customerMessages": 0, "inputTokens": 0, "outputTokens": 0 },
-    { "day": "2026-10-21", "conversations": 12, "customerMessages": 41, "inputTokens": 210400, "outputTokens": 18950 }
+    {
+      "day": "2026-09-22",
+      "conversations": 0,
+      "customerMessages": 0,
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "answers": 0,
+      "problemAnswers": 0,
+      "cartAdds": 0,
+      "cartConversations": 0
+    },
+    {
+      "day": "2026-10-21",
+      "conversations": 12,
+      "customerMessages": 41,
+      "inputTokens": 210400,
+      "outputTokens": 18950,
+      "answers": 41,
+      "problemAnswers": 3,
+      "cartAdds": 5,
+      "cartConversations": 4
+    }
   ],
-  "totals": { "conversations": 12, "customerMessages": 41, "inputTokens": 210400, "outputTokens": 18950 },
+  "totals": {
+    "conversations": 12,
+    "customerMessages": 41,
+    "inputTokens": 210400,
+    "outputTokens": 18950,
+    "answers": 41,
+    "problemAnswers": 3,
+    "cartAdds": 5,
+    "cartConversations": 4
+  },
   "month": {
     "from": "2026-10-01",
     "conversations": 12,
     "customerMessages": 41,
     "inputTokens": 210400,
-    "outputTokens": 18950
+    "outputTokens": 18950,
+    "answers": 41,
+    "problemAnswers": 3,
+    "cartAdds": 5,
+    "cartConversations": 4
   },
-  "today": { "tokens": 229350, "dailyLimit": 5000000 }
+  "today": { "tokens": 229350, "dailyLimit": 5000000 },
+  "emptySearches": [{ "text": "plotter a1", "searches": 3, "conversations": 2, "lastConversationId": 57 }]
 }
 ```

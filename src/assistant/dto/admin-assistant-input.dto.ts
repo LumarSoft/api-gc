@@ -3,6 +3,7 @@ import {
   ArrayMaxSize,
   ArrayMinSize,
   IsArray,
+  IsBoolean,
   IsEnum,
   IsInt,
   IsOptional,
@@ -40,6 +41,12 @@ export class ListAssistantConversationsDto extends DateRangeQueryDto {
   @IsOptional()
   @IsEnum(ConversationStatus)
   status?: ConversationStatus
+
+  /** Only conversations with an answer to look at: failed, cut, slow or with searches that found nothing. */
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) => value === 'true' || value === true)
+  @IsBoolean()
+  problems?: boolean
 
   /** Partial match on any message of the conversation and the customer's name or email; "#12" or "12" also its id. */
   @IsOptional()

@@ -175,7 +175,40 @@ describe('Assistant (local MySQL e2e)', () => {
     expect(conversation.messages[1]).toMatchObject({
       model: 'fake-model',
       recommendedProducts: [productIds[1], productIds[0]],
+      outcome: 'ANSWERED',
+      emptySearches: 0,
+      toolCalls: [
+        { tool: 'search_products', text: `Busco una ${word}`, sort: 'price-asc', results: 2, partial: false },
+        { tool: 'show_products', results: 2, missing: [] },
+      ],
     })
+    expect(conversation.messages[1].durationMs).toEqual(expect.any(Number))
+  })
+
+  it('records the products added to the cart from its cards, only the ones it showed', async () => {
+    const events = await ask({ message: word })
+    const token = events[0].type === 'conversation' ? events[0].token : ''
+    const cards = events.find(event => event.type === 'products')
+    const card = cards?.type === 'products' ? cards.items[0] : null
+    const add = (body: object, status: number): request.Test =>
+      request(server()).post('/assistant/cart-adds').set('X-Forwarded-For', ip).send(body).expect(status)
+    await add({ conversation: token, productId: card?.id, variantId: card?.variantId }, 204)
+    await add({ conversation: token, productId: card?.id }, 204)
+    const rows = await prisma.assistantCartAdd.findMany({
+      where: { conversationId: conversationIds[conversationIds.length - 1] },
+      orderBy: { id: 'asc' },
+    })
+    expect(rows.map(row => [row.productId, row.variantId])).toEqual([
+      [card?.id, card?.variantId],
+      [card?.id, null],
+    ])
+    // The draft was never shown; the other card's variant is not this product's.
+    await add({ conversation: token, productId: productIds[2] }, 422)
+    const other = await prisma.productVariant.findFirstOrThrow({ where: { productId: productIds[0] } })
+    if (card?.id !== productIds[0]) await add({ conversation: token, productId: card?.id, variantId: other.id }, 422)
+    await add({ conversation: 'x'.repeat(64), productId: card?.id }, 404)
+    await add({ conversation: token, productId: 'uno' }, 400)
+    await add({ conversation: 'corto', productId: card?.id }, 400)
   })
 
   it('continues a conversation only with its token, remembering the cards it showed', async () => {
@@ -218,6 +251,11 @@ describe('Assistant (local MySQL e2e)', () => {
     const events = await ask({ message: word })
     expect(events.map(event => event.type)).toEqual(['conversation', 'error', 'done'])
     model.fail = false
+    // Recorded all the same, to review in the admin.
+    const failed = await prisma.assistantMessage.findFirstOrThrow({
+      where: { conversationId: conversationIds[conversationIds.length - 1], role: 'ASSISTANT' },
+    })
+    expect(failed).toMatchObject({ outcome: 'FAILED', content: '' })
 
     model.configured = false
     await ask({ message: word }, 503)

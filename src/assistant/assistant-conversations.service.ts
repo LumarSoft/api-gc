@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common'
 import { argentineDay, argentineMidnight } from '../common/utils/report-period'
 import type { AuthenticatedUser } from '../common/types/authenticated-user'
 import { generateSecureToken, hashToken } from '../common/utils/secure-token'
-import { ConversationStatus, MessageRole } from '../generated/prisma/enums'
+import { AnswerOutcome, ConversationStatus, MessageRole } from '../generated/prisma/enums'
 import { PrismaService } from '../prisma/prisma.service'
+import type { ToolTrace } from './lib/answer-trace'
 import { HISTORY_MESSAGES } from './lib/assistant-limits'
 import { storedProductIds, type StoredMessage } from './lib/assistant-history'
 
@@ -21,6 +22,10 @@ export interface RecordedAnswer {
   inputTokens: number
   outputTokens: number
   productIds: number[]
+  outcome: AnswerOutcome
+  durationMs: number
+  toolCalls: ToolTrace[]
+  emptySearches: number
 }
 
 /** Conversations and their messages. A conversation is reached only with its token, whose hash is stored. */
@@ -82,6 +87,10 @@ export class AssistantConversationsService {
           inputTokens: answer.inputTokens,
           outputTokens: answer.outputTokens,
           recommendedProducts: answer.productIds.length ? answer.productIds : undefined,
+          outcome: answer.outcome,
+          durationMs: answer.durationMs,
+          toolCalls: answer.toolCalls.length ? answer.toolCalls : undefined,
+          emptySearches: answer.emptySearches,
         },
       }),
       this.prisma.assistantConversation.update({
@@ -93,6 +102,32 @@ export class AssistantConversationsService {
         },
       }),
     ])
+  }
+
+  /**
+   * A product added to the cart from a card of the conversation of `token`. Only products the conversation showed
+   * count, so the numbers say what the assistant sold and nothing else.
+   */
+  async recordCartAdd(token: string, productId: number, variantId: number | undefined): Promise<void> {
+    const conversation = await this.prisma.assistantConversation.findFirst({
+      where: { sessionId: hashToken(token), deletedAt: null },
+      select: {
+        id: true,
+        messages: { where: { role: MessageRole.ASSISTANT }, select: { recommendedProducts: true } },
+      },
+    })
+    if (!conversation) throw new NotFoundException('La conversación ya no está disponible.')
+    const shown = conversation.messages.some(message =>
+      storedProductIds(message.recommendedProducts).includes(productId),
+    )
+    if (!shown) throw new UnprocessableEntityException('Ese producto no se mostró en esta conversación.')
+    const variant = variantId
+      ? await this.prisma.productVariant.findFirst({ where: { id: variantId, productId }, select: { id: true } })
+      : null
+    if (variantId && !variant) throw new UnprocessableEntityException('Esa variante no es de ese producto.')
+    await this.prisma.assistantCartAdd.create({
+      data: { conversationId: conversation.id, productId, variantId: variant?.id ?? null },
+    })
   }
 
   /** The last messages, oldest first, with the products each answer showed as cards. */
