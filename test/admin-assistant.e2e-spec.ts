@@ -286,6 +286,7 @@ describe('Admin assistant (local MySQL e2e)', () => {
 
     await changeStatus([questionIds[0], 999999999], 'DISMISSED').expect(404)
     await changeStatus([], 'DISMISSED').expect(400)
+    await changeStatus([2_147_483_648], 'DISMISSED').expect(400)
     await changeStatus([questionIds[0]], 'CLOSED').expect(400)
     expect((await prisma.unansweredQuestion.findUniqueOrThrow({ where: { id: questionIds[0] } })).status).toBe('OPEN')
   })

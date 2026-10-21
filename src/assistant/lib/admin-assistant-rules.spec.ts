@@ -6,6 +6,7 @@ describe('admin assistant rules', () => {
     expect(excerpt('a'.repeat(250))).toHaveLength(200)
     expect(excerpt('a'.repeat(250)).endsWith('…')).toBe(true)
     expect(excerpt('palabra '.repeat(30), 20)).toBe('palabra palabra pal…')
+    expect(excerpt(`${'a'.repeat(18)}🖨️🖨️`, 20)).toBe(`${'a'.repeat(18)}🖨…`)
   })
 
   it('reads a conversation id typed with or without #', () => {

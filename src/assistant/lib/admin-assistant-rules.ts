@@ -3,10 +3,15 @@ import type { AssistantUsageDayDto, AssistantUsageTotalsDto } from '../dto/admin
 /** Length of the first question shown in the conversation list. */
 export const EXCERPT_LENGTH = 200
 
-/** The text on one line, cut to `length` characters with an ellipsis. */
+/** The text on one line, cut to `length` characters with an ellipsis (never in the middle of an emoji). */
 export function excerpt(text: string, length = EXCERPT_LENGTH): string {
-  const line = text.replace(/\s+/g, ' ').trim()
-  return line.length > length ? `${line.slice(0, length - 1).trimEnd()}…` : line
+  const characters = Array.from(text.replace(/\s+/g, ' ').trim())
+  return characters.length > length
+    ? `${characters
+        .slice(0, length - 1)
+        .join('')
+        .trimEnd()}…`
+    : characters.join('')
 }
 
 /** "#12" or "12": a conversation id typed in the search box. */
