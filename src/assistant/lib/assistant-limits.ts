@@ -12,8 +12,11 @@ export interface AssistantLimits {
 export const MAX_CUSTOMER_MESSAGES = 40
 /** Previous messages the model reads; older ones are left out to keep each call small. */
 export const HISTORY_MESSAGES = 16
-/** Model calls per answer: search, look at a sheet, show cards, answer. */
-export const MAX_TURN_STEPS = 5
+/**
+ * Model calls per answer. A consumable question takes search → sheet → search → sheet, then the cards and the answer:
+ * with fewer steps the last one can only write text and the cards are lost.
+ */
+export const MAX_TURN_STEPS = 6
 
 const DEFAULTS: AssistantLimits = {
   maxOutputTokens: 2_000,
