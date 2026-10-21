@@ -18,6 +18,11 @@ export interface ToolDefinition {
 export interface ToolResult<D> {
   output: unknown
   display?: D
+  /**
+   * The answer is complete once this runs, when the same model call already wrote its text (quick replies under the
+   * question just asked): another call would only repeat it.
+   */
+  endsTurn?: boolean
 }
 
 export interface TurnRequest<D> {

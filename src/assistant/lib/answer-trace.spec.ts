@@ -40,6 +40,18 @@ describe('answer trace', () => {
     })
   })
 
+  it('keeps the quick replies offered', () => {
+    expect(traceTool('offer_replies', { options: ['Hogar', ' Oficina '] }, { shown: ['Hogar', 'Oficina'] })).toEqual({
+      tool: 'offer_replies',
+      options: ['Hogar', 'Oficina'],
+    })
+    expect(traceTool('offer_replies', { options: ['Hogar'] }, { error: 'Pasá de 2 a 4' })).toEqual({
+      tool: 'offer_replies',
+      options: ['Hogar'],
+      error: true,
+    })
+  })
+
   it('counts the cards shown and the slugs that had none', () => {
     expect(traceTool('show_products', { slugs: ['a', 'b'] }, { shown: ['A'], missing: ['b'] })).toEqual({
       tool: 'show_products',

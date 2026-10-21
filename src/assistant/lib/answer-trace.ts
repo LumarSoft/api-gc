@@ -1,4 +1,4 @@
-import { productSlugArgument, searchArguments } from './assistant-tools'
+import { productSlugArgument, replyOptionsArgument, searchArguments } from './assistant-tools'
 
 /** An answer that took this long is flagged to staff: with tools the median is about 12 s (measured 2026-10-21). */
 export const SLOW_ANSWER_MS = 30_000
@@ -25,6 +25,8 @@ export type ToolTrace = {
   slug?: string | null
   /** show_products: slugs that are not published, so no card was shown for them. */
   missing?: string[]
+  /** offer_replies: the quick replies shown under the question. */
+  options?: string[]
   /** The tool answered with an error (unknown category, unpublished product…). */
   error?: boolean
 }
@@ -49,6 +51,8 @@ export function traceTool(name: string, args: unknown, output: unknown): ToolTra
     }
     case 'get_product':
       return { tool: name, slug: productSlugArgument(args), ...error }
+    case 'offer_replies':
+      return { tool: name, options: replyOptionsArgument(args), ...error }
     case 'show_products':
       return {
         tool: name,

@@ -5,6 +5,10 @@ export type SearchSort = (typeof SEARCH_SORTS)[number]
 
 /** Most cards the assistant shows at once: a short list is easier to choose from. */
 export const MAX_SHOWN_PRODUCTS = 4
+/** Quick replies under a question: a few short buttons, each one a whole answer. */
+export const MIN_REPLY_OPTIONS = 2
+export const MAX_REPLY_OPTIONS = 4
+export const MAX_REPLY_LENGTH = 40
 
 export interface SearchArguments {
   text: string | null
@@ -89,6 +93,28 @@ export const ASSISTANT_TOOLS: ToolDefinition[] = [
     },
   },
   {
+    name: 'offer_replies',
+    description:
+      'Muestra debajo de tu pregunta botones con respuestas cortas, para que el cliente toque una en vez de ' +
+      'escribir; al tocarla, manda ese texto como su respuesta. Llamala antes de escribir cada pregunta de pocas ' +
+      'respuestas posibles (para qué lo usa, color o blanco y negro, sí o no, presupuesto, qué tipo de producto) y ' +
+      'después escribí la pregunta.',
+    parameters: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['options'],
+      properties: {
+        options: {
+          type: 'array',
+          items: { type: 'string' },
+          description:
+            `De ${MIN_REPLY_OPTIONS} a ${MAX_REPLY_OPTIONS} respuestas de hasta ${MAX_REPLY_LENGTH} caracteres, como las ` +
+            'escribiría el cliente, por ejemplo "Para la oficina" o "Sí, que también escanee".',
+        },
+      },
+    },
+  },
+  {
     name: 'contact_team',
     description:
       'Ofrece al cliente un botón para seguir la consulta con una persona del equipo por WhatsApp. Usala si lo ' +
@@ -159,6 +185,26 @@ export function shownSlugsArgument(args: unknown): string[] {
   const values = isObject(args) && Array.isArray(args.slugs) ? args.slugs : []
   const slugs = values.map(slug).filter((value): value is string => value !== null)
   return [...new Set(slugs)].slice(0, MAX_SHOWN_PRODUCTS)
+}
+
+/**
+ * The quick replies the model offered: trimmed, one line, without markup, short enough for a button and not repeated.
+ * Fewer than `MIN_REPLY_OPTIONS` means none are shown.
+ */
+export function replyOptionsArgument(args: unknown): string[] {
+  const values = isObject(args) && Array.isArray(args.options) ? args.options : []
+  const options: string[] = []
+  for (const value of values) {
+    if (typeof value !== 'string') continue
+    const option = value
+      .replace(/[*_#`[\]<>{}]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+    if (!option || option.length > MAX_REPLY_LENGTH) continue
+    if (options.some(other => other.toLowerCase() === option.toLowerCase())) continue
+    options.push(option)
+  }
+  return options.slice(0, MAX_REPLY_OPTIONS)
 }
 
 export function contactArguments(args: unknown): { reason: string; message: string } | null {

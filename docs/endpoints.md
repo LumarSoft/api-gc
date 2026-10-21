@@ -2703,11 +2703,15 @@ and start 20 conversations per hour.
 | `text`         | `delta`   | Next piece of the answer (plain text with `**bold**`, `- ` lists, `[t](/path)`) |
 | `products`     | `items`   | Product cards to show at this point of the answer                               |
 | `handoff`      | `url`     | WhatsApp link with the customer's message written (`ASSISTANT_WHATSAPP_NUMBER`) |
+| `replies`      | `options` | 2–4 short answers (≤ 40 chars) to the question ending the text, as buttons      |
 | `error`        | `message` | The answer could not be completed (show it; the customer can retry)             |
 | `done`         |           | Last line, also after an `error`                                                |
 
 `items` are the catalog cards of `GET /products` (same fields and prices) plus `variantId`: the only active variant,
 to add to the cart directly, or `null` when the product has options to choose on its page.
+
+`replies` comes after the question it answers, usually last: tapping an option sends its text as the next message
+(the store shows them only under the latest answer, until the customer replies).
 
 ```
 {"type":"conversation","token":"Qm9…"}
@@ -2854,6 +2858,7 @@ Answers recorded from 2026-10-21 also say how they went (`null`/empty before, an
 `EMPTY_SEARCH`) and `tools`, the tools the model used in order. Each one has `tool` and only its own fields:
 `search_products` → `text`, `category`, `use`, `maxPrice`, `sort`, `results` (products found) and `partial` (no product
 had every word); `get_product` → `slug`; `show_products` → `results` (cards shown) and `missing` (slugs not published);
+`offer_replies` → `options` (the quick replies offered);
 any of them → `error: true` when it answered with an error. `cartAdds` are the products added to the cart from the
 conversation's cards, oldest first (`variantId` `null` when the card did not add one directly). A customer message
 has `page`, the product page it was written from (`null` outside product pages and before 2026-10-21; same shape as

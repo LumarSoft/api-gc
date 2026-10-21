@@ -217,6 +217,9 @@ Domain rules that apply across modules. When a request contradicts one of these,
   the company's address, phone or opening hours: they are not loaded yet.
 - Recommendations are product cards with the price and an "Agregar al carrito" button: the customer adds them; the
   assistant never changes the cart.
+- **Quick replies (added 2026-10-21):** when it ends with a closed question (what the product is for, yes or no, a
+  budget range, which kind of product), it offers 2 to 4 short answers as buttons; tapping one sends it as the
+  customer's message, and the customer can always type instead. It asks one question at a time.
 - Conversations are stored (questions, answers, tokens, products shown) for stats and CRM later. A conversation is
   continued only with the random token the browser received (its SHA-256 is stored). Questions it could not answer
   are stored as `UnansweredQuestion` for staff to complete the data.
