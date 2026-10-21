@@ -2612,33 +2612,39 @@ token; send that token with the next messages. Only the token's SHA-256 is store
 answers, token usage, products shown) is saved for the store.
 
 **Auth required:** No. A session is read when present (prices for that buyer; the conversation is linked to the
-user). Expired session → `401` (refresh and retry, like the catalog). Rate limit: 10 requests/min per IP.
+user). Expired session → `401` (refresh and retry, like the catalog). Rate limit: 10 requests/min per IP. Each visitor
+(their IP, and their account when signed in) may also use a tenth of `ASSISTANT_DAILY_TOKEN_LIMIT` per Argentine day
+and start 20 conversations per hour.
 
 **Request body**
 
-| Field          | Type   | Required | Constraints                                                              |
-| -------------- | ------ | -------- | ------------------------------------------------------------------------ |
-| `message`      | string | Yes      | Trimmed, 1–1000 characters                                               |
-| `conversation` | string | No       | Token from the `conversation` event, 64 characters `[A-Za-z0-9_-]`       |
-| `productSlug`  | string | No       | Product page the customer is on, so "this one" means that product       |
+| Field          | Type   | Required | Constraints                                                        |
+| -------------- | ------ | -------- | ------------------------------------------------------------------ |
+| `message`      | string | Yes      | Trimmed, 1–1000 characters                                         |
+| `conversation` | string | No       | Token from the `conversation` event, 64 characters `[A-Za-z0-9_-]` |
+| `productSlug`  | string | No       | Product page the customer is on, so "this one" means that product  |
 
 ```json
-{ "message": "¿Qué impresora me conviene para fotos?", "conversation": "Qm9…64 chars", "productSlug": "impresora-multifuncional-epson-ecotank-l8180" }
+{
+  "message": "¿Qué impresora me conviene para fotos?",
+  "conversation": "Qm9…64 chars",
+  "productSlug": "impresora-multifuncional-epson-ecotank-l8180"
+}
 ```
 
 **Responses**
 
 `200 OK` — the stream. Event types, in order of appearance:
 
-| `type`         | Fields                       | Meaning                                                                         |
-| -------------- | ---------------------------- | ------------------------------------------------------------------------------- |
-| `conversation` | `token`                      | Only for a new conversation, first line                                         |
-| `status`       | `text`                       | Shown while it works ("Buscando tintas…"); the next one or the text replaces it |
-| `text`         | `delta`                      | Next piece of the answer (plain text with `**bold**`, `- ` lists, `[t](/path)`) |
-| `products`     | `items`                      | Product cards to show at this point of the answer                               |
-| `handoff`      | `url`                        | WhatsApp link with the customer's message written (`ASSISTANT_WHATSAPP_NUMBER`) |
-| `error`        | `message`                    | The answer could not be completed (show it; the customer can retry)             |
-| `done`         |                              | Last line, also after an `error`                                                |
+| `type`         | Fields    | Meaning                                                                         |
+| -------------- | --------- | ------------------------------------------------------------------------------- |
+| `conversation` | `token`   | Only for a new conversation, first line                                         |
+| `status`       | `text`    | Shown while it works ("Buscando tintas…"); the next one or the text replaces it |
+| `text`         | `delta`   | Next piece of the answer (plain text with `**bold**`, `- ` lists, `[t](/path)`) |
+| `products`     | `items`   | Product cards to show at this point of the answer                               |
+| `handoff`      | `url`     | WhatsApp link with the customer's message written (`ASSISTANT_WHATSAPP_NUMBER`) |
+| `error`        | `message` | The answer could not be completed (show it; the customer can retry)             |
+| `done`         |           | Last line, also after an `error`                                                |
 
 `items` are the catalog cards of `GET /products` (same fields and prices) plus `variantId`: the only active variant,
 to add to the cart directly, or `null` when the product has options to choose on its page.
@@ -2660,11 +2666,24 @@ to add to the cart directly, or `null` when the product has options to choose on
 
 `409 Conflict` the conversation is still answering the previous message. `422 Unprocessable Entity` the conversation
 reached its limit (40 messages or `ASSISTANT_CONVERSATION_TOKEN_LIMIT` tokens): start a new one. `429 Too Many
-Requests`. `503 Service Unavailable` no `OPENAI_API_KEY`, or the store's daily token limit
+Requests` more than 10 messages in a minute, or the visitor's own daily or hourly limit (show `message`):
+
+```json
+{
+  "statusCode": 429,
+  "message": "Llegamos al límite de consultas desde esta conexión por hoy. Probá de nuevo más tarde."
+}
+```
+
+`503 Service Unavailable` no `OPENAI_API_KEY`, or the store's daily token limit
 (`ASSISTANT_DAILY_TOKEN_LIMIT`) was reached:
 
 ```json
-{ "statusCode": 503, "message": "El asesor no está disponible en este momento. Probá de nuevo más tarde.", "error": "Service Unavailable" }
+{
+  "statusCode": 503,
+  "message": "El asesor no está disponible en este momento. Probá de nuevo más tarde.",
+  "error": "Service Unavailable"
+}
 ```
 
 ### GET /admin/assistant/conversations
@@ -2676,14 +2695,14 @@ person takes over by WhatsApp). Most recent activity first.
 
 **Query**
 
-| Field      | Type    | Required | Constraints                                                                                          |
-| ---------- | ------- | -------- | ---------------------------------------------------------------------------------------------------- |
-| `page`     | integer | No       | 1–10000, default 1                                                                                   |
-| `pageSize` | integer | No       | 1–100, default 25                                                                                    |
-| `status`   | string  | No       | `OPEN` \| `ESCALATED` (offered WhatsApp) \| `RESOLVED` \| `CLOSED`                                   |
+| Field      | Type    | Required | Constraints                                                                                                                                                           |
+| ---------- | ------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `page`     | integer | No       | 1–10000, default 1                                                                                                                                                    |
+| `pageSize` | integer | No       | 1–100, default 25                                                                                                                                                     |
+| `status`   | string  | No       | `OPEN` \| `ESCALATED` (offered WhatsApp) \| `RESOLVED` \| `CLOSED`                                                                                                    |
 | `q`        | string  | No       | Max 100, trimmed: partial match on any message (customer's or assistant's), the customer's name or email; `12` or `#12` also matches that id. `%` and `_` are literal |
-| `from`     | string  | No       | Calendar day `YYYY-MM-DD` (Argentina): conversations **started** from that day. With `to`            |
-| `to`       | string  | No       | Last day included; not after today; at most 366 days in total. Without both: every day               |
+| `from`     | string  | No       | Calendar day `YYYY-MM-DD` (Argentina): conversations **started** from that day. With `to`                                                                             |
+| `to`       | string  | No       | Last day included; not after today; at most 366 days in total. Without both: every day                                                                                |
 
 **Responses**
 
@@ -2825,10 +2844,10 @@ Marks one question (row action) or a selection answered or dismissed, or opens t
 
 **Request body**
 
-| Field    | Type      | Required | Constraints                                   |
-| -------- | --------- | -------- | --------------------------------------------- |
-| `ids`    | integer[] | Yes      | 1–100 question ids (repeated ids count once)  |
-| `status` | string    | Yes      | `ANSWERED` \| `DISMISSED` \| `OPEN` (reopen)  |
+| Field    | Type      | Required | Constraints                                  |
+| -------- | --------- | -------- | -------------------------------------------- |
+| `ids`    | integer[] | Yes      | 1–100 question ids (repeated ids count once) |
+| `status` | string    | Yes      | `ANSWERED` \| `DISMISSED` \| `OPEN` (reopen) |
 
 ```json
 { "ids": [9, 10], "status": "DISMISSED" }
@@ -2871,7 +2890,13 @@ them up. `month` is the current calendar month up to now, whatever the period. `
     { "day": "2026-10-21", "conversations": 12, "customerMessages": 41, "inputTokens": 210400, "outputTokens": 18950 }
   ],
   "totals": { "conversations": 12, "customerMessages": 41, "inputTokens": 210400, "outputTokens": 18950 },
-  "month": { "from": "2026-10-01", "conversations": 12, "customerMessages": 41, "inputTokens": 210400, "outputTokens": 18950 },
+  "month": {
+    "from": "2026-10-01",
+    "conversations": 12,
+    "customerMessages": 41,
+    "inputTokens": 210400,
+    "outputTokens": 18950
+  },
   "today": { "tokens": 229350, "dailyLimit": 5000000 }
 }
 ```

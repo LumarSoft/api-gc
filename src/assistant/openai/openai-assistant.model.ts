@@ -6,23 +6,37 @@ import type {
   ResponseFunctionToolCall,
   ResponseInputItem,
 } from 'openai/resources/responses/responses'
-import type { ReasoningEffort } from 'openai/resources/shared'
 import {
   AssistantModelError,
   type AssistantModel,
   type ChatMessage,
   type ToolDefinition,
+  type ToolResult,
   type TurnEvent,
   type TurnRequest,
 } from '../assistant-model'
 
 /** GPT-6 Luna: OpenAI's small, inexpensive model for high-volume chat (chosen by the client on 2026-10-20). */
 export const DEFAULT_OPENAI_MODEL = 'gpt-6-luna'
+/** Lowest to highest. */
 const REASONING_EFFORTS = ['none', 'minimal', 'low', 'medium', 'high'] as const
+type Effort = (typeof REASONING_EFFORTS)[number]
 /** Measured on 2026-10-21: same wait as low (6–10 s an answer) and steadier recommendations, for little more cost. */
 const DEFAULT_REASONING_EFFORT = 'medium'
-/** Per model call. A turn makes a few calls, and the customer sees the text as it streams in. */
+/** Until OpenAI answers a call (headers). A turn makes a few calls, and the customer sees the text as it streams in. */
 const TIMEOUT_MS = 45_000
+/** Longest pause between two events of a call: the SDK timeout stops counting once the stream has started. */
+const IDLE_MS = 30_000
+/** A whole answer, every call included. The slowest one measured (2026-10-21) took 74 s. */
+const TURN_MS = 150_000
+/** Tool calls run per step; any more are answered with an error, so a prompted model cannot run dozens at once. */
+const MAX_TOOL_CALLS = 4
+/** Once the cards are shown only their explanation is left: it needs little reasoning, and medium took up to 23 s. */
+const EXPLAIN_EFFORT: Effort = 'low'
+/** Characters per token, to estimate what an interrupted call used (Spanish text and JSON; on the generous side). */
+const CHARS_PER_TOKEN = 3.5
+/** Same key for every conversation: they share the instructions and tools, the prefix OpenAI caches. */
+const PROMPT_CACHE_KEY = 'cg-store-assistant'
 
 /** `AssistantModel` on top of OpenAI's Responses API, with function tools and streamed text. */
 @Injectable()
@@ -30,7 +44,7 @@ export class OpenAiAssistantModel implements AssistantModel {
   private readonly logger = new Logger(OpenAiAssistantModel.name)
   private readonly client: OpenAI | null
   readonly name: string
-  private readonly reasoningEffort: ReasoningEffort
+  private readonly reasoningEffort: Effort
 
   constructor(config: ConfigService) {
     const apiKey = config.get<string>('OPENAI_API_KEY')?.trim() ?? ''
@@ -49,29 +63,56 @@ export class OpenAiAssistantModel implements AssistantModel {
     if (!client) throw new AssistantModelError('OpenAI is not configured')
     // Stateless (`store: false`): every call carries the whole turn, including the model's encrypted reasoning.
     const input: ResponseInputItem[] = request.history.map(toInputMessage)
+    const deadline = AbortSignal.timeout(TURN_MS)
     // Text written after a tool round continues the same reply: separate it from the text before.
     let textBefore = false
+    let effort = this.reasoningEffort
+    // What the next call reads, in tokens: the first one from its characters, later ones from the previous usage.
+    let inputTokens = estimateTokens(request.instructions, JSON.stringify(request.tools), JSON.stringify(input))
 
     for (let step = 1; step <= request.maxSteps; step++) {
       const lastStep = step === request.maxSteps
-      const response = yield* this.streamStep(client, request, input, lastStep, textBefore)
-      yield {
-        type: 'usage',
-        inputTokens: response.usage?.input_tokens ?? 0,
-        outputTokens: response.usage?.output_tokens ?? 0,
+      const progress: StepProgress = { started: false, outputChars: 0 }
+      let response: OpenAiResponse
+      try {
+        response = yield* this.streamStep(client, request, input, { lastStep, textBefore, effort, deadline }, progress)
+      } catch (error) {
+        // OpenAI bills what it read and wrote before the call was cut (the customer left, a timeout): without an
+        // estimate the conversation and daily limits would never see it.
+        if (progress.started || request.signal.aborted)
+          yield { type: 'usage', inputTokens, outputTokens: Math.ceil(progress.outputChars / CHARS_PER_TOKEN) }
+        throw error
       }
+      const usage = { inputTokens: response.usage?.input_tokens ?? 0, outputTokens: response.usage?.output_tokens ?? 0 }
+      yield { type: 'usage', ...usage }
+      inputTokens = usage.inputTokens + usage.outputTokens
+      if (response.status === 'incomplete')
+        this.logger.warn(`OpenAI cut a call short (${response.incomplete_details?.reason ?? 'no reason'})`)
       if (response.output.some(item => item.type === 'message')) textBefore = true
       input.push(...(response.output as ResponseInputItem[]))
 
-      const calls = response.output.filter((item): item is ResponseFunctionToolCall => item.type === 'function_call')
+      // A call cut by the output cap may have half its arguments: it is not run.
+      const calls = response.output.filter(
+        (item): item is ResponseFunctionToolCall => item.type === 'function_call' && item.status !== 'incomplete',
+      )
       if (!calls.length || lastStep) return
-      for (const call of calls) {
-        const result = await request.runTool(call.name, parseArguments(call.arguments))
+      const results = await Promise.all(
+        calls.map((call, index) =>
+          index < MAX_TOOL_CALLS
+            ? request.runTool(call.name, parseArguments(call.arguments))
+            : Promise.resolve({ output: { error: `Usá como máximo ${MAX_TOOL_CALLS} herramientas por paso.` } }),
+        ),
+      )
+      for (const [index, call] of calls.entries()) {
+        const result: ToolResult<D> = results[index]
         if (result.display !== undefined) {
           yield { type: 'display', display: result.display }
           textBefore = false
+          if (REASONING_EFFORTS.indexOf(effort) > REASONING_EFFORTS.indexOf(EXPLAIN_EFFORT)) effort = EXPLAIN_EFFORT
         }
-        input.push({ type: 'function_call_output', call_id: call.call_id, output: JSON.stringify(result.output) })
+        const output = JSON.stringify(result.output)
+        inputTokens += estimateTokens(output)
+        input.push({ type: 'function_call_output', call_id: call.call_id, output })
       }
     }
   }
@@ -81,11 +122,17 @@ export class OpenAiAssistantModel implements AssistantModel {
     client: OpenAI,
     request: TurnRequest<D>,
     input: ResponseInputItem[],
-    lastStep: boolean,
-    textBefore: boolean,
+    step: StepOptions,
+    progress: StepProgress,
   ): AsyncGenerator<TurnEvent<D>, OpenAiResponse> {
     let finished: OpenAiResponse | null = null
-    let separated = !textBefore
+    let separated = !step.textBefore
+    const idle = new AbortController()
+    let idleTimer = setTimeout(() => idle.abort(), IDLE_MS)
+    const keepAlive = (): void => {
+      clearTimeout(idleTimer)
+      idleTimer = setTimeout(() => idle.abort(), IDLE_MS)
+    }
     try {
       const stream = await client.responses.create(
         {
@@ -93,25 +140,30 @@ export class OpenAiAssistantModel implements AssistantModel {
           instructions: request.instructions,
           input,
           tools: request.tools.map(toFunctionTool),
-          tool_choice: lastStep ? 'none' : 'auto',
+          tool_choice: step.lastStep ? 'none' : 'auto',
           parallel_tool_calls: true,
           max_output_tokens: request.maxOutputTokens,
-          reasoning: { effort: this.reasoningEffort },
+          reasoning: { effort: step.effort },
           store: false,
           include: ['reasoning.encrypted_content'],
           safety_identifier: request.safetyId,
+          prompt_cache_key: PROMPT_CACHE_KEY,
           stream: true,
         },
-        { signal: request.signal },
+        { signal: AbortSignal.any([request.signal, step.deadline, idle.signal]) },
       )
+      progress.started = true
       for await (const event of stream) {
+        keepAlive()
         if (event.type === 'response.output_text.delta') {
           if (!separated) {
             separated = true
             yield { type: 'text', delta: '\n\n' }
           }
+          progress.outputChars += event.delta.length
           yield { type: 'text', delta: event.delta }
         } else if (event.type === 'response.output_item.done' && event.item.type === 'function_call') {
+          progress.outputChars += event.item.arguments.length
           // As soon as each call is decided, not when the whole step ends: the wait that follows is what to explain.
           yield { type: 'tool', name: event.item.name, args: parseArguments(event.item.arguments) }
         } else if (event.type === 'response.completed' || event.type === 'response.incomplete') {
@@ -127,8 +179,15 @@ export class OpenAiAssistantModel implements AssistantModel {
       }
     } catch (error) {
       if (error instanceof AssistantModelError || request.signal.aborted) throw error
+      if (idle.signal.aborted || step.deadline.aborted) {
+        const why = idle.signal.aborted ? `no events for ${IDLE_MS / 1000} s` : `answer over ${TURN_MS / 1000} s`
+        this.logger.warn(`OpenAI call given up (${why})`)
+        throw new AssistantModelError('OpenAI took too long')
+      }
       this.logFailure(error)
       throw new AssistantModelError('OpenAI did not answer')
+    } finally {
+      clearTimeout(idleTimer)
     }
     if (!finished) throw new AssistantModelError('OpenAI ended the answer without finishing it')
     return finished
@@ -145,6 +204,28 @@ export class OpenAiAssistantModel implements AssistantModel {
       this.logger.warn(`OpenAI request failed before answering (${error instanceof Error ? error.name : 'unknown'})`)
     }
   }
+}
+
+interface StepOptions {
+  /** The last call of the turn can only write text. */
+  lastStep: boolean
+  /** Text was already written in this turn: the next text starts a new paragraph. */
+  textBefore: boolean
+  effort: Effort
+  /** Aborts when the whole answer has taken too long. */
+  deadline: AbortSignal
+}
+
+/** What a call got to do before it ended, to estimate its usage if it is cut. */
+interface StepProgress {
+  /** OpenAI received the request. */
+  started: boolean
+  /** Characters the model wrote: text and tool arguments. */
+  outputChars: number
+}
+
+function estimateTokens(...texts: string[]): number {
+  return Math.ceil(texts.reduce((sum, text) => sum + text.length, 0) / CHARS_PER_TOKEN)
 }
 
 function toInputMessage(message: ChatMessage): ResponseInputItem {

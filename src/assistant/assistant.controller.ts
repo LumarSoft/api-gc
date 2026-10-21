@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Res, UseGuards } from '@nestjs/common'
+import { Body, Controller, Ip, Post, Res, UseGuards } from '@nestjs/common'
 import { Throttle } from '@nestjs/throttler'
 import type { Response } from 'express'
 import { OptionalUser } from '../common/decorators/optional-user.decorator'
@@ -21,10 +21,11 @@ export class AssistantController {
   async send(
     @Body() input: SendAssistantMessageDto,
     @OptionalUser() user: AuthenticatedUser | undefined,
+    @Ip() ip: string | undefined,
     @Res() response: Response,
   ): Promise<void> {
     // Refusals (limits, unknown conversation) are thrown here, before any byte of the stream is sent.
-    const conversation = await this.assistant.open(input, user)
+    const conversation = await this.assistant.open(input, user, ip)
     const abort = new AbortController()
     response.on('close', () => {
       if (!response.writableFinished) abort.abort()
