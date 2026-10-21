@@ -98,6 +98,23 @@ if (env) {
   else ok('Online payment (Mercado Pago) configured')
 }
 
+// 3d. AI sales assistant (OpenAI): optional; without a key the store's chat says it is not available
+if (env) {
+  const whatsapp = (env.ASSISTANT_WHATSAPP_NUMBER ?? '').replace(/[\s+()-]/g, '')
+  if (!env.OPENAI_API_KEY) ok('AI sales assistant off: no OPENAI_API_KEY in .env')
+  else if (!env.OPENAI_API_KEY.startsWith('sk-'))
+    warn(
+      'OPENAI_API_KEY does not look like an OpenAI key (they start with sk-): the assistant will not answer',
+      'platform.openai.com → API keys → paste the key into .env',
+    )
+  else if (whatsapp && !/^\d{8,15}$/.test(whatsapp))
+    warn(
+      'ASSISTANT_WHATSAPP_NUMBER is not in international format: the assistant will not offer WhatsApp',
+      'write it like 5493415550000 in .env, or leave it empty',
+    )
+  else ok(`AI sales assistant configured (${env.OPENAI_MODEL || 'gpt-6-luna'})`)
+}
+
 // 4. Prisma client generated from the current schema (compared by content: switching branches changes file dates)
 const schemaDir = join(ROOT, 'prisma', 'schema')
 const generatedClass = join(ROOT, 'src', 'generated', 'prisma', 'internal', 'class.ts')
