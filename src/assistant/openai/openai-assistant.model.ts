@@ -15,6 +15,7 @@ import {
   type TurnEvent,
   type TurnRequest,
 } from '../assistant-model'
+import { RepeatedMessages } from './repeated-messages'
 
 /** GPT-6 Luna: OpenAI's small, inexpensive model for high-volume chat (chosen by the client on 2026-10-20). */
 export const DEFAULT_OPENAI_MODEL = 'gpt-6-luna'
@@ -67,6 +68,7 @@ export class OpenAiAssistantModel implements AssistantModel {
     // Text written after a tool round continues the same reply: separate it from the text before.
     let textBefore = false
     let effort = this.reasoningEffort
+    const repeated = new RepeatedMessages()
     // What the next call reads, in tokens: the first one from its characters, later ones from the previous usage.
     let inputTokens = estimateTokens(request.instructions, JSON.stringify(request.tools), JSON.stringify(input))
 
@@ -77,7 +79,13 @@ export class OpenAiAssistantModel implements AssistantModel {
       const progress: StepProgress = { started: false, outputChars: 0 }
       let response: OpenAiResponse
       try {
-        response = yield* this.streamStep(client, request, input, { lastStep, textBefore, effort, deadline }, progress)
+        response = yield* this.streamStep(
+          client,
+          request,
+          input,
+          { lastStep, textBefore, effort, deadline, repeated },
+          progress,
+        )
       } catch (error) {
         // OpenAI bills what it read and wrote before the call was cut (the customer left, a timeout): without an
         // estimate the conversation and daily limits would never see it.
@@ -90,7 +98,8 @@ export class OpenAiAssistantModel implements AssistantModel {
       inputTokens = usage.inputTokens + usage.outputTokens
       if (response.status === 'incomplete')
         this.logger.warn(`OpenAI cut a call short (${response.incomplete_details?.reason ?? 'no reason'})`)
-      if (response.output.some(item => item.type === 'message')) textBefore = true
+      const wroteText = response.output.some(item => item.type === 'message')
+      if (wroteText) textBefore = true
       input.push(...(response.output as ResponseInputItem[]))
 
       // A call cut by the output cap may have half its arguments: it is not run.
@@ -102,7 +111,9 @@ export class OpenAiAssistantModel implements AssistantModel {
         calls.map((call, index) =>
           index < MAX_TOOL_CALLS
             ? request.runTool(call.name, parseArguments(call.arguments))
-            : Promise.resolve({ output: { error: `Usá como máximo ${MAX_TOOL_CALLS} herramientas por paso.` } }),
+            : Promise.resolve<ToolResult<D>>({
+                output: { error: `Usá como máximo ${MAX_TOOL_CALLS} herramientas por paso.` },
+              }),
         ),
       )
       for (const [index, call] of calls.entries()) {
@@ -116,6 +127,8 @@ export class OpenAiAssistantModel implements AssistantModel {
         inputTokens += estimateTokens(output)
         input.push({ type: 'function_call_output', call_id: call.call_id, output })
       }
+      // Quick replies under the question this call just wrote close the answer: nothing is left to say.
+      if (wroteText && results.every(result => result.endsTurn === true)) return
     }
   }
 
@@ -129,6 +142,8 @@ export class OpenAiAssistantModel implements AssistantModel {
   ): AsyncGenerator<TurnEvent<D>, OpenAiResponse> {
     let finished: OpenAiResponse | null = null
     let separated = !step.textBefore
+    // Two messages of one call (a preamble and the answer) are two paragraphs, not one run-on line.
+    let shownMessage: string | null = null
     const idle = new AbortController()
     let idleTimer = setTimeout(() => idle.abort(), IDLE_MS)
     const keepAlive = (): void => {
@@ -158,12 +173,16 @@ export class OpenAiAssistantModel implements AssistantModel {
       for await (const event of stream) {
         keepAlive()
         if (event.type === 'response.output_text.delta') {
-          if (!separated) {
-            separated = true
-            yield { type: 'text', delta: '\n\n' }
-          }
           progress.outputChars += event.delta.length
-          yield { type: 'text', delta: event.delta }
+          const shown = step.repeated.next(event.item_id, event.delta)
+          if (!shown) continue
+          if (!separated || (shownMessage !== null && shownMessage !== event.item_id))
+            yield { type: 'text', delta: '\n\n' }
+          separated = true
+          shownMessage = event.item_id
+          yield { type: 'text', delta: shown }
+        } else if (event.type === 'response.output_item.done' && event.item.type === 'message') {
+          step.repeated.finish()
         } else if (event.type === 'response.output_item.done' && event.item.type === 'function_call') {
           progress.outputChars += event.item.arguments.length
           // As soon as each call is decided, not when the whole step ends: the wait that follows is what to explain.
@@ -216,6 +235,8 @@ interface StepOptions {
   effort: Effort
   /** Aborts when the whole answer has taken too long. */
   deadline: AbortSignal
+  /** Messages already written in this answer, so a repeated one is not shown again. */
+  repeated: RepeatedMessages
 }
 
 /** What a call got to do before it ended, to estimate its usage if it is cut. */

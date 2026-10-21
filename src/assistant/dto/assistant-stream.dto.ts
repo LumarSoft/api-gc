@@ -11,6 +11,8 @@ export type AssistantDisplay =
   | { type: 'products'; items: AssistantProductCardDto[] }
   /** Link that opens WhatsApp with the customer's message already written. */
   | { type: 'handoff'; url: string }
+  /** Short answers to the question that ends the text, as buttons: tapping one sends it as the customer's message. */
+  | { type: 'replies'; options: string[] }
 
 /** One line of the NDJSON stream of `POST /assistant/messages`. */
 export type AssistantStreamEvent =

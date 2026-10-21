@@ -38,6 +38,29 @@ function textStep(text: string): object[] {
   ]
 }
 
+/** A finished call that wrote this text and then asked for these tools. */
+function textAndCallsStep(text: string, names: string[]): object[] {
+  const calls = names.map((name, index) => ({
+    type: 'function_call',
+    name,
+    call_id: `call-${index}`,
+    arguments: '{}',
+    status: 'completed',
+  }))
+  return [
+    { type: 'response.output_text.delta', delta: text },
+    ...calls.map(item => ({ type: 'response.output_item.done', item })),
+    {
+      type: 'response.completed',
+      response: {
+        status: 'completed',
+        output: [{ type: 'message' }, ...calls],
+        usage: { input_tokens: 2000, output_tokens: 60 },
+      },
+    },
+  ]
+}
+
 /** OpenAI's client as the adapter uses it: each call streams the next script; `hang` waits until it is aborted. */
 function fakeClient(steps: { events: object[]; hang?: boolean }[]) {
   const params: Params[] = []
@@ -126,6 +149,61 @@ describe('OpenAiAssistantModel', () => {
     const events = await collect(adapter.runTurn(request(runTool)))
     expect(params.map(body => body.reasoning.effort)).toEqual(['medium', 'medium', 'low'])
     expect(events.filter(event => event.type === 'display')).toEqual([{ type: 'display', display: 'cards' }])
+  })
+
+  it('ends the answer when quick replies follow the question the same call wrote', async () => {
+    const replies = (name: string): Promise<ToolResult<string>> =>
+      Promise.resolve(
+        name === 'offer_replies' ? { output: { shown: 2 }, display: 'replies', endsTurn: true } : { output: {} },
+      )
+    const asked = model([
+      { events: textAndCallsStep('¿Para qué la vas a usar?', ['offer_replies']) },
+      { events: textStep('Algo más') },
+    ])
+    const events = await collect(asked.adapter.runTurn(request(replies)))
+    expect(asked.params).toHaveLength(1)
+    expect(events.filter(event => event.type === 'display')).toEqual([{ type: 'display', display: 'replies' }])
+
+    // Before writing the question, or next to a tool whose result it still needs, the model goes on.
+    const early = model([{ events: callsStep(['offer_replies']) }, { events: textStep('¿Para qué la vas a usar?') }])
+    await collect(early.adapter.runTurn(request(replies)))
+    expect(early.params).toHaveLength(2)
+    const mixed = model([
+      { events: textAndCallsStep('Busco opciones.', ['offer_replies', 'search_products']) },
+      { events: textStep('Listo') },
+    ])
+    await collect(mixed.adapter.runTurn(request(replies)))
+    expect(mixed.params).toHaveLength(2)
+  })
+
+  it('shows a message the model repeats only once, and two different ones as two paragraphs', async () => {
+    const message = (id: string, text: string): object[] => [
+      { type: 'response.output_text.delta', item_id: id, delta: text },
+      { type: 'response.output_item.done', item: { type: 'message', id } },
+    ]
+    const step = (...messages: object[][]): { events: object[] } => ({
+      events: [
+        ...messages.flat(),
+        {
+          type: 'response.completed',
+          response: {
+            status: 'completed',
+            output: [{ type: 'message' }],
+            usage: { input_tokens: 1, output_tokens: 1 },
+          },
+        },
+      ],
+    })
+    const text = async (steps: { events: object[] }[]): Promise<string> => {
+      const events = await collect(model(steps).adapter.runTurn(request(() => Promise.resolve({ output: {} }))))
+      return events.map(event => (event.type === 'text' ? event.delta : '')).join('')
+    }
+    expect(await text([step(message('m1', '¿Para qué la usás?'), message('m2', '¿Para qué la usás?'))])).toBe(
+      '¿Para qué la usás?',
+    )
+    expect(await text([step(message('m1', 'Te ayudamos a elegir.'), message('m2', '¿Para qué la usás?'))])).toBe(
+      'Te ayudamos a elegir.\n\n¿Para qué la usás?',
+    )
   })
 
   it('does not run a tool call cut by the output cap', async () => {

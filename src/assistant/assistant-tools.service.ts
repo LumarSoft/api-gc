@@ -9,8 +9,11 @@ import { whatsappLink, whatsappNumber } from './lib/assistant-limits'
 import {
   assistantTools,
   contactArguments,
+  MAX_REPLY_OPTIONS,
+  MIN_REPLY_OPTIONS,
   productSlugArgument,
   questionArgument,
+  replyOptionsArgument,
   searchArguments,
   shownSlugsArgument,
 } from './lib/assistant-tools'
@@ -65,6 +68,8 @@ export class AssistantToolsService {
       }
       case 'show_products':
         return this.showProducts(shownSlugsArgument(args), context)
+      case 'offer_replies':
+        return this.offerReplies(replyOptionsArgument(args))
       case 'contact_team':
         return this.contactTeam(args, context)
       case 'record_unanswered_question': {
@@ -84,6 +89,23 @@ export class AssistantToolsService {
     return {
       output: { shown: cards.map(card => card.name), missing },
       display: { type: 'products', items: cards },
+    }
+  }
+
+  private offerReplies(options: string[]): ToolResult<AssistantDisplay> {
+    if (options.length < MIN_REPLY_OPTIONS)
+      return {
+        output: {
+          error: `Pasá de ${MIN_REPLY_OPTIONS} a ${MAX_REPLY_OPTIONS} respuestas distintas, cada una de pocas palabras.`,
+        },
+      }
+    return {
+      output: {
+        shown: options,
+        note: 'El cliente ya ve esos botones debajo de tu mensaje. Si todavía no escribiste la pregunta, escribila ahora, corta y sin repetir las opciones.',
+      },
+      display: { type: 'replies', options },
+      endsTurn: true,
     }
   }
 

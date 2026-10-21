@@ -31,6 +31,8 @@ class FakeModel implements AssistantModel {
   delay = 0
   histories: ChatMessage[][] = []
   instructions: string[] = []
+  /** Quick replies to offer after the text, as the model would pass them. */
+  replies: unknown[] | null = null
 
   async *runTurn<D>(request: TurnRequest<D>): AsyncGenerator<TurnEvent<D>> {
     this.histories.push(request.history)
@@ -49,6 +51,10 @@ class FakeModel implements AssistantModel {
     yield { type: 'text', delta: `estas opciones (leí ${request.history.length} mensajes).` }
     const shown = await request.runTool('show_products', { slugs: found.products.map(product => product.slug) })
     if (shown.display) yield { type: 'display', display: shown.display }
+    if (this.replies) {
+      const offered = await request.runTool('offer_replies', { options: this.replies })
+      if (offered.display) yield { type: 'display', display: offered.display }
+    }
     yield { type: 'usage', inputTokens: 50, outputTokens: 5 }
   }
 }
@@ -184,6 +190,41 @@ describe('Assistant (local MySQL e2e)', () => {
       ],
     })
     expect(conversation.messages[1].durationMs).toEqual(expect.any(Number))
+  })
+
+  it('streams the quick replies it offers, cleaned, and records them', async () => {
+    model.replies = [' Para la oficina ', 'para la oficina', 'Para el **hogar**', 'x'.repeat(41)]
+    try {
+      const events = await ask({ message: `Busco una ${word}` })
+      expect(events.map(event => event.type)).toEqual([
+        'conversation',
+        'status',
+        'text',
+        'text',
+        'products',
+        'replies',
+        'done',
+      ])
+      expect(events.find(event => event.type === 'replies')).toEqual({
+        type: 'replies',
+        options: ['Para la oficina', 'Para el hogar'],
+      })
+      const answer = await prisma.assistantMessage.findFirstOrThrow({
+        where: { conversationId: conversationIds.at(-1), role: 'ASSISTANT' },
+      })
+      expect(answer.toolCalls).toEqual([
+        expect.objectContaining({ tool: 'search_products' }),
+        { tool: 'show_products', results: 2, missing: [] },
+        { tool: 'offer_replies', options: ['Para la oficina', 'Para el hogar'] },
+      ])
+
+      // A single usable option is not offered: the answer goes on without buttons.
+      model.replies = ['Sí']
+      const single = await ask({ message: `Busco una ${word}` })
+      expect(single.some(event => event.type === 'replies')).toBe(false)
+    } finally {
+      model.replies = null
+    }
   })
 
   it('records the products added to the cart from its cards, only the ones it showed', async () => {

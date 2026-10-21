@@ -4,6 +4,7 @@ import {
   contactArguments,
   MAX_SHOWN_PRODUCTS,
   productSlugArgument,
+  replyOptionsArgument,
   searchArguments,
   shownSlugsArgument,
 } from './assistant-tools'
@@ -47,6 +48,26 @@ describe('assistant tools', () => {
     expect(MAX_SHOWN_PRODUCTS).toBe(4)
     expect(productSlugArgument({ slug: 'ecotank-l3250' })).toBe('ecotank-l3250')
     expect(productSlugArgument({ slug: '../etc' })).toBeNull()
+  })
+
+  it('keeps quick replies short, plain, distinct and at most four', () => {
+    expect(
+      replyOptionsArgument({
+        options: [
+          ' Para la  oficina ',
+          'para la oficina',
+          'Para el **hogar**',
+          'x'.repeat(41),
+          '',
+          7,
+          'Para fotos',
+          'Para comercio',
+          'Para textil',
+        ],
+      }),
+    ).toEqual(['Para la oficina', 'Para el hogar', 'Para fotos', 'Para comercio'])
+    expect(replyOptionsArgument({ options: 'Sí' })).toEqual([])
+    expect(replyOptionsArgument(null)).toEqual([])
   })
 
   it('needs a message to contact the team', () => {
