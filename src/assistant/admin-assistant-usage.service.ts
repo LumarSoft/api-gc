@@ -133,12 +133,15 @@ export class AdminAssistantUsageService {
     return count(rows[0]?.conversations)
   }
 
-  /** Searches of the assistant that found nothing, grouped by their text (case aside), most repeated first. */
+  /**
+   * Searches of the assistant that found nothing, grouped by their text without case, spaces or dashes ("XQ-7781" and
+   * "xq 7781" are one), most repeated first.
+   */
   private async emptySearches(from: Date, until: Date): Promise<AssistantEmptySearchDto[]> {
     const rows = await this.prisma.$queryRaw<
       { term: string; searches: unknown; conversations: unknown; lastConversationId: unknown }[]
     >`
-      SELECT LOWER(search.term) AS term, COUNT(*) AS searches,
+      SELECT MIN(LOWER(search.term)) AS term, COUNT(*) AS searches,
         COUNT(DISTINCT message.conversationId) AS conversations, MAX(message.conversationId) AS lastConversationId
       FROM AssistantMessage AS message,
         JSON_TABLE(message.toolCalls, '$[*]' COLUMNS (
@@ -149,7 +152,7 @@ export class AdminAssistantUsageService {
       WHERE message.role = 'ASSISTANT' AND message.toolCalls IS NOT NULL
         AND message.createdAt >= ${from} AND message.createdAt < ${until}
         AND search.tool = 'search_products' AND search.results = 0 AND search.term IS NOT NULL
-      GROUP BY LOWER(search.term)
+      GROUP BY LOWER(REGEXP_REPLACE(search.term, '[^[:alnum:]]', ''))
       ORDER BY searches DESC, lastConversationId DESC
       LIMIT 20`
     return rows.map(row => ({

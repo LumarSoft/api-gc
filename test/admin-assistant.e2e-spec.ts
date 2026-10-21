@@ -182,6 +182,7 @@ describe('Admin assistant (local MySQL e2e)', () => {
           durationMs: 40_000,
           toolCalls: [
             { tool: 'search_products', text: 'Plotter', results: 0, partial: false },
+            { tool: 'search_products', text: 'plot-ter', results: 0, partial: false },
             { tool: 'search_products', text: 'tinta', results: 3, partial: false },
             { tool: 'show_products', results: 1, missing: [] },
           ],
@@ -289,6 +290,7 @@ describe('Admin assistant (local MySQL e2e)', () => {
       problems: ['SLOW', 'EMPTY_SEARCH'],
       tools: [
         { tool: 'search_products', text: 'Plotter', results: 0 },
+        { tool: 'search_products', text: 'plot-ter', results: 0 },
         { tool: 'search_products', text: 'tinta', results: 3 },
         { tool: 'show_products', results: 1 },
       ],
@@ -385,7 +387,8 @@ describe('Admin assistant (local MySQL e2e)', () => {
       cartConversations: 1,
     })
     expect(usage.emptySearches).toEqual([
-      { text: 'plotter', searches: 1, conversations: 1, lastConversationId: conversationIds[3] },
+      // "Plotter" and "plot-ter" are the same search.
+      { text: 'plot-ter', searches: 2, conversations: 1, lastConversationId: conversationIds[3] },
     ])
     // The window itself starts and ends at Argentine midnight: 23:30 of the 1st counts, 00:30 of the 2nd does not.
     const oneDay = await get<AssistantUsageDto>(`/admin/assistant/usage?from=${pastYear}-03-01&to=${pastYear}-03-01`)

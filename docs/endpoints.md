@@ -2966,7 +2966,7 @@ them up. `month` is the current calendar month up to now, whatever the period. `
 answers recorded with their outcome (from 2026-10-21) and `problemAnswers` the ones to look at (see the conversations
 list). `cartAdds` counts products added to the cart from the assistant's cards and `cartConversations` the
 conversations they came from (in `totals` and `month`, each conversation once). `emptySearches` lists the period's
-product searches that found nothing, by text (case aside), most repeated first, at most 20, with the latest
+product searches that found nothing, by text (case, spaces and dashes aside), most repeated first, at most 20, with the latest
 conversation that made it.
 
 ```json
