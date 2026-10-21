@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { Prisma } from '../generated/prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import {
+  CATEGORY_BONUS,
   closestTerm,
   fold,
   HIT_WEIGHT,
@@ -18,7 +19,12 @@ import { ProductSearchVocabulary } from './product-search-vocabulary.service'
 export type SearchMatch = RankedSearch & { correctedQuery: string | null }
 
 const HIT_SELECT = { id: true, isFeatured: true, publishedAt: true } satisfies Prisma.ProductSelect
-const STRONG_SELECT = { ...HIT_SELECT, name: true } satisfies Prisma.ProductSelect
+const STRONG_SELECT = {
+  ...HIT_SELECT,
+  name: true,
+  category: { select: { name: true, parent: { select: { name: true } } } },
+} satisfies Prisma.ProductSelect
+type StrongRow = Prisma.ProductGetPayload<{ select: typeof STRONG_SELECT }>
 
 /**
  * Free-text search over products: each word of the text is searched with the catalog's names for it (wifi →
@@ -86,14 +92,20 @@ export class ProductSearchService {
       this.prisma.product.findMany({ where: { AND: [where, { OR: strong }] }, select: STRONG_SELECT }),
       this.prisma.product.findMany({ where: { AND: [where, { OR: weak }] }, select: HIT_SELECT }),
     ])
-    // Which strong matches are in the name (or a SKU / model code): the collation ignores accents, so compare folded.
-    const foldedForms = searchForms(word).map(fold)
-    const inName = (row: { id: number; name: string }): boolean =>
-      codeIds.includes(row.id) || foldedForms.some(form => fold(row.name.toLowerCase()).includes(form))
+    // Which strong matches are in the name (or a SKU / model code) and the category: the collation ignores accents, so
+    // compare folded.
+    const foldedForms = searchForms(word).map(form => fold(form.toLowerCase()))
+    const has = (text: string | undefined): boolean =>
+      text !== undefined && foldedForms.some(form => fold(text.toLowerCase()).includes(form))
+    const weight = (row: StrongRow): number =>
+      (codeIds.includes(row.id) || has(row.name) ? HIT_WEIGHT.name : HIT_WEIGHT.related) +
+      (has(row.category.name) || has(row.category.parent?.name) ? CATEGORY_BONUS : 0)
     return [
-      ...strongRows.map(({ name, ...row }) => ({
-        ...row,
-        weight: inName({ id: row.id, name }) ? HIT_WEIGHT.name : HIT_WEIGHT.related,
+      ...strongRows.map(row => ({
+        id: row.id,
+        isFeatured: row.isFeatured,
+        publishedAt: row.publishedAt,
+        weight: weight(row),
       })),
       ...weakRows.map(row => ({ ...row, weight: HIT_WEIGHT.specification })),
     ]

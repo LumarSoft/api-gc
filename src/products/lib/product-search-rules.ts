@@ -153,7 +153,14 @@ export const HIT_WEIGHT = {
   specification: 1,
 } as const
 
-/** A product found for one searched word, and how strongly (`HIT_WEIGHT`). */
+/**
+ * Added to a word's weight when it also names the product's category or its parent: the word says what the product
+ * is. "tinta" lists the ink (category "Tintas y consumibles") before a printer named "de tinta", even when the ink's
+ * name lacks the word.
+ */
+export const CATEGORY_BONUS = 2
+
+/** A product found for one searched word, and how strongly (`HIT_WEIGHT`, plus `CATEGORY_BONUS`). */
 export interface WordHit {
   id: number
   isFeatured: boolean
@@ -170,7 +177,8 @@ export interface RankedSearch {
 
 /**
  * Orders the products found for each word: those with every word first (none with only some, unless `partial`), then
- * more words found, found in better places (`HIT_WEIGHT`), and the catalog's own order (featured, newest).
+ * more words found, found in better places (`HIT_WEIGHT`, `CATEGORY_BONUS`), and the catalog's own order (featured,
+ * newest).
  */
 export function rankSearch(hitsPerWord: WordHit[][], partial: boolean): RankedSearch {
   const found = new Map<number, { hit: WordHit; words: number; weight: number }>()

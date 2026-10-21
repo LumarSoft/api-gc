@@ -183,8 +183,9 @@ Domain rules that apply across modules. When a request contradicts one of these,
 - **Search (2026-10-21):** the store's search and the assistant's share one search: every word must match (name,
   summary, SKU, category, brand, use or a specification), with the catalog's names for common words (wifi →
   inalámbrica…), model codes with or without separators, and misspelled words corrected to the closest catalog word.
-  When nothing has every word, the closest products are shown and the store says so. The search box shows the first
-  products while the customer types (`GET /products/suggest`).
+  When nothing has every word, the closest products are shown and the store says so. Products whose category names
+  the word come first ("tinta" lists the ink before a printer "de tinta"), then those with it in the name. The search
+  box shows the first products while the customer types (`GET /products/suggest`).
 - **Duplicating** a product creates a draft copy with new slug and SKUs (`-copia` / `-COPIA`). Tango codes and stock
   are never copied: they belong to the original articles.
 
