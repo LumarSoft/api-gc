@@ -1,4 +1,14 @@
-import { modelCode, rankSearch, searchForms, searchWords, type WordHit } from './product-search-rules'
+import {
+  buildVocabulary,
+  catalogWords,
+  closestTerm,
+  editDistance,
+  modelCode,
+  rankSearch,
+  searchForms,
+  searchWords,
+  type WordHit,
+} from './product-search-rules'
 
 describe('product search rules', () => {
   it('keeps the meaningful words of a question, in singular', () => {
@@ -48,7 +58,7 @@ describe('product search rules', () => {
 
   const hit = (id: number, strong: boolean, isFeatured = false): WordHit => ({
     id,
-    strong,
+    weight: strong ? 2 : 1,
     isFeatured,
     publishedAt: new Date(2026, 0, id),
   })
@@ -64,6 +74,11 @@ describe('product search rules', () => {
     expect(ranked).toEqual({ ids: [4, 3, 1, 2], complete: true })
   })
 
+  it('puts a word found in the name before one found in the summary or the category', () => {
+    const at = (id: number, weight: number): WordHit => ({ id, weight, isFeatured: id === 2, publishedAt: null })
+    expect(rankSearch([[at(1, 3), at(2, 2), at(3, 1)]], false).ids).toEqual([1, 2, 3])
+  })
+
   it('counts a product once per word, by its best field', () => {
     expect(rankSearch([[hit(1, false), hit(1, true), hit(2, true)]], false).ids).toEqual([2, 1])
   })
@@ -73,5 +88,45 @@ describe('product search rules', () => {
     expect(rankSearch(hits, false)).toEqual({ ids: [], complete: true })
     expect(rankSearch(hits, true)).toEqual({ ids: [3, 2, 1], complete: false })
     expect(rankSearch([[]], true)).toEqual({ ids: [], complete: true })
+  })
+
+  it('counts a swap of two letters as one edit', () => {
+    expect(editDistance('ecotnak', 'ecotank')).toBe(1)
+    expect(editDistance('epsom', 'epson')).toBe(1)
+    expect(editDistance('impresra', 'impresora')).toBe(1)
+    expect(editDistance('tinta', 'tinta')).toBe(0)
+    expect(editDistance('plotter', 'papel')).toBeGreaterThan(2)
+  })
+
+  it('learns the catalog words, in singular, with how many products use them', () => {
+    expect(catalogWords('Impresoras Multifuncionales EcoTank L3250 de 2 años')).toEqual([
+      'impresora',
+      'multifuncional',
+      'ecotank',
+      'año',
+    ])
+    const vocabulary = buildVocabulary(['Impresora EcoTank L3250', 'Impresora Fotográfica EcoTank L8050', 'Escáner'])
+    expect(vocabulary.get('ecotank')).toEqual({ word: 'ecotank', weight: 2 })
+    expect(vocabulary.get('fotografica')).toEqual({ word: 'fotográfica', weight: 1 })
+  })
+
+  it('corrects a misspelled word to the closest catalog word', () => {
+    const vocabulary = buildVocabulary([
+      'Impresora Multifuncional EcoTank L3250',
+      'Impresora EcoTank L1250',
+      'Botella de tinta Epson T544',
+      'Escáner Epson',
+      'Impresora de Sublimación SureColor F170',
+    ])
+    expect(closestTerm('ecotnak', vocabulary)).toBe('ecotank')
+    expect(closestTerm('epsom', vocabulary)).toBe('epson')
+    expect(closestTerm('impresra', vocabulary)).toBe('impresora')
+    expect(closestTerm('escaner', vocabulary)).toBeNull()
+    expect(closestTerm('sublimasion', vocabulary)).toBe('sublimación')
+    // Short words, codes and words too far from any are left as typed.
+    expect(closestTerm('tnta', vocabulary)).toBe('tinta')
+    expect(closestTerm('tnt', vocabulary)).toBeNull()
+    expect(closestTerm('l3260', vocabulary)).toBeNull()
+    expect(closestTerm('heladera', vocabulary)).toBeNull()
   })
 })

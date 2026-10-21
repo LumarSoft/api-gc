@@ -1,11 +1,13 @@
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common'
-import { SkipThrottle } from '@nestjs/throttler'
+import { SkipThrottle, Throttle } from '@nestjs/throttler'
 import { OptionalUser } from '../common/decorators/optional-user.decorator'
 import { OptionalJwtAuthGuard } from '../common/guards/optional-jwt-auth.guard'
 import type { AuthenticatedUser } from '../common/types/authenticated-user'
 import { ListProductsQueryDto } from './dto/list-products-query.dto'
-import { PaginatedProductsDto, ProductDetailDto } from './dto/product-response.dto'
+import { PaginatedProductsDto, ProductDetailDto, ProductSuggestionsDto } from './dto/product-response.dto'
 import { ProductSlugParamDto } from './dto/product-slug-param.dto'
+import { SuggestProductsQueryDto } from './dto/suggest-products-query.dto'
+import { ProductSuggestionsService } from './product-suggestions.service'
 import { ProductsService } from './products.service'
 
 /**
@@ -16,7 +18,10 @@ import { ProductsService } from './products.service'
 @Controller('products')
 @UseGuards(OptionalJwtAuthGuard)
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(
+    private readonly productsService: ProductsService,
+    private readonly suggestions: ProductSuggestionsService,
+  ) {}
 
   @Get()
   findAll(
@@ -24,6 +29,20 @@ export class ProductsController {
     @OptionalUser() user: AuthenticatedUser | undefined,
   ): Promise<PaginatedProductsDto> {
     return this.productsService.findAll(query, user)
+  }
+
+  /**
+   * The store's search box asks this while the customer types, from the browser: rate limited per visitor (unlike the
+   * routes above), generously, since a debounced search box sends a request every few keystrokes.
+   */
+  @Get('suggest')
+  @SkipThrottle({ default: false })
+  @Throttle({ default: { limit: 240, ttl: 60_000 } })
+  suggest(
+    @Query() query: SuggestProductsQueryDto,
+    @OptionalUser() user: AuthenticatedUser | undefined,
+  ): Promise<ProductSuggestionsDto> {
+    return this.suggestions.suggest(query.q, user)
   }
 
   @Get(':slug')

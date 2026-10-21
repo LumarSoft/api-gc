@@ -30,6 +30,8 @@
   from the front server's IP, so a per-IP limit would be shared by every visitor and take the store down under normal
   traffic. Today: `products`, `categories`, `tags`, `brands` and `GET /auth/me`.
 - `POST /activity` (anonymous stats events, called by the browser) has its own limit: 60 requests/min per IP.
+- `GET /products/suggest` (the search box, called by the browser while the customer types) is throttled per IP even
+  though the rest of `/products` is not: 240 requests/min.
 - `POST /assistant/messages` (AI sales assistant, each message costs model tokens) allows 10 requests/min per IP, on
   top of its per-conversation, per-visitor (a tenth of the daily tokens, 20 new conversations per hour) and daily
   token limits.

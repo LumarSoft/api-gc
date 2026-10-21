@@ -88,6 +88,31 @@ describe('Store activity and behavior stats (local MySQL e2e)', () => {
     expect(events[2]).toMatchObject({ searchQuery: `tinta ${suffix}`, resultCount: 0, productId: null })
   })
 
+  it("suggests the searches several visitors made and found, never one person's text", async () => {
+    const search = (query: string, resultCount = 3) => ({
+      type: ActivityType.SEARCH,
+      visitorId: randomUUID(),
+      searchQuery: query,
+      resultCount,
+    })
+    const popular = `ecopopular${suffix}`
+    await prisma.activityEvent.createMany({
+      data: [
+        ...[1, 2, 3].map(() => search(popular)),
+        // Two visitors are not enough; nothing found is not suggested; an email is never shown.
+        ...[1, 2].map(() => search(`dosvisitas${suffix}`)),
+        ...[1, 2, 3].map(() => search(`sinresultados${suffix}`, 0)),
+        ...[1, 2, 3].map(() => search(`ana${suffix}@example.com`)),
+      ],
+    })
+    const response = await request(app.getHttpServer()).get('/activity/popular-searches').expect(200)
+    const { searches } = response.body as { searches: string[] }
+    expect(searches).toContain(popular)
+    for (const hidden of [`dosvisitas${suffix}`, `sinresultados${suffix}`, `ana${suffix}@example.com`])
+      expect(searches).not.toContain(hidden)
+    expect(response.headers['cache-control']).toBe('public, max-age=600')
+  })
+
   it('ignores bots and rejects incomplete or unknown events', async () => {
     const visitorId = randomUUID()
     await send({ type: 'VISIT', visitorId }, 'Mozilla/5.0 (compatible; Googlebot/2.1)').expect(204)

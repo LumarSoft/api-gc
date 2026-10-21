@@ -2,6 +2,9 @@ import { Injectable } from '@nestjs/common'
 import { Prisma } from '../generated/prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import {
+  closestTerm,
+  fold,
+  HIT_WEIGHT,
   modelCode,
   rankSearch,
   searchForms,
@@ -9,8 +12,13 @@ import {
   type RankedSearch,
   type WordHit,
 } from './lib/product-search-rules'
+import { ProductSearchVocabulary } from './product-search-vocabulary.service'
+
+/** A ranked search and, when a misspelled word was corrected, the text actually searched ("ecotnak" → "ecotank"). */
+export type SearchMatch = RankedSearch & { correctedQuery: string | null }
 
 const HIT_SELECT = { id: true, isFeatured: true, publishedAt: true } satisfies Prisma.ProductSelect
+const STRONG_SELECT = { ...HIT_SELECT, name: true } satisfies Prisma.ProductSelect
 
 /**
  * Free-text search over products: each word of the text is searched with the catalog's names for it (wifi →
@@ -18,20 +26,42 @@ const HIT_SELECT = { id: true, isFeatured: true, publishedAt: true } satisfies P
  */
 @Injectable()
 export class ProductSearchService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly vocabulary: ProductSearchVocabulary,
+  ) {}
 
   /** Whether the text has anything to search for ("de la" has not). */
   hasWords(text: string): boolean {
     return searchWords(text).length > 0
   }
 
-  /** Products within `where` that match `text`, best first. See `rankSearch` for `partial`. */
-  async rank(text: string, where: Prisma.ProductWhereInput, partial: boolean): Promise<RankedSearch> {
+  /**
+   * Products within `where` that match `text`, best first. See `rankSearch` for `partial`. A word that finds nothing is
+   * searched again as the catalog word it most likely misspells.
+   */
+  async rank(text: string, where: Prisma.ProductWhereInput, partial: boolean): Promise<SearchMatch> {
     const words = searchWords(text)
-    return rankSearch(await Promise.all(words.map(word => this.hits(word, where))), partial)
+    const hits = await Promise.all(words.map(word => this.hits(word, where)))
+    const searched = [...words]
+    if (hits.some(found => !found.length)) {
+      const vocabulary = await this.vocabulary.get()
+      await Promise.all(
+        words.map(async (word, index) => {
+          const correction = hits[index].length || modelCode(word) ? null : closestTerm(word, vocabulary)
+          if (!correction) return
+          const corrected = await this.hits(correction, where)
+          if (!corrected.length) return
+          hits[index] = corrected
+          searched[index] = correction
+        }),
+      )
+    }
+    const corrected = searched.some((word, index) => word !== words[index])
+    return { ...rankSearch(hits, partial), correctedQuery: corrected ? searched.join(' ') : null }
   }
 
-  /** Products within `where` that match one word, telling whether it was in a strong field. */
+  /** Products within `where` that match one word, weighted by where it was found (`HIT_WEIGHT`). */
   private async hits(word: string, where: Prisma.ProductWhereInput): Promise<WordHit[]> {
     const forms = searchForms(word).map(escapeLike)
     const code = modelCode(word)
@@ -53,10 +83,20 @@ export class ProductSearchService {
       },
     }))
     const [strongRows, weakRows] = await Promise.all([
-      this.prisma.product.findMany({ where: { AND: [where, { OR: strong }] }, select: HIT_SELECT }),
+      this.prisma.product.findMany({ where: { AND: [where, { OR: strong }] }, select: STRONG_SELECT }),
       this.prisma.product.findMany({ where: { AND: [where, { OR: weak }] }, select: HIT_SELECT }),
     ])
-    return [...strongRows.map(row => ({ ...row, strong: true })), ...weakRows.map(row => ({ ...row, strong: false }))]
+    // Which strong matches are in the name (or a SKU / model code): the collation ignores accents, so compare folded.
+    const foldedForms = searchForms(word).map(fold)
+    const inName = (row: { id: number; name: string }): boolean =>
+      codeIds.includes(row.id) || foldedForms.some(form => fold(row.name.toLowerCase()).includes(form))
+    return [
+      ...strongRows.map(({ name, ...row }) => ({
+        ...row,
+        weight: inName({ id: row.id, name }) ? HIT_WEIGHT.name : HIT_WEIGHT.related,
+      })),
+      ...weakRows.map(row => ({ ...row, weight: HIT_WEIGHT.specification })),
+    ]
   }
 
   /** Products whose name or a SKU, without separators, contains the code ("TM-T20IV" for "tmt20"). */

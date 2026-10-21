@@ -19,6 +19,8 @@ const SEARCH_RESULTS = 8
 const SEARCH_CANDIDATES = 200
 
 export interface SearchResult {
+  /** The text actually searched when a misspelled word was corrected. */
+  searchedAs?: string
   total: number
   /** True when no product matched every word and the results match only some of them. */
   partialMatch: boolean
@@ -48,6 +50,7 @@ export class AssistantCatalogService {
     if (search.sort !== 'relevance')
       items = items.sort((a, b) => compareByPrice(a, b, search.sort === 'price-asc' ? 1 : -1))
     return {
+      ...(match.correctedQuery ? { searchedAs: match.correctedQuery } : {}),
       total: items.length,
       partialMatch: !match.complete,
       products: items.slice(0, SEARCH_RESULTS).map(productLine),
