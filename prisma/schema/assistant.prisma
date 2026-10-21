@@ -118,12 +118,16 @@ model AssistantMessage {
   toolCalls           Json?
   /// Answers only: product searches that found nothing (catalog gaps, missing synonyms).
   emptySearches       Int?
+  /// Customer messages only: the product page they wrote from (they can move around the store with the chat open).
+  productId           Int?
   createdAt           DateTime       @default(now())
 
   conversation AssistantConversation @relation(fields: [conversationId], references: [id])
+  product      Product?              @relation(fields: [productId], references: [id])
 
   @@index([conversationId, createdAt])
   @@index([createdAt])
+  @@index([productId])
 }
 
 /// A product added to the cart from one of the assistant's cards. Append-only (see database.md).

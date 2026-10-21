@@ -70,6 +70,7 @@ export const conversationDetailSelect = {
       durationMs: true,
       toolCalls: true,
       emptySearches: true,
+      productId: true,
       createdAt: true,
     },
   },

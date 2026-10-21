@@ -106,19 +106,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-hogar"
-      ],
+      "tags": ["uso-hogar"],
       "sourceUrl": "https://epson.com.ar/Para-el-hogar/Impresoras/Inyecci%C3%B3n-de-tinta/Impresora-Inal%C3%A1mbrica-EcoTank-L1250/p/C11CJ71303",
       "variants": [
         {
           "sku": "C11CJ71303",
           "name": null,
           "optionValues": null,
-          "images": [
-            "c11cj71303-1.jpg",
-            "c11cj71303-2.jpg"
-          ],
+          "images": ["c11cj71303-1.jpg", "c11cj71303-2.jpg"],
           "samplePrice": {
             "amount": "329999.00",
             "currency": "ARS",
@@ -258,19 +253,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-hogar"
-      ],
+      "tags": ["uso-hogar"],
       "sourceUrl": "https://epson.com.ar/Para-el-hogar/Impresoras/Inyecci%C3%B3n-de-tinta/Impresora-Multifuncional-EcoTank-L3210/p/C11CJ68303",
       "variants": [
         {
           "sku": "C11CJ68303",
           "name": null,
           "optionValues": null,
-          "images": [
-            "c11cj68303-1.jpg",
-            "c11cj68303-2.jpg"
-          ],
+          "images": ["c11cj68303-1.jpg", "c11cj68303-2.jpg"],
           "samplePrice": {
             "amount": "379999.00",
             "currency": "ARS",
@@ -440,19 +430,14 @@
         }
       ],
       "isFeatured": true,
-      "tags": [
-        "uso-hogar"
-      ],
+      "tags": ["uso-hogar"],
       "sourceUrl": "https://epson.com.ar/Para-el-hogar/Impresoras/Inyecci%C3%B3n-de-tinta/Impresora-Multifuncional-Inl%C3%A1mbrica-EcoTank-L3250/p/C11CJ67304",
       "variants": [
         {
           "sku": "C11CJ67304",
           "name": null,
           "optionValues": null,
-          "images": [
-            "c11cj67304-1.jpg",
-            "c11cj67304-2.jpg"
-          ],
+          "images": ["c11cj67304-1.jpg", "c11cj67304-2.jpg"],
           "samplePrice": {
             "amount": "419999.00",
             "currency": "ARS",
@@ -477,19 +462,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-hogar"
-      ],
+      "tags": ["uso-hogar"],
       "sourceUrl": "https://epson.com.ar/Para-el-hogar/Impresoras/Inyecci%C3%B3n-de-tinta/Impresora-Multifuncional-EcoTank-L3560/p/C11CK58302",
       "variants": [
         {
           "sku": "C11CK58302",
           "name": null,
           "optionValues": null,
-          "images": [
-            "c11ck58302-1.jpg",
-            "c11ck58302-2.jpg"
-          ],
+          "images": ["c11ck58302-1.jpg", "c11ck58302-2.jpg"],
           "samplePrice": {
             "amount": "489999.00",
             "currency": "ARS",
@@ -514,19 +494,14 @@
         }
       ],
       "isFeatured": true,
-      "tags": [
-        "uso-hogar"
-      ],
+      "tags": ["uso-hogar"],
       "sourceUrl": "https://epson.com.ar/Para-el-hogar/Impresoras/Inyecci%C3%B3n-de-tinta/Epson-EcoTank-L4360-Impresora-Multifuncional-a-Color-Wi-Fi-y-D%C3%BAplex/p/C11CL41303",
       "variants": [
         {
           "sku": "C11CL41303",
           "name": null,
           "optionValues": null,
-          "images": [
-            "c11cl41303-1.jpg",
-            "c11cl41303-2.jpg"
-          ],
+          "images": ["c11cl41303-1.jpg", "c11cl41303-2.jpg"],
           "samplePrice": {
             "amount": "599999.00",
             "currency": "ARS",
@@ -551,19 +526,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-hogar"
-      ],
+      "tags": ["uso-hogar"],
       "sourceUrl": "https://epson.com.ar/Para-el-hogar/Impresoras/Inyecci%C3%B3n-de-tinta/Epson-Impresora-EcoTank-L1350-a-Color-con-Wi-Fi/p/C11CL65303",
       "variants": [
         {
           "sku": "C11CL65303",
           "name": null,
           "optionValues": null,
-          "images": [
-            "c11cl65303-1.jpg",
-            "c11cl65303-2.jpg"
-          ],
+          "images": ["c11cl65303-1.jpg", "c11cl65303-2.jpg"],
           "samplePrice": {
             "amount": "349999.00",
             "currency": "ARS",
@@ -588,19 +558,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-hogar"
-      ],
+      "tags": ["uso-hogar"],
       "sourceUrl": "https://epson.com.ar/Para-el-hogar/Impresoras/Inyecci%C3%B3n-de-tinta/Epson-Impresora-Multifuncional-EcoTank-L3350-a-Color-con-Wi-Fi/p/C11CL62306",
       "variants": [
         {
           "sku": "C11CL62306",
           "name": null,
           "optionValues": null,
-          "images": [
-            "c11cl62306-1.jpg",
-            "c11cl62306-2.jpg"
-          ],
+          "images": ["c11cl62306-1.jpg", "c11cl62306-2.jpg"],
           "samplePrice": {
             "amount": "449999.00",
             "currency": "ARS",
@@ -625,20 +590,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-foto",
-        "uso-hogar"
-      ],
+      "tags": ["uso-foto", "uso-hogar"],
       "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Fotos/Impresora-Fotogr%C3%A1fica-Inal%C3%A1mbrica-EcoTank-L8050/p/C11CK37301",
       "variants": [
         {
           "sku": "C11CK37301",
           "name": null,
           "optionValues": null,
-          "images": [
-            "c11ck37301-1.jpg",
-            "c11ck37301-2.jpg"
-          ],
+          "images": ["c11ck37301-1.jpg", "c11ck37301-2.jpg"],
           "samplePrice": {
             "amount": "899999.00",
             "currency": "ARS",
@@ -813,20 +772,14 @@
         }
       ],
       "isFeatured": true,
-      "tags": [
-        "uso-foto",
-        "uso-hogar"
-      ],
+      "tags": ["uso-foto", "uso-hogar"],
       "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Fotos/Impresora-Multifuncional-Epson-EcoTank-L8180/p/C11CJ21303",
       "variants": [
         {
           "sku": "C11CJ21303",
           "name": null,
           "optionValues": null,
-          "images": [
-            "c11cj21303-1.jpg",
-            "c11cj21303-2.jpg"
-          ],
+          "images": ["c11cj21303-1.jpg", "c11cj21303-2.jpg"],
           "samplePrice": {
             "amount": "1399999.00",
             "currency": "ARS",
@@ -1001,20 +954,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-foto",
-        "uso-hogar"
-      ],
+      "tags": ["uso-foto", "uso-hogar"],
       "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Fotos/Impresora-Multifuncional-Epson-EcoTank-L8160/p/C11CJ20303",
       "variants": [
         {
           "sku": "C11CJ20303",
           "name": null,
           "optionValues": null,
-          "images": [
-            "c11cj20303-1.jpg",
-            "c11cj20303-2.jpg"
-          ],
+          "images": ["c11cj20303-1.jpg", "c11cj20303-2.jpg"],
           "samplePrice": {
             "amount": "1199999.00",
             "currency": "ARS",
@@ -1204,20 +1151,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-foto",
-        "uso-hogar"
-      ],
+      "tags": ["uso-foto", "uso-hogar"],
       "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Gran-Formato/Impresora-Fotogr%C3%A1fica-de-17%22-SureColor-P900/p/C11CH37301",
       "variants": [
         {
           "sku": "C11CH37301",
           "name": null,
           "optionValues": null,
-          "images": [
-            "c11ch37301-1.jpg",
-            "c11ch37301-2.jpg"
-          ],
+          "images": ["c11ch37301-1.jpg", "c11ch37301-2.jpg"],
           "samplePrice": {
             "amount": "1490.00",
             "currency": "USD",
@@ -1242,19 +1183,14 @@
         }
       ],
       "isFeatured": true,
-      "tags": [
-        "uso-oficina"
-      ],
+      "tags": ["uso-oficina"],
       "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Inyecci%C3%B3n-de-Tinta/Impresora-Multifuncional-Inal%C3%A1mbrica-EcoTank-L6490/p/C11CJ88303",
       "variants": [
         {
           "sku": "C11CJ88303",
           "name": null,
           "optionValues": null,
-          "images": [
-            "c11cj88303-1.jpg",
-            "c11cj88303-2.jpg"
-          ],
+          "images": ["c11cj88303-1.jpg", "c11cj88303-2.jpg"],
           "samplePrice": {
             "amount": "1099999.00",
             "currency": "ARS",
@@ -1444,19 +1380,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-oficina"
-      ],
+      "tags": ["uso-oficina"],
       "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Inyecci%C3%B3n-de-Tinta/Impresora-Multifuncional-Inal%C3%A1mbrica-EcoTank-L5290/p/C11CJ65303",
       "variants": [
         {
           "sku": "C11CJ65303",
           "name": null,
           "optionValues": null,
-          "images": [
-            "c11cj65303-1.jpg",
-            "c11cj65303-2.jpg"
-          ],
+          "images": ["c11cj65303-1.jpg", "c11cj65303-2.jpg"],
           "samplePrice": {
             "amount": "699999.00",
             "currency": "ARS",
@@ -1646,19 +1577,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-oficina"
-      ],
+      "tags": ["uso-oficina"],
       "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Inyecci%C3%B3n-de-Tinta/Impresora-Multifuncional-Epson-EcoTank-L6270/p/C11CJ61303",
       "variants": [
         {
           "sku": "C11CJ61303",
           "name": null,
           "optionValues": null,
-          "images": [
-            "c11cj61303-1.jpg",
-            "c11cj61303-2.jpg"
-          ],
+          "images": ["c11cj61303-1.jpg", "c11cj61303-2.jpg"],
           "samplePrice": {
             "amount": "829999.00",
             "currency": "ARS",
@@ -1928,19 +1854,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-oficina"
-      ],
+      "tags": ["uso-oficina"],
       "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Inyecci%C3%B3n-de-Tinta/Impresora-Multifuncional-Epson-EcoTank-L14150/p/C11CH96303",
       "variants": [
         {
           "sku": "C11CH96303",
           "name": null,
           "optionValues": null,
-          "images": [
-            "c11ch96303-1.jpg",
-            "c11ch96303-2.jpg"
-          ],
+          "images": ["c11ch96303-1.jpg", "c11ch96303-2.jpg"],
           "samplePrice": {
             "amount": "1299999.00",
             "currency": "ARS",
@@ -2195,19 +2116,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-oficina"
-      ],
+      "tags": ["uso-oficina"],
       "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Inyecci%C3%B3n-de-Tinta/Impresora-Multifuncional-Blanco-y-Negro-EcoTank-M2120/p/C11CJ18301",
       "variants": [
         {
           "sku": "C11CJ18301",
           "name": null,
           "optionValues": null,
-          "images": [
-            "c11cj18301-1.jpg",
-            "c11cj18301-2.jpg"
-          ],
+          "images": ["c11cj18301-1.jpg", "c11cj18301-2.jpg"],
           "samplePrice": {
             "amount": "649999.00",
             "currency": "ARS",
@@ -2232,19 +2148,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-oficina"
-      ],
+      "tags": ["uso-oficina"],
       "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Inyecci%C3%B3n-de-Tinta/Impresora-WorkForce-Pro-WF-C5890/p/C11CK23301",
       "variants": [
         {
           "sku": "C11CK23301",
           "name": null,
           "optionValues": null,
-          "images": [
-            "c11ck23301-1.jpg",
-            "c11ck23301-2.jpg"
-          ],
+          "images": ["c11ck23301-1.jpg", "c11ck23301-2.jpg"],
           "samplePrice": {
             "amount": "990.00",
             "currency": "USD",
@@ -2434,19 +2345,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-oficina"
-      ],
+      "tags": ["uso-oficina"],
       "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Inyecci%C3%B3n-de-Tinta/Impresora-multifuncional-Epson-EcoTank-L4260/p/C11CJ63303",
       "variants": [
         {
           "sku": "C11CJ63303",
           "name": null,
           "optionValues": null,
-          "images": [
-            "c11cj63303-1.jpg",
-            "c11cj63303-2.jpg"
-          ],
+          "images": ["c11cj63303-1.jpg", "c11cj63303-2.jpg"],
           "samplePrice": {
             "amount": "539999.00",
             "currency": "ARS",
@@ -2631,19 +2537,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-gran-formato"
-      ],
+      "tags": ["uso-gran-formato"],
       "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Gran-Formato/Impresora-Inal%C3%A1mbrica-SureColor-T5170M-36%22-con-Esc%C3%A1ner-Integrado/p/SCT5170M",
       "variants": [
         {
           "sku": "SCT5170M",
           "name": null,
           "optionValues": null,
-          "images": [
-            "sct5170m-1.jpg",
-            "sct5170m-2.jpg"
-          ],
+          "images": ["sct5170m-1.jpg", "sct5170m-2.jpg"],
           "samplePrice": {
             "amount": "3990.00",
             "currency": "USD",
@@ -2848,19 +2749,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-gran-formato"
-      ],
+      "tags": ["uso-gran-formato"],
       "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Gran-Formato/Impresora-de-Escritorio-SureColor-T3170x-24%22/p/SCT3170X",
       "variants": [
         {
           "sku": "SCT3170X",
           "name": null,
           "optionValues": null,
-          "images": [
-            "sct3170x-1.jpg",
-            "sct3170x-2.jpg"
-          ],
+          "images": ["sct3170x-1.jpg", "sct3170x-2.jpg"],
           "samplePrice": {
             "amount": "2190.00",
             "currency": "USD",
@@ -2885,19 +2781,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-gran-formato"
-      ],
+      "tags": ["uso-gran-formato"],
       "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Gran-Formato/Impresora-de-Gran-Formato-SureColor-P7370-de-24%E2%80%9D/p/SCP7370SE",
       "variants": [
         {
           "sku": "SCP7370SE",
           "name": null,
           "optionValues": null,
-          "images": [
-            "scp7370se-1.jpg",
-            "scp7370se-2.jpg"
-          ],
+          "images": ["scp7370se-1.jpg", "scp7370se-2.jpg"],
           "samplePrice": {
             "amount": "6490.00",
             "currency": "USD",
@@ -3112,19 +3003,14 @@
         }
       ],
       "isFeatured": true,
-      "tags": [
-        "uso-textil"
-      ],
+      "tags": ["uso-textil"],
       "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Gran-Formato/Impresora-de-Sublimaci%C3%B3n-de-Tinta-SureColor-F170/p/C11CJ80201",
       "variants": [
         {
           "sku": "C11CJ80201",
           "name": null,
           "optionValues": null,
-          "images": [
-            "c11cj80201-1.jpg",
-            "c11cj80201-2.jpg"
-          ],
+          "images": ["c11cj80201-1.jpg", "c11cj80201-2.jpg"],
           "samplePrice": {
             "amount": "890.00",
             "currency": "USD",
@@ -3359,19 +3245,14 @@
         }
       ],
       "isFeatured": true,
-      "tags": [
-        "uso-textil"
-      ],
+      "tags": ["uso-textil"],
       "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Gran-Formato/Impresora-Epson-SureColor-F570/p/SCF570LA",
       "variants": [
         {
           "sku": "SCF570LA",
           "name": null,
           "optionValues": null,
-          "images": [
-            "scf570la-1.jpg",
-            "scf570la-2.jpg"
-          ],
+          "images": ["scf570la-1.jpg", "scf570la-2.jpg"],
           "samplePrice": {
             "amount": "2890.00",
             "currency": "USD",
@@ -3396,19 +3277,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-textil"
-      ],
+      "tags": ["uso-textil"],
       "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Gran-Formato/Impresora-de-Sublimaci%C3%B3n-SureColor-F6470-de-44%22/p/SCF6470PE",
       "variants": [
         {
           "sku": "SCF6470PE",
           "name": null,
           "optionValues": null,
-          "images": [
-            "scf6470pe-1.jpg",
-            "scf6470pe-2.jpg"
-          ],
+          "images": ["scf6470pe-1.jpg", "scf6470pe-2.jpg"],
           "samplePrice": {
             "amount": "9900.00",
             "currency": "USD",
@@ -3533,19 +3409,14 @@
         }
       ],
       "isFeatured": true,
-      "tags": [
-        "uso-oficina"
-      ],
+      "tags": ["uso-oficina"],
       "sourceUrl": "https://epson.com.ar/Para-el-hogar/Esc%C3%A1neres/Esc%C3%A1neres-de-documentos/Esc%C3%A1ner-D%C3%BAplex-de-Documentos-WorkForce-ES-400-II/p/B11B261201",
       "variants": [
         {
           "sku": "B11B261201",
           "name": null,
           "optionValues": null,
-          "images": [
-            "b11b261201-1.jpg",
-            "b11b261201-2.jpg"
-          ],
+          "images": ["b11b261201-1.jpg", "b11b261201-2.jpg"],
           "samplePrice": {
             "amount": "899999.00",
             "currency": "ARS",
@@ -3675,19 +3546,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-oficina"
-      ],
+      "tags": ["uso-oficina"],
       "sourceUrl": "https://epson.com.ar/Para-el-hogar/Esc%C3%A1neres/Esc%C3%A1neres-de-documentos/Esc%C3%A1ner-de-Documentos-D%C3%BAplex-Inal%C3%A1mbrico-WorkForce-ES-580W/p/B11B258201",
       "variants": [
         {
           "sku": "B11B258201",
           "name": null,
           "optionValues": null,
-          "images": [
-            "b11b258201-1.jpg",
-            "b11b258201-2.jpg"
-          ],
+          "images": ["b11b258201-1.jpg", "b11b258201-2.jpg"],
           "samplePrice": {
             "amount": "1149999.00",
             "currency": "ARS",
@@ -3712,19 +3578,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-oficina"
-      ],
+      "tags": ["uso-oficina"],
       "sourceUrl": "https://epson.com.ar/Para-el-hogar/Esc%C3%A1neres/Fotos/Esc%C3%A1ner-de-Cama-Plana-Epson-Perfection-V39-II-para-Fotograf%C3%ADas-y-Documentos-a-color/p/B11B268201",
       "variants": [
         {
           "sku": "B11B268201",
           "name": null,
           "optionValues": null,
-          "images": [
-            "b11b268201-1.jpg",
-            "b11b268201-2.jpg"
-          ],
+          "images": ["b11b268201-1.jpg", "b11b268201-2.jpg"],
           "samplePrice": {
             "amount": "239999.00",
             "currency": "ARS",
@@ -3749,19 +3610,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-oficina"
-      ],
+      "tags": ["uso-oficina"],
       "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Esc%C3%A1neres/Esc%C3%A1neres-de-documentos/Epson-DS-C330-Esc%C3%A1ner-Compacto-de-Documentos-con-Alimentador-Autom%C3%A1tico/p/B11B272201",
       "variants": [
         {
           "sku": "B11B272201",
           "name": null,
           "optionValues": null,
-          "images": [
-            "b11b272201-1.jpg",
-            "b11b272201-2.jpg"
-          ],
+          "images": ["b11b272201-1.jpg", "b11b272201-2.jpg"],
           "samplePrice": {
             "amount": "699999.00",
             "currency": "ARS",
@@ -3901,19 +3757,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-oficina"
-      ],
+      "tags": ["uso-oficina"],
       "sourceUrl": "https://epson.com.ar/Para-el-hogar/Esc%C3%A1neres/Esc%C3%A1neres-de-documentos/Esc%C3%A1ner-Port%C3%A1til-Inal%C3%A1mbrico-WorkForce-ES-60W/p/B11B253201",
       "variants": [
         {
           "sku": "B11B253201",
           "name": null,
           "optionValues": null,
-          "images": [
-            "b11b253201-1.jpg",
-            "b11b253201-2.jpg"
-          ],
+          "images": ["b11b253201-1.jpg", "b11b253201-2.jpg"],
           "samplePrice": {
             "amount": "549999.00",
             "currency": "ARS",
@@ -3938,9 +3789,7 @@
         }
       ],
       "isFeatured": true,
-      "tags": [
-        "uso-hogar"
-      ],
+      "tags": ["uso-hogar"],
       "sourceUrl": "https://epson.com.ar/Para-el-hogar/Proyectores/Cine-en-Casa/Proyector-L%C3%A1ser-Port%C3%A1til-Smart-Epson-EF21---Rosa-Cuarzo/p/V11HB35220",
       "variants": [
         {
@@ -3949,10 +3798,7 @@
           "optionValues": {
             "Color": "Rosa Cuarzo"
           },
-          "images": [
-            "v11hb35220-1.jpg",
-            "v11hb35220-2.jpg"
-          ],
+          "images": ["v11hb35220-1.jpg", "v11hb35220-2.jpg"],
           "samplePrice": {
             "amount": "990.00",
             "currency": "USD",
@@ -3966,9 +3812,7 @@
           "optionValues": {
             "Color": "Blanco Diamante"
           },
-          "images": [
-            "v11hb35020-1.jpg"
-          ],
+          "images": ["v11hb35020-1.jpg"],
           "samplePrice": {
             "amount": "990.00",
             "currency": "USD",
@@ -3982,9 +3826,7 @@
           "optionValues": {
             "Color": "Verde Ópalo"
           },
-          "images": [
-            "v11hb35320-1.jpg"
-          ],
+          "images": ["v11hb35320-1.jpg"],
           "samplePrice": {
             "amount": "990.00",
             "currency": "USD",
@@ -4009,9 +3851,7 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-hogar"
-      ],
+      "tags": ["uso-hogar"],
       "sourceUrl": "https://epson.com.ar/Para-el-hogar/Proyectores/Cine-en-Casa/Proyector-Smart-Port%C3%A1til-Lifestudio-Pop-EF-61---Verde-Humo---Full-HD/p/V11HB72321",
       "variants": [
         {
@@ -4020,10 +3860,7 @@
           "optionValues": {
             "Color": "Verde Humo"
           },
-          "images": [
-            "v11hb72321-1.jpg",
-            "v11hb72321-2.jpg"
-          ],
+          "images": ["v11hb72321-1.jpg", "v11hb72321-2.jpg"],
           "samplePrice": {
             "amount": "1190.00",
             "currency": "USD",
@@ -4037,9 +3874,7 @@
           "optionValues": {
             "Color": "Beige Rosado"
           },
-          "images": [
-            "v11hb72221-1.jpg"
-          ],
+          "images": ["v11hb72221-1.jpg"],
           "samplePrice": {
             "amount": "1190.00",
             "currency": "USD",
@@ -4053,9 +3888,7 @@
           "optionValues": {
             "Color": "Blanco Cálido"
           },
-          "images": [
-            "v11hb72021-1.jpg"
-          ],
+          "images": ["v11hb72021-1.jpg"],
           "samplePrice": {
             "amount": "1190.00",
             "currency": "USD",
@@ -4080,19 +3913,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-hogar"
-      ],
+      "tags": ["uso-hogar"],
       "sourceUrl": "https://epson.com.ar/Para-el-hogar/Proyectores/Cine-en-Casa/Proyector-Home-Cinema-2300-para-Videojuegos/p/V11HA74020",
       "variants": [
         {
           "sku": "V11HA74020",
           "name": null,
           "optionValues": null,
-          "images": [
-            "v11ha74020-1.jpg",
-            "v11ha74020-2.jpg"
-          ],
+          "images": ["v11ha74020-1.jpg", "v11ha74020-2.jpg"],
           "samplePrice": {
             "amount": "1090.00",
             "currency": "USD",
@@ -4257,19 +4085,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-hogar"
-      ],
+      "tags": ["uso-hogar"],
       "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Proyectores/Port%C3%A1til/Proyector-Epson-PowerLite-FH52%2B/p/V11H978021",
       "variants": [
         {
           "sku": "V11H978021",
           "name": null,
           "optionValues": null,
-          "images": [
-            "v11h978021-1.jpg",
-            "v11h978021-2.jpg"
-          ],
+          "images": ["v11h978021-1.jpg", "v11h978021-2.jpg"],
           "samplePrice": {
             "amount": "990.00",
             "currency": "USD",
@@ -4294,19 +4117,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-hogar"
-      ],
+      "tags": ["uso-hogar"],
       "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Proyectores/Proyectores-para-Salas-de-Clases-/Proyector-Port%C3%A1til-PowerLite-E24/p/V11HB51021",
       "variants": [
         {
           "sku": "V11HB51021",
           "name": null,
           "optionValues": null,
-          "images": [
-            "v11hb51021-1.jpg",
-            "v11hb51021-2.jpg"
-          ],
+          "images": ["v11hb51021-1.jpg", "v11hb51021-2.jpg"],
           "samplePrice": {
             "amount": "590.00",
             "currency": "USD",
@@ -4331,19 +4149,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-comercio"
-      ],
+      "tags": ["uso-comercio"],
       "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Punto-de-Venta/Impresora-T%C3%A9rmica-de-Recibos-TM-T20IV-SP/p/C31CL47022",
       "variants": [
         {
           "sku": "C31CL47022",
           "name": null,
           "optionValues": null,
-          "images": [
-            "c31cl47022-1.jpg",
-            "c31cl47022-2.jpg"
-          ],
+          "images": ["c31cl47022-1.jpg", "c31cl47022-2.jpg"],
           "samplePrice": {
             "amount": "289999.00",
             "currency": "ARS",
@@ -4368,19 +4181,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-comercio"
-      ],
+      "tags": ["uso-comercio"],
       "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Punto-de-Venta/Impresora-T%C3%A9rmica-de-Recibos-TM-m30III/p/C31CK50012",
       "variants": [
         {
           "sku": "C31CK50012",
           "name": null,
           "optionValues": null,
-          "images": [
-            "c31ck50012-1.jpg",
-            "c31ck50012-2.jpg"
-          ],
+          "images": ["c31ck50012-1.jpg", "c31ck50012-2.jpg"],
           "samplePrice": {
             "amount": "469999.00",
             "currency": "ARS",
@@ -4405,19 +4213,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-comercio"
-      ],
+      "tags": ["uso-comercio"],
       "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Punto-de-Venta/Impresora-T%C3%A9rmica-de-Etiquetas-TM-L100/p/C31CJ52001",
       "variants": [
         {
           "sku": "C31CJ52001",
           "name": null,
           "optionValues": null,
-          "images": [
-            "c31cj52001-1.jpg",
-            "c31cj52001-2.jpg"
-          ],
+          "images": ["c31cj52001-1.jpg", "c31cj52001-2.jpg"],
           "samplePrice": {
             "amount": "399999.00",
             "currency": "ARS",
@@ -4587,19 +4390,14 @@
         }
       ],
       "isFeatured": false,
-      "tags": [
-        "uso-comercio"
-      ],
+      "tags": ["uso-comercio"],
       "sourceUrl": "https://epson.com.ar/Para-el-trabajo/Impresoras/Punto-de-Venta/Impresora-port%C3%A1til-de-recibos-Epson-TM-P60II/p/C31CC79011",
       "variants": [
         {
           "sku": "C31CC79011",
           "name": null,
           "optionValues": null,
-          "images": [
-            "c31cc79011-1.jpg",
-            "c31cc79011-2.jpg"
-          ],
+          "images": ["c31cc79011-1.jpg", "c31cc79011-2.jpg"],
           "samplePrice": {
             "amount": "549999.00",
             "currency": "ARS",
@@ -4624,18 +4422,10 @@
         }
       ],
       "isFeatured": true,
-      "tags": [
-        "uso-hogar",
-        "uso-oficina"
-      ],
+      "tags": ["uso-hogar", "uso-oficina"],
       "sourceUrl": null,
       "needsReview": "TODO(client-data): confirm SKUs, contents and compatible models; add official photos",
-      "compatibleWith": [
-        "C11CJ71303",
-        "C11CJ68303",
-        "C11CJ67304",
-        "C11CJ65303"
-      ],
+      "compatibleWith": ["C11CJ71303", "C11CJ68303", "C11CJ67304", "C11CJ65303"],
       "variants": [
         {
           "sku": "T544120-AL",

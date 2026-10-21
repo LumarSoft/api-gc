@@ -16,6 +16,19 @@ npm run doctor             # tells you if anything else is missing
 
 ---
 
+## 2026-10-21 — Product page of each assistant message (migration)
+
+Each customer message to the assistant now stores the product page it was written from (`AssistantMessage.productId`),
+so the assistant knows what "this one" is as the customer moves around the store:
+
+```bash
+npx prisma migrate dev && npx prisma generate
+```
+
+Production: `npx prisma migrate deploy` before starting the new build, together with the entry below.
+
+---
+
 ## 2026-10-21 — Assistant answer trace and cart adds (migration)
 
 The assistant now records how each answer went (outcome, duration, the tools it used) and the products added to the

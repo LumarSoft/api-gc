@@ -87,13 +87,23 @@ export class AssistantCatalogService {
     )
   }
 
-  /** Name of a visible product, to tell the model which page the customer is on. */
-  async visibleName(slug: string): Promise<string | null> {
+  /** The visible product whose page the customer is on, to tell the model what "this one" is. */
+  async viewedProduct(slug: string): Promise<{ id: number; name: string; slug: string } | null> {
     const product = await this.prisma.product.findFirst({
       where: { slug, deletedAt: null, status: ProductStatus.PUBLISHED },
+      select: { id: true, name: true, slug: true },
+    })
+    return product && (await this.products.isVisible(product.id)) ? product : null
+  }
+
+  /** Names of products by id (also archived ones: they name the page an old message was written from). */
+  async productNames(ids: number[]): Promise<Map<number, string>> {
+    if (!ids.length) return new Map()
+    const rows = await this.prisma.product.findMany({
+      where: { id: { in: [...new Set(ids)] } },
       select: { id: true, name: true },
     })
-    return product && (await this.products.isVisible(product.id)) ? product.name : null
+    return new Map(rows.map(row => [row.id, row.name]))
   }
 
   /** Category (with its subcategories) and use filters. Unknown slugs are an error the model can correct. */

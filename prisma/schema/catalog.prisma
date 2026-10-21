@@ -114,6 +114,7 @@ model Product {
   promotionTargets      PromotionTarget[]
   activityEvents        ActivityEvent[]
   assistantCartAdds     AssistantCartAdd[]
+  assistantMessages     AssistantMessage[]
 
   @@index([brandId])
   @@index([categoryId])

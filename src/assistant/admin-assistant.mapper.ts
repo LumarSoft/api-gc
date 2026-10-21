@@ -69,6 +69,7 @@ export class AdminAssistantMapper {
         inputTokens: message.inputTokens,
         outputTokens: message.outputTokens,
         products: storedProductIds(message.recommendedProducts).flatMap(id => cards.get(id) ?? []),
+        page: message.productId === null ? null : (cards.get(message.productId) ?? null),
         outcome: message.outcome,
         durationMs: message.durationMs,
         tools: storedTraces(message.toolCalls),
