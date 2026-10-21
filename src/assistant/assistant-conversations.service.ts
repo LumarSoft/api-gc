@@ -5,7 +5,7 @@ import { generateSecureToken, hashToken } from '../common/utils/secure-token'
 import { ConversationStatus, MessageRole } from '../generated/prisma/enums'
 import { PrismaService } from '../prisma/prisma.service'
 import { HISTORY_MESSAGES } from './lib/assistant-limits'
-import type { StoredMessage } from './lib/assistant-history'
+import { storedProductIds, type StoredMessage } from './lib/assistant-history'
 
 export interface OpenConversation {
   id: number
@@ -106,7 +106,7 @@ export class AssistantConversationsService {
     return messages.reverse().map(message => ({
       role: message.role === MessageRole.USER ? 'user' : 'assistant',
       text: message.content,
-      productIds: productIds(message.recommendedProducts),
+      productIds: storedProductIds(message.recommendedProducts),
     }))
   }
 
@@ -132,9 +132,4 @@ export class AssistantConversationsService {
     })
     return (totals._sum.inputTokens ?? 0) + (totals._sum.outputTokens ?? 0)
   }
-}
-
-/** `recommendedProducts` holds product ids, e.g. [12, 48]. */
-function productIds(value: unknown): number[] {
-  return Array.isArray(value) ? value.filter((id): id is number => Number.isInteger(id)) : []
 }

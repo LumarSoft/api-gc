@@ -136,7 +136,7 @@ Current state: the **full database schema** is defined (`prisma/schema/`, one fi
 (booking carrier shipments, labels, cancellation and the provider's status webhook), `MercadoPagoModule` (payment
 provider behind `PAYMENT_GATEWAY`), `PaymentsModule` (Mercado Pago checkout of orders, the buyer's return and the signed
 webhook), `AssistantModule` (AI sales assistant over the catalog, OpenAI behind `ASSISTANT_MODEL`, streamed
-answers), `FavoritesModule`
+answers; staff read its conversations, unanswered questions and usage under `/admin/assistant`), `FavoritesModule`
 (signed-in customers' saved products, cards built by `ProductsService`), `WholesaleApplicationsModule`
 ("clientes frecuentes": customer applications and staff approve/reject/pause/resume, audited), `MailModule`,
 `FilesModule` (storage + admin image upload), `AuditLogsModule` (record every admin change — see "Admin routes" in
