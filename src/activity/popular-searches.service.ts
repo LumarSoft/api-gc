@@ -29,7 +29,8 @@ export class PopularSearchesService {
     const rows = await this.prisma.$queryRaw<{ query: string }[]>`
       SELECT searchQuery AS query
       FROM ActivityEvent
-      WHERE type = ${ActivityType.SEARCH} AND createdAt >= ${since} AND resultCount > 0 AND searchQuery IS NOT NULL
+      WHERE type = ${ActivityType.SEARCH} AND createdAt >= ${since} AND createdAt <= ${now} AND resultCount > 0
+        AND searchQuery IS NOT NULL
       GROUP BY searchQuery
       HAVING COUNT(DISTINCT visitorId) >= ${POPULAR_SEARCH_MIN_VISITORS}
       ORDER BY COUNT(DISTINCT visitorId) DESC, COUNT(*) DESC, query

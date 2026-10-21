@@ -8,6 +8,7 @@ import { randomBytes, randomUUID } from 'node:crypto'
 import request from 'supertest'
 import type { App } from 'supertest/types'
 import type { AdminBehaviorDto } from '../src/analytics/dto/behavior-response.dto'
+import { PopularSearchesService } from '../src/activity/popular-searches.service'
 import { AppModule } from '../src/app.module'
 import { PrismaExceptionFilter } from '../src/common/filters/prisma-exception.filter'
 import { ActivityType, CartStatus, ProductStatus, UserRole } from '../src/generated/prisma/enums'
@@ -89,11 +90,16 @@ describe('Store activity and behavior stats (local MySQL e2e)', () => {
   })
 
   it("suggests the searches several visitors made and found, never one person's text", async () => {
+    // Searches of a past day only this run is likely to use (the funnel test below uses 2021 onwards), read as of the
+    // next day: the test database keeps every earlier run's searches, and enough of them would push this one out of
+    // the list.
+    const day = Date.UTC(2000, 0, 1) + (parseInt(suffix.slice(0, 6), 16) % 7000) * DAY_MS
     const search = (query: string, resultCount = 3) => ({
       type: ActivityType.SEARCH,
       visitorId: randomUUID(),
       searchQuery: query,
       resultCount,
+      createdAt: new Date(day),
     })
     const popular = `ecopopular${suffix}`
     await prisma.activityEvent.createMany({
@@ -105,11 +111,14 @@ describe('Store activity and behavior stats (local MySQL e2e)', () => {
         ...[1, 2, 3].map(() => search(`ana${suffix}@example.com`)),
       ],
     })
-    const response = await request(app.getHttpServer()).get('/activity/popular-searches').expect(200)
-    const { searches } = response.body as { searches: string[] }
+    // A new instance: the app's one caches what it read for 10 minutes.
+    const { searches } = await new PopularSearchesService(prisma).list(new Date(day + DAY_MS))
     expect(searches).toContain(popular)
     for (const hidden of [`dosvisitas${suffix}`, `sinresultados${suffix}`, `ana${suffix}@example.com`])
       expect(searches).not.toContain(hidden)
+
+    const response = await request(app.getHttpServer()).get('/activity/popular-searches').expect(200)
+    expect((response.body as { searches: unknown }).searches).toEqual(expect.any(Array))
     expect(response.headers['cache-control']).toBe('public, max-age=600')
   })
 
