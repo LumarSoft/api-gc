@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { Prisma } from '../generated/prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import {
+  CATEGORY_BONUS,
   closestTerm,
   fold,
   HIT_WEIGHT,
@@ -9,6 +10,7 @@ import {
   rankSearch,
   searchForms,
   searchWords,
+  startsAWord,
   type RankedSearch,
   type WordHit,
 } from './lib/product-search-rules'
@@ -18,7 +20,12 @@ import { ProductSearchVocabulary } from './product-search-vocabulary.service'
 export type SearchMatch = RankedSearch & { correctedQuery: string | null }
 
 const HIT_SELECT = { id: true, isFeatured: true, publishedAt: true } satisfies Prisma.ProductSelect
-const STRONG_SELECT = { ...HIT_SELECT, name: true } satisfies Prisma.ProductSelect
+const STRONG_SELECT = {
+  ...HIT_SELECT,
+  name: true,
+  category: { select: { name: true, parent: { select: { name: true } } } },
+} satisfies Prisma.ProductSelect
+type StrongRow = Prisma.ProductGetPayload<{ select: typeof STRONG_SELECT }>
 
 /**
  * Free-text search over products: each word of the text is searched with the catalog's names for it (wifi →
@@ -61,7 +68,7 @@ export class ProductSearchService {
     return { ...rankSearch(hits, partial), correctedQuery: corrected ? searched.join(' ') : null }
   }
 
-  /** Products within `where` that match one word, weighted by where it was found (`HIT_WEIGHT`). */
+  /** Products within `where` that match one word, weighted by where it was found (`HIT_WEIGHT`, `CATEGORY_BONUS`). */
   private async hits(word: string, where: Prisma.ProductWhereInput): Promise<WordHit[]> {
     const forms = searchForms(word).map(escapeLike)
     const code = modelCode(word)
@@ -86,14 +93,23 @@ export class ProductSearchService {
       this.prisma.product.findMany({ where: { AND: [where, { OR: strong }] }, select: STRONG_SELECT }),
       this.prisma.product.findMany({ where: { AND: [where, { OR: weak }] }, select: HIT_SELECT }),
     ])
-    // Which strong matches are in the name (or a SKU / model code): the collation ignores accents, so compare folded.
-    const foldedForms = searchForms(word).map(fold)
-    const inName = (row: { id: number; name: string }): boolean =>
+    // Which strong matches are in the name (or a SKU / model code), and which are what their category names: the
+    // collation ignores accents, so compare folded.
+    const plainForms = searchForms(word)
+    const foldedForms = plainForms.map(fold)
+    const inName = (row: StrongRow): boolean =>
       codeIds.includes(row.id) || foldedForms.some(form => fold(row.name.toLowerCase()).includes(form))
+    const inCategory = ({ category }: StrongRow): boolean =>
+      startsAWord(category.name, plainForms) ||
+      (category.parent !== null && startsAWord(category.parent.name, plainForms))
+    const weight = (row: StrongRow): number =>
+      (inName(row) ? HIT_WEIGHT.name : HIT_WEIGHT.related) + (inCategory(row) ? CATEGORY_BONUS : 0)
     return [
-      ...strongRows.map(({ name, ...row }) => ({
-        ...row,
-        weight: inName({ id: row.id, name }) ? HIT_WEIGHT.name : HIT_WEIGHT.related,
+      ...strongRows.map(row => ({
+        id: row.id,
+        isFeatured: row.isFeatured,
+        publishedAt: row.publishedAt,
+        weight: weight(row),
       })),
       ...weakRows.map(row => ({ ...row, weight: HIT_WEIGHT.specification })),
     ]

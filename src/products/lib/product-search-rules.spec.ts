@@ -7,6 +7,7 @@ import {
   rankSearch,
   searchForms,
   searchWords,
+  startsAWord,
   type WordHit,
 } from './product-search-rules'
 
@@ -77,6 +78,14 @@ describe('product search rules', () => {
   it('puts a word found in the name before one found in the summary or the category', () => {
     const at = (id: number, weight: number): WordHit => ({ id, weight, isFeatured: id === 2, publishedAt: null })
     expect(rankSearch([[at(1, 3), at(2, 2), at(3, 1)]], false).ids).toEqual([1, 2, 3])
+  })
+
+  it('finds a word in a category name only at the start of one of its words', () => {
+    expect(startsAWord('Tintas y consumibles', ['tinta'])).toBe(true)
+    expect(startsAWord('Papeles y sustratos', ['tinta'])).toBe(false)
+    expect(startsAWord('Tintas y consumibles', ['ta'])).toBe(false)
+    expect(startsAWord('Sublimación y textil', ['sublimacion'])).toBe(true)
+    expect(startsAWord('Puntos de venta', searchForms('ticket'))).toBe(true)
   })
 
   it('counts a product once per word, by its best field', () => {

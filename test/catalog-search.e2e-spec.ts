@@ -16,6 +16,8 @@ describe('Catalog search (local MySQL e2e)', () => {
   const server = (): App => app.getHttpServer()
   const productIds: number[] = []
   let categoryId: number
+  /** "Tintas y consumibles" and a subcategory of it, for the ranking by category. */
+  const inkCategoryIds: number[] = []
   /** A word only this suite's products have, so the rest of the catalog stays out of the results. */
   let word: string
   let code: string
@@ -47,7 +49,22 @@ describe('Catalog search (local MySQL e2e)', () => {
     word = `busqueda${suffix}`
     code = String(randomInt(10_000, 99_999))
     categoryId = (await prisma.category.create({ data: { name: 'Search test', slug: `search-${suffix}` } })).id
-    const fixtures = [
+    const ink = await prisma.category.create({
+      data: { name: 'Tintas y consumibles', slug: `search-${suffix}-ink` },
+    })
+    const refills = await prisma.category.create({
+      data: { name: 'Botellas', slug: `search-${suffix}-refills`, parentId: ink.id },
+    })
+    inkCategoryIds.push(ink.id, refills.id)
+    const fixtures: {
+      key: string
+      name: string
+      specs: string[]
+      draft?: boolean
+      categoryId?: number
+      shortDescription?: string
+      isFeatured?: boolean
+    }[] = [
       { key: 'wireless', name: `Impresora Inalámbrica ${word}`, specs: [] as string[] },
       { key: 'wifiSpec', name: `Impresora Compacta ${word}`, specs: ['USB de alta velocidad, Wi-Fi Direct'] },
       {
@@ -58,6 +75,16 @@ describe('Catalog search (local MySQL e2e)', () => {
       { key: 'scanner', name: `Escáner Dúplex ${word}`, specs: [] },
       { key: 'receipts', name: `Impresora Térmica de Recibos QZ-T${code}III ${word}`, specs: [] },
       { key: 'draft', name: `Impresora Inalámbrica Borrador ${word}`, specs: [], draft: true },
+      { key: 'inkBottle', name: `Botella de tinta ${word}`, specs: [], categoryId: ink.id },
+      {
+        key: 'inkRefill',
+        name: `Botella Cian ${word}`,
+        specs: [],
+        categoryId: refills.id,
+        shortDescription: 'Tinta original para recargar',
+      },
+      // Featured and the newest: without the category it would come first for "tinta".
+      { key: 'inkPrinter', name: `Sublimadora de Tinta ${word}`, specs: [], isFeatured: true },
     ]
     for (const [index, item] of fixtures.entries()) {
       names[item.key] = item.name
@@ -65,7 +92,9 @@ describe('Catalog search (local MySQL e2e)', () => {
         data: {
           name: item.name,
           slug: `search-${suffix}-${item.key.toLowerCase()}`,
-          categoryId,
+          categoryId: item.categoryId ?? categoryId,
+          shortDescription: item.shortDescription,
+          isFeatured: item.isFeatured ?? false,
           status: item.draft ? 'DRAFT' : 'PUBLISHED',
           publishedAt: new Date(2020, 0, index + 1),
           specifications: {
@@ -90,7 +119,10 @@ describe('Catalog search (local MySQL e2e)', () => {
       })
       await prisma.productVariant.updateMany({ where: { productId: { in: productIds } }, data: { deletedAt: now } })
       await prisma.product.updateMany({ where: { id: { in: productIds } }, data: { deletedAt: now } })
-      await prisma.category.update({ where: { id: categoryId }, data: { deletedAt: now } })
+      await prisma.category.updateMany({
+        where: { id: { in: [categoryId, ...inkCategoryIds] } },
+        data: { deletedAt: now },
+      })
     }
     if (app) await app.close()
   })
@@ -109,6 +141,10 @@ describe('Catalog search (local MySQL e2e)', () => {
     expect(await search(`${word} escaner`)).toEqual([names.scanner])
     // No product has both: the closest ones, flagged as such.
     expect((await searchPage(`${word} plotter`)).search?.partial).toBe(true)
+  })
+
+  it('lists first the products whose category names the word, then those with it in the name', async () => {
+    expect(await search(`tinta ${word}`)).toEqual([names.inkBottle, names.inkRefill, names.inkPrinter])
   })
 
   it('finds model codes written with or without separators', async () => {
@@ -149,7 +185,7 @@ describe('Catalog search (local MySQL e2e)', () => {
         .get(`/products?q=${encodeURIComponent(`${word} heladera`)}`)
         .expect(200)
     ).body as PaginatedProductsDto
-    expect(page.total).toBe(5)
+    expect(page.total).toBe(8)
     expect(page.search).toEqual({ correctedQuery: null, partial: true })
     const none = (await request(server()).get(`/products?q=zqzq${code}heladera`).expect(200))
       .body as PaginatedProductsDto
