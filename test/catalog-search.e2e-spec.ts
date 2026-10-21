@@ -43,7 +43,11 @@ describe('Catalog search (local MySQL e2e)', () => {
     const fixtures = [
       { key: 'wireless', name: `Impresora Inalámbrica ${word}`, specs: [] as string[] },
       { key: 'wifiSpec', name: `Impresora Compacta ${word}`, specs: ['USB de alta velocidad, Wi-Fi Direct'] },
-      { key: 'usb', name: `Impresora Básica ${word}`, specs: ['USB de alta velocidad'] },
+      {
+        key: 'usb',
+        name: `Impresora Básica ${word}`,
+        specs: ['USB de alta velocidad', 'https://example.com/ficha-wifi-a3.pdf'],
+      },
       { key: 'scanner', name: `Escáner Dúplex ${word}`, specs: [] },
       { key: 'receipts', name: `Impresora Térmica de Recibos QZ-T${code}III ${word}`, specs: [] },
       { key: 'draft', name: `Impresora Inalámbrica Borrador ${word}`, specs: [], draft: true },
@@ -89,6 +93,8 @@ describe('Catalog search (local MySQL e2e)', () => {
     expect(await search(`${word} wifi`)).toEqual(expected)
     expect(await search(`impresoras ${word} con wi fi`)).toEqual(expected)
     expect(await search(`${word} inalámbricas`)).toEqual(expected)
+    // Only in the link to its spec sheet: not a match.
+    expect(await search(`${word} a3`)).toEqual([])
   })
 
   it('needs every word, in any order', async () => {

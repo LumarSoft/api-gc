@@ -45,9 +45,12 @@ export class ProductSearchService {
       { tags: { some: { tag: { name: { contains: form }, deletedAt: null } } } },
     ])
     if (codeIds.length) strong.push({ id: { in: codeIds } })
-    // Specifications hold what names leave out (Wi-Fi, dúplex, A3), so they count, but less than the name.
+    // Specifications hold what names leave out (Wi-Fi, dúplex, A3), so they count, but less than the name. Links to
+    // spec sheets are left out: their hashes would match short words like "a3" by chance.
     const weak: Prisma.ProductWhereInput[] = forms.map(form => ({
-      specifications: { some: { value: { contains: form }, deletedAt: null } },
+      specifications: {
+        some: { value: { contains: form }, NOT: { value: { startsWith: 'http' } }, deletedAt: null },
+      },
     }))
     const [strongRows, weakRows] = await Promise.all([
       this.prisma.product.findMany({ where: { AND: [where, { OR: strong }] }, select: HIT_SELECT }),
