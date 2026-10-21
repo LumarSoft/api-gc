@@ -148,6 +148,20 @@ describe('OpenAiAssistantModel', () => {
     await expect(turn.next()).rejects.toThrow('aborted')
   })
 
+  it('sends no more calls once the customer left while the tools ran', async () => {
+    const leave = new AbortController()
+    const { adapter, params } = model([{ events: callsStep(['search_products']) }, { events: textStep('Listo') }])
+    const runTool = (): Promise<ToolResult<string>> => {
+      leave.abort()
+      return Promise.resolve({ output: {} })
+    }
+    const events = await collect(adapter.runTurn(request(runTool, leave.signal)))
+    expect(params).toHaveLength(1)
+    expect(events.filter(event => event.type === 'usage')).toEqual([
+      { type: 'usage', inputTokens: 1000, outputTokens: 50 },
+    ])
+  })
+
   it('gives up a call that stops streaming, counting what it used', async () => {
     jest.useFakeTimers()
     try {

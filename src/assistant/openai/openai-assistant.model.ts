@@ -71,6 +71,8 @@ export class OpenAiAssistantModel implements AssistantModel {
     let inputTokens = estimateTokens(request.instructions, JSON.stringify(request.tools), JSON.stringify(input))
 
     for (let step = 1; step <= request.maxSteps; step++) {
+      // The customer left while the tools ran: the next call is never sent, so nothing more is used.
+      if (request.signal.aborted) return
       const lastStep = step === request.maxSteps
       const progress: StepProgress = { started: false, outputChars: 0 }
       let response: OpenAiResponse
