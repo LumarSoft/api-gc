@@ -27,6 +27,8 @@ class FakeModel implements AssistantModel {
   configured = true
   readonly name = 'fake-model'
   fail = false
+  /** Milliseconds before answering, to keep a conversation busy. */
+  delay = 0
   histories: ChatMessage[][] = []
   instructions: string[] = []
 
@@ -34,6 +36,7 @@ class FakeModel implements AssistantModel {
     this.histories.push(request.history)
     this.instructions.push(request.instructions)
     if (this.fail) throw new AssistantModelError('down')
+    if (this.delay) await new Promise(resolve => setTimeout(resolve, this.delay))
     const question = request.history[request.history.length - 1].text
     const found = (await request.runTool('search_products', { text: question, sort: 'price-asc' })).output as {
       products: { slug: string }[]
@@ -216,6 +219,26 @@ describe('Assistant (local MySQL e2e)', () => {
     model.configured = false
     await ask({ message: word }, 503)
     model.configured = true
+  })
+
+  it('answers one message at a time per conversation', async () => {
+    const events = await ask({ message: word })
+    const token = events[0].type === 'conversation' ? events[0].token : ''
+    model.delay = 300
+    const statuses = await Promise.all(
+      [1, 2].map(
+        async () =>
+          (
+            await request(server())
+              .post('/assistant/messages')
+              .set('X-Forwarded-For', ip)
+              .send({ message: word, conversation: token })
+          ).status,
+      ),
+    )
+    model.delay = 0
+    expect(statuses.sort()).toEqual([200, 409])
+    await ask({ message: word, conversation: token })
   })
 
   it('takes at most 10 messages per minute from one IP', async () => {

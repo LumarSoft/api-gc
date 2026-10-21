@@ -37,7 +37,9 @@ assistant offers. Leave it empty until the client confirms the number.
 
 Production: the client's OpenAI key, and `ASSISTANT_WHATSAPP_NUMBER` once confirmed. Nginx must not buffer
 `/assistant/messages` (the API sends `X-Accel-Buffering: no`, which Nginx honors by default) or the answer arrives all
-at once instead of streaming.
+at once instead of streaming. The assistant allows 10 messages/min **per visitor IP**: with browsers calling the API
+directly behind Nginx (the 2026-10-15 setup) `TRUST_PROXY=1` is right; if they go through the front's `/api` rewrite
+(`API_UPSTREAM_URL`) instead, `TRUST_PROXY` must count that hop too, or every visitor shares one limit.
 
 ---
 

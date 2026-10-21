@@ -45,7 +45,10 @@ export class AssistantService {
     this.limits = assistantLimits(key => config.get<string>(key))
   }
 
-  /** Every check that can refuse the message, before the answer starts streaming (so they are plain HTTP errors). */
+  /**
+   * Every check that can refuse the message, before the answer starts streaming (so they are plain HTTP errors).
+   * On success the conversation is reserved until `answer` finishes: always call it next.
+   */
   async open(input: SendAssistantMessageDto, user: AuthenticatedUser | undefined): Promise<OpenConversation> {
     if (!this.model.configured) throw new ServiceUnavailableException(UNAVAILABLE)
     if ((await this.tokensToday()) >= this.limits.dailyTokens) {
@@ -59,6 +62,8 @@ export class AssistantService {
     )
     if (problem) throw new UnprocessableEntityException(problem)
     if (this.answering.has(conversation.id)) throw new ConflictException('Esperá a que termine la respuesta anterior.')
+    // Reserved in the same step as the check, so two simultaneous messages cannot both pass. `answer` releases it.
+    this.answering.add(conversation.id)
     return conversation
   }
 
@@ -68,7 +73,6 @@ export class AssistantService {
     user: AuthenticatedUser | undefined,
     signal: AbortSignal,
   ): AsyncGenerator<AssistantStreamEvent> {
-    this.answering.add(conversation.id)
     const answer: RecordedTurn = { text: '', productIds: [], inputTokens: 0, outputTokens: 0 }
     try {
       if (conversation.newToken) yield { type: 'conversation', token: conversation.newToken }
