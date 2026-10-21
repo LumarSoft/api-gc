@@ -26,11 +26,33 @@ describe('assistant instructions', () => {
     expect(text).toMatch(/Nunca los inventes/)
   })
 
+  it('keeps the copy rules: plural, no "mayorista", the customer\'s language', () => {
+    const text = assistantInstructions(facts, catalog, turn)
+    expect(text).toContain('La tienda no usa la palabra "mayorista"')
+    expect(text).toContain('nunca "te muestro"')
+    expect(text).toContain('respondé en ese idioma')
+  })
+
+  it('shows the closest options instead of stopping at "no hay"', () => {
+    const text = assistantInstructions(facts, catalog, turn)
+    expect(text).toContain('no te quedes en el "no hay"')
+    expect(text).toContain('mostrá el equipo Epson que resuelve lo mismo')
+  })
+
+  it('says where the shipping cost is instead of asking for the postal code', () => {
+    const text = assistantInstructions(facts, catalog, turn)
+    expect(text).toContain('Desde el chat no se puede cotizar: no pidas el código postal')
+    expect(text).toContain('El costo de un envío no es un dato faltante')
+  })
+
   it('states what the store offers today', () => {
     const text = assistantInstructions(facts, catalog, turn)
     expect(text).toContain('Entrega a domicilio en Rosario: $ 3.500, gratis en compras desde $ 80.000.')
     expect(text).toContain('Medio de pago: a coordinar con el local')
     expect(text).toContain('reservados 24 horas.')
+    expect(assistantInstructions({ ...facts, onlinePayment: true }, catalog, turn)).toContain(
+      'reservados 24 horas; con Mercado Pago, 1 hora.',
+    )
     const off = assistantInstructions({ ...facts, localDelivery: null, carrierShipping: false }, catalog, turn)
     expect(off).toContain('Entrega a domicilio en Rosario: todavía no está disponible.')
     expect(off).toContain('Envíos al resto del país: todavía no están disponibles')
