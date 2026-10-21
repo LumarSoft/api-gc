@@ -1,34 +1,8 @@
 import type { MoneyDto } from '../../pricing/pricing.service'
 import type { Availability, ProductDetailDto, ProductSummaryDto } from '../../products/dto/product-response.dto'
 
-/** Words that say nothing about the product ("una impresora para la oficina" → "impresora", "oficina"). */
-const STOP_WORDS = new Set([
-  ...'a al algo alguna alguno busco con como cual de del el en es esa ese esta este la las lo los'.split(' '),
-  ...'me mi mis necesito o para por que quiero se su sus tiene un una uno unos unas y'.split(' '),
-])
-/** Searched words are few: more would only narrow the results to nothing. */
-const MAX_WORDS = 5
 const DESCRIPTION_CHARS = 1200
 const MAX_SPECIFICATIONS = 40
-
-/**
- * Words to look for in a free-text search, without stop words and in singular ("impresoras fotográficas" →
- * "impresora", "fotográfica"). The database collation already ignores case and accents.
- */
-export function searchWords(text: string): string[] {
-  const words = text
-    .toLowerCase()
-    .split(/[^\p{L}\p{N}-]+/u)
-    .filter(word => word.length > 1 && !STOP_WORDS.has(word))
-    .map(singular)
-  return [...new Set(words)].slice(0, MAX_WORDS)
-}
-
-function singular(word: string): string {
-  if (word.length > 4 && /[^aeiou]es$/.test(word) && !/(as|es|is|os|us)es$/.test(word)) return word.slice(0, -2)
-  if (word.length > 3 && /[aeiou]s$/.test(word)) return word.slice(0, -1)
-  return word
-}
 
 const ARS = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
 const USD = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })

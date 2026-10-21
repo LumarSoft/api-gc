@@ -14,6 +14,7 @@ import { AdminVariantsService } from './admin-variants.service'
 import { CatalogReferences } from './catalog-references'
 import { ProductsController } from './products.controller'
 import { ProductMapper } from './product.mapper'
+import { ProductSearchService } from './product-search.service'
 import { ProductsService } from './products.service'
 
 @Module({
@@ -21,6 +22,7 @@ import { ProductsService } from './products.service'
   controllers: [ProductsController, AdminProductsController, AdminVariantsController],
   providers: [
     ProductsService,
+    ProductSearchService,
     ProductMapper,
     AdminProductsService,
     AdminProductBulkService,

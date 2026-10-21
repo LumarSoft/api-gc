@@ -1,24 +1,7 @@
 import type { ProductSummaryDto } from '../../products/dto/product-response.dto'
-import { priceLabel, productLine, searchWords, withinBudget } from './catalog-search-rules'
+import { priceLabel, productLine, withinBudget } from './catalog-search-rules'
 
 describe('catalog search rules', () => {
-  it('keeps the meaningful words of a question, in singular', () => {
-    expect(searchWords('Quiero una impresora para la oficina')).toEqual(['impresora', 'oficina'])
-    expect(searchWords('impresoras fotográficas')).toEqual(['impresora', 'fotográfica'])
-    expect(searchWords('escáneres y papeles')).toEqual(['escáner', 'papel'])
-  })
-
-  it('keeps model codes and SKUs as they are', () => {
-    expect(searchWords('L3250')).toEqual(['l3250'])
-    expect(searchWords('tinta T544 cyan')).toEqual(['tinta', 't544', 'cyan'])
-    expect(searchWords('TM-T20IV-SP')).toEqual(['tm-t20iv-sp'])
-  })
-
-  it('searches at most five distinct words', () => {
-    expect(searchWords('a b c')).toEqual([])
-    expect(searchWords('wifi wifi duplex color a3 escaner fotos')).toEqual(['wifi', 'duplex', 'color', 'a3', 'escaner'])
-  })
-
   it('formats prices like the store', () => {
     expect(priceLabel({ amount: '419999.00', currency: 'ARS' })).toMatch(/^\$\s?419\.999$/)
     expect(priceLabel({ amount: '1490.00', currency: 'USD' })).toMatch(/^US\$\s?1\.490$/)

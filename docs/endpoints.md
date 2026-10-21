@@ -333,10 +333,18 @@ stock.
 | category | string  | No       | Category slug. Includes its subcategories                                                       |
 | brand    | string  | No       | Comma-separated brand slugs, e.g. `epson`                                                       |
 | tag      | string  | No       | Comma-separated tag slugs (any), e.g. `uso-hogar,uso-foto`                                      |
-| q        | string  | No       | Max 100. Searches name, short description and SKU (case/accent-insensitive)                     |
+| q        | string  | No       | Max 100. Every word must match (see below)                                                      |
 | featured | boolean | No       | `true` = only featured products                                                                 |
 | onSale   | boolean | No       | `true` = only offers: the buyer's lowest price is below its previous price (same as `OFFER`)    |
 | sort     | string  | No       | `relevance` (default: featured first, then newest), `newest`, `price-asc`, `price-desc`, `name` |
+
+**Search (`q`).** Case- and accent-insensitive, at most five words, without filler words ("una impresora para la
+oficina" → "impresora", "oficina") and in singular. A product matches a word in its name, short description, SKU,
+category, brand, a use tag or a specification value. Each word is also searched with the catalog's names for it
+(`wifi` → "Wi-Fi", "inalámbrica"; `comandera`/`ticket` → "recibo", "puntos de venta"; `plotter` → "gran formato";
+`multifuncion` → "multifuncional"; `doble faz` → "dúplex"…), and a model code with or without separators
+(`L-3250`, `L 3250`, `tmt20` → "TM-T20IV"). With `sort=relevance` the best matches come first: more words in the name,
+SKU, category, brand or tags before matches only in the specifications, then the usual order.
 
 **Responses**
 
