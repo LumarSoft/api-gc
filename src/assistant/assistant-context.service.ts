@@ -29,15 +29,16 @@ export class AssistantContextService {
     @Inject(PAYMENT_GATEWAY) private readonly gateway: PaymentGateway,
   ) {}
 
-  async instructions(user: AuthenticatedUser | undefined, productSlug: string | undefined): Promise<string> {
-    const [{ facts, catalog }, viewingName] = await Promise.all([
-      this.storeContext(),
-      productSlug ? this.catalog.visibleName(productSlug) : null,
-    ])
+  /** `viewing`: the product page the customer wrote this message from, if any. */
+  async instructions(
+    user: AuthenticatedUser | undefined,
+    viewing: { name: string; slug: string } | null,
+  ): Promise<string> {
+    const { facts, catalog } = await this.storeContext()
     return assistantInstructions(facts, catalog, {
       frequentCustomer: user?.buyerType === BuyerType.WHOLESALE,
       signedIn: Boolean(user),
-      viewing: viewingName && productSlug ? { name: viewingName, slug: productSlug } : null,
+      viewing: viewing ? { name: viewing.name, slug: viewing.slug } : null,
       today: argentineDay(new Date()),
     })
   }

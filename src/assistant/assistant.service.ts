@@ -103,18 +103,22 @@ export class AssistantService {
       if (conversation.newToken) yield { type: 'conversation', token: conversation.newToken }
       // From here on the stream has started: every failure ends it with an error line, never a hung response.
       try {
-        await this.conversations.recordQuestion(conversation.id, input.message)
+        const page = input.productSlug ? await this.catalog.viewedProduct(input.productSlug) : null
+        await this.conversations.recordQuestion(conversation.id, input.message, page?.id ?? null)
         const [stored, instructions] = await Promise.all([
           this.conversations.history(conversation.id),
-          this.context.instructions(user, input.productSlug),
+          this.context.instructions(user, page),
         ])
-        const shown = await this.catalog.shownLines(
-          stored.flatMap(message => message.productIds),
-          user,
-        )
+        const [shown, pages] = await Promise.all([
+          this.catalog.shownLines(
+            stored.flatMap(message => message.productIds),
+            user,
+          ),
+          this.catalog.productNames(stored.flatMap(message => (message.pageId === null ? [] : [message.pageId]))),
+        ])
         const turn = this.model.runTurn({
           instructions,
-          history: chatHistory(stored, shown),
+          history: chatHistory(stored, shown, pages),
           tools: this.tools.definitions(),
           runTool: async (name, args) => {
             const result = await this.tools.run(name, args, { conversationId: conversation.id, user })

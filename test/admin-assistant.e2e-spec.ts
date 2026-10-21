@@ -68,6 +68,7 @@ describe('Admin assistant (local MySQL e2e)', () => {
       role: MessageRole
       content: string
       shown?: number[]
+      page?: number
       tokens?: [number, number]
       trace?: { outcome: AnswerOutcome; durationMs: number; toolCalls?: object[]; emptySearches?: number }
     }[],
@@ -97,6 +98,7 @@ describe('Admin assistant (local MySQL e2e)', () => {
           inputTokens: message.tokens?.[0] ?? null,
           outputTokens: message.tokens?.[1] ?? null,
           recommendedProducts: message.shown,
+          productId: message.page,
           outcome: message.trace?.outcome,
           durationMs: message.trace?.durationMs,
           toolCalls: message.trace?.toolCalls,
@@ -171,7 +173,7 @@ describe('Admin assistant (local MySQL e2e)', () => {
       },
     ])
     const slow = await conversation({ createdAt: new Date(`${pastYear}-03-02T03:30:00Z`) }, [
-      { role: MessageRole.USER, content: 'Tintas' },
+      { role: MessageRole.USER, content: 'Tintas', page: productIds[0] },
       {
         role: MessageRole.ASSISTANT,
         content: 'Estas son.',
@@ -296,6 +298,8 @@ describe('Admin assistant (local MySQL e2e)', () => {
       ],
     })
     expect(slow.messages[0]).toMatchObject({ outcome: null, durationMs: null, tools: [], problems: [] })
+    expect(slow.messages[0].page?.id).toBe(productIds[0])
+    expect(slow.messages[1].page).toBeNull()
     expect(slow.cartAdds.map(add => [add.product.id, add.variantId])).toEqual([[productIds[0], null]])
     expect(detail.cartAdds).toEqual([])
     await get('/admin/assistant/conversations/999999999', 404)

@@ -2618,11 +2618,11 @@ and start 20 conversations per hour.
 
 **Request body**
 
-| Field          | Type   | Required | Constraints                                                        |
-| -------------- | ------ | -------- | ------------------------------------------------------------------ |
-| `message`      | string | Yes      | Trimmed, 1–1000 characters                                         |
-| `conversation` | string | No       | Token from the `conversation` event, 64 characters `[A-Za-z0-9_-]` |
-| `productSlug`  | string | No       | Product page the customer is on, so "this one" means that product  |
+| Field          | Type   | Required | Constraints                                                                                                                                  |
+| -------------- | ------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `message`      | string | Yes      | Trimmed, 1–1000 characters                                                                                                                   |
+| `conversation` | string | No       | Token from the `conversation` event, 64 characters `[A-Za-z0-9_-]`                                                                           |
+| `productSlug`  | string | No       | Product page the customer is on now; send it with every message (it is stored with it, and the assistant reads where each message came from) |
 
 ```json
 {
@@ -2795,7 +2795,9 @@ Answers recorded from 2026-10-21 also say how they went (`null`/empty before, an
 `search_products` → `text`, `category`, `use`, `maxPrice`, `sort`, `results` (products found) and `partial` (no product
 had every word); `get_product` → `slug`; `show_products` → `results` (cards shown) and `missing` (slugs not published);
 any of them → `error: true` when it answered with an error. `cartAdds` are the products added to the cart from the
-conversation's cards, oldest first (`variantId` `null` when the card did not add one directly).
+conversation's cards, oldest first (`variantId` `null` when the card did not add one directly). A customer message
+has `page`, the product page it was written from (`null` outside product pages and before 2026-10-21; same shape as
+`products`).
 
 ```json
 {
@@ -2817,6 +2819,14 @@ conversation's cards, oldest first (`variantId` `null` when the card did not add
       "inputTokens": null,
       "outputTokens": null,
       "products": [],
+      "page": {
+        "id": 3,
+        "name": "Impresora Multifuncional Epson EcoTank L3250",
+        "slug": "impresora-multifuncional-epson-ecotank-l3250",
+        "status": "PUBLISHED",
+        "archived": false,
+        "imageUrl": "http://localhost:3001/files/products/l3250.jpg"
+      },
       "outcome": null,
       "durationMs": null,
       "tools": [],

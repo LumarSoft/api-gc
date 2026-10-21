@@ -21,7 +21,7 @@ export interface TurnContext {
   /** The customer is an approved "cliente frecuente" and sees preferential prices. */
   frequentCustomer: boolean
   signedIn: boolean
-  /** The product page the customer opened the chat from. */
+  /** The product page the customer is on now (they wrote this message from it). */
   viewing: { name: string; slug: string } | null
   /** Argentine calendar day, e.g. "2026-10-20". */
   today: string
@@ -63,7 +63,8 @@ const DATA_RULES = `# Datos
 - Datos de la empresa: todavía no tenés dirección, teléfono, horarios ni redes. Si los piden, decí que todavía no están publicados en la tienda, anotá la pregunta con record_unanswered_question y derivá al equipo cuando se pueda. Nunca los inventes.
 - No ves pedidos, cuentas ni pagos de nadie. El seguimiento de un pedido está en /pedidos con el link privado que se muestra al comprar; para problemas con un pedido, derivá al equipo cuando se pueda.
 - Cuando el cliente pregunta algo de la tienda que tus datos no cubren, usá record_unanswered_question y derivá al equipo cuando se pueda. El costo de un envío no es un dato faltante: se ve al finalizar la compra (ver «La tienda hoy»).
-- Derivar al equipo: ver «Contacto con una persona» en «La tienda hoy».`
+- Derivar al equipo: ver «Contacto con una persona» en «La tienda hoy».
+- El cliente puede moverse por la tienda con el chat abierto. Cada mensaje suyo dice desde dónde lo escribió ([Escrito desde la ficha de …] o [Escrito fuera de las fichas de productos]) y «Esta conversación» dice dónde está ahora: "este", "esta" o "el que estoy viendo" es siempre esa, y si pregunta qué está mirando, nombrala. Que cambie de producto es normal y no hubo ninguna confusión: lo que dijiste antes era sobre la ficha en la que estaba entonces. No te disculpes ni lo llames error, y no digas que no podés ver en qué ficha está.`
 
 const HOW_TO_SELL = `# Cómo asesorar
 1. Si la necesidad es vaga, hacé una o dos preguntas cortas que cambien la recomendación (uso: hogar, oficina, fotos, comercio, textil; cuánto imprime; color o blanco y negro; presupuesto; si necesita escanear o wifi). No hagas un interrogatorio: con lo básico, recomendá.
@@ -144,7 +145,10 @@ function turnSection(context: TurnContext): string {
       ? 'Cliente con cuenta, compra con precios minoristas.'
       : 'Visitante sin cuenta, ve precios minoristas.'
   const lines = ['# Esta conversación', `- Hoy es ${context.today}.`, `- ${profile}`]
-  if (context.viewing)
-    lines.push(`- Abrió el chat desde la ficha de «${context.viewing.name}» (slug ${context.viewing.slug}).`)
+  lines.push(
+    context.viewing
+      ? `- Ahora está en la ficha de «${context.viewing.name}» (slug ${context.viewing.slug}).`
+      : '- Ahora no está en la ficha de ningún producto.',
+  )
   return lines.join('\n')
 }

@@ -63,6 +63,8 @@ export class AdminAssistantMessageDto {
   outputTokens: number | null
   /** Cards shown with this answer, in order. */
   products: AdminShownProductDto[]
+  /** Customer messages only: the product page it was written from (since 2026-10-21); null elsewhere. */
+  page: AdminShownProductDto | null
   /** Answers only; null for the customer's messages and answers recorded before 2026-10-21. */
   outcome: AnswerOutcome | null
   durationMs: number | null

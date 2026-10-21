@@ -56,6 +56,7 @@ export class AdminAssistantConversationsService {
     const ids = [
       ...new Set([
         ...row.messages.flatMap(message => storedProductIds(message.recommendedProducts)),
+        ...row.messages.flatMap(message => (message.productId === null ? [] : [message.productId])),
         ...row.cartAdds.map(add => add.productId),
       ]),
     ]

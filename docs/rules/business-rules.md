@@ -230,6 +230,9 @@ Domain rules that apply across modules. When a request contradicts one of these,
   text. Products added to the cart from the chat's cards are recorded with their conversation (only products it
   showed), so the metrics say how many conversations led to the cart. It is part of the conversation the store already
   keeps, not the anonymous activity tracking, so Do Not Track does not apply.
+- **The page the customer is on (added 2026-10-21):** the chat stays open while the customer moves around the store,
+  so every message carries the product page it was written from (stored with it). The assistant reads where each of
+  the customer's messages came from and where they are now, so "this one" follows them; staff see it in the admin.
 
 ## Favorites
 

@@ -37,7 +37,8 @@ class FakeModel implements AssistantModel {
     this.instructions.push(request.instructions)
     if (this.fail) throw new AssistantModelError('down')
     if (this.delay) await new Promise(resolve => setTimeout(resolve, this.delay))
-    const question = request.history[request.history.length - 1].text
+    // The customer's words, without the note on where they wrote them from.
+    const question = request.history[request.history.length - 1].text.split('\n\n[')[0]
     const search = { status: 'Buscando lo que pediste', text: question, sort: 'price-asc' }
     yield { type: 'tool', name: 'search_products', args: search }
     const found = (await request.runTool('search_products', search)).output as {
@@ -225,10 +226,22 @@ describe('Assistant (local MySQL e2e)', () => {
     await ask({ message: 'hola', conversation: 'short' }, 400)
   })
 
-  it('tells the model which product page the customer is on', async () => {
-    const slug = (await prisma.product.findUniqueOrThrow({ where: { id: productIds[0] } })).slug
-    await ask({ message: word, productSlug: slug })
-    expect(model.instructions[model.instructions.length - 1]).toContain(`(slug ${slug})`)
+  it('tells the model which product page the customer is on now, and which one each message came from', async () => {
+    const product = await prisma.product.findUniqueOrThrow({ where: { id: productIds[0] } })
+    const first = await ask({ message: word, productSlug: product.slug })
+    const token = first[0].type === 'conversation' ? first[0].token : ''
+    expect(model.instructions.at(-1)).toContain(`Ahora está en la ficha de «${product.name}» (slug ${product.slug})`)
+
+    // The customer moved to a page that is not a product.
+    await ask({ message: `otra ${word}`, conversation: token })
+    expect(model.instructions.at(-1)).toContain('Ahora no está en la ficha de ningún producto.')
+    expect(model.histories.at(-1)?.[0].text).toBe(`${word}\n\n[Escrito desde la ficha de «${product.name}»]`)
+    expect(model.histories.at(-1)?.at(-1)?.text).toBe(`otra ${word}\n\n[Escrito fuera de las fichas de productos]`)
+    const questions = await prisma.assistantMessage.findMany({
+      where: { conversationId: conversationIds.at(-1), role: 'USER' },
+      orderBy: { id: 'asc' },
+    })
+    expect(questions.map(question => question.productId)).toEqual([product.id, null])
   })
 
   it('refuses empty or long messages and conversations past their limit', async () => {

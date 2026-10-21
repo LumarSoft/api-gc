@@ -65,9 +65,12 @@ export class AssistantConversationsService {
     }
   }
 
-  async recordQuestion(conversationId: number, text: string): Promise<void> {
+  /** `productId`: the product page the customer wrote it from. */
+  async recordQuestion(conversationId: number, text: string, productId: number | null): Promise<void> {
     await this.prisma.$transaction([
-      this.prisma.assistantMessage.create({ data: { conversationId, role: MessageRole.USER, content: text } }),
+      this.prisma.assistantMessage.create({
+        data: { conversationId, role: MessageRole.USER, content: text, productId },
+      }),
       this.prisma.assistantConversation.update({
         where: { id: conversationId },
         data: { lastMessageAt: new Date() },
@@ -136,12 +139,13 @@ export class AssistantConversationsService {
       where: { conversationId, role: { in: [MessageRole.USER, MessageRole.ASSISTANT] } },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: HISTORY_MESSAGES,
-      select: { role: true, content: true, recommendedProducts: true },
+      select: { role: true, content: true, recommendedProducts: true, productId: true },
     })
     return messages.reverse().map(message => ({
       role: message.role === MessageRole.USER ? 'user' : 'assistant',
       text: message.content,
       productIds: storedProductIds(message.recommendedProducts),
+      pageId: message.productId,
     }))
   }
 
