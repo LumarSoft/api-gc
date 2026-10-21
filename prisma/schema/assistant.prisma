@@ -61,9 +61,9 @@ model KnowledgeDocument {
 
 model AssistantConversation {
   id               Int                @id @default(autoincrement())
-  /// Null for guests.
+  /// Null for guests. Set when a signed-in customer writes.
   userId           Int?
-  /// Anonymous visitor id (cookie), links guest conversations and activity.
+  /// SHA-256 of the random token the browser keeps to continue this chat; the token itself is never stored.
   sessionId        String             @db.VarChar(64)
   status           ConversationStatus @default(OPEN)
   escalatedAt      DateTime?

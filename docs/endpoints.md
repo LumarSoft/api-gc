@@ -2586,3 +2586,70 @@ to the customer) — **required** for `reject` and `pause`.
 `200 OK` — the updated application (admin shape). `422` missing note, decision not allowed now, or not the company's
 latest application. Approve/reject record an email to the applicant (`wholesale-approved` / `wholesale-rejected`;
 logged until a mail provider exists).
+
+## Sales assistant
+
+The store's AI sales assistant (`src/assistant/`). It answers only about the store's products and how to buy, with
+tools over the real catalog: prices and visibility come from `ProductsService`, so they match what the store shows to
+the same buyer (retail or "cliente frecuente"). Browser-only. Off until `OPENAI_API_KEY` is set.
+
+### POST /assistant/messages
+
+Sends a customer message and streams the answer as **NDJSON** (`Content-Type: application/x-ndjson`): one JSON event
+per line, written as the model produces it. Without `conversation` it starts a new one and the first line carries its
+token; send that token with the next messages. Only the token's SHA-256 is stored, and the conversation (questions,
+answers, token usage, products shown) is saved for the store.
+
+**Auth required:** No. A session is read when present (prices for that buyer; the conversation is linked to the
+user). Expired session → `401` (refresh and retry, like the catalog). Rate limit: 10 requests/min per IP.
+
+**Request body**
+
+| Field          | Type   | Required | Constraints                                                              |
+| -------------- | ------ | -------- | ------------------------------------------------------------------------ |
+| `message`      | string | Yes      | Trimmed, 1–1000 characters                                               |
+| `conversation` | string | No       | Token from the `conversation` event, 64 characters `[A-Za-z0-9_-]`       |
+| `productSlug`  | string | No       | Product page the customer is on, so "this one" means that product       |
+
+```json
+{ "message": "¿Qué impresora me conviene para fotos?", "conversation": "Qm9…64 chars", "productSlug": "impresora-multifuncional-epson-ecotank-l8180" }
+```
+
+**Responses**
+
+`200 OK` — the stream. Event types, in order of appearance:
+
+| `type`         | Fields                       | Meaning                                                                         |
+| -------------- | ---------------------------- | ------------------------------------------------------------------------------- |
+| `conversation` | `token`                      | Only for a new conversation, first line                                         |
+| `text`         | `delta`                      | Next piece of the answer (plain text with `**bold**`, `- ` lists, `[t](/path)`) |
+| `products`     | `items`                      | Product cards to show at this point of the answer                               |
+| `handoff`      | `url`                        | WhatsApp link with the customer's message written (`ASSISTANT_WHATSAPP_NUMBER`) |
+| `error`        | `message`                    | The answer could not be completed (show it; the customer can retry)             |
+| `done`         |                              | Last line, also after an `error`                                                |
+
+`items` are the catalog cards of `GET /products` (same fields and prices) plus `variantId`: the only active variant,
+to add to the cart directly, or `null` when the product has options to choose on its page.
+
+```
+{"type":"conversation","token":"Qm9…"}
+{"type":"text","delta":"Para fotos te conviene una EcoTank de seis colores. "}
+{"type":"products","items":[{"id":9,"slug":"impresora-multifuncional-epson-ecotank-l8180","name":"Impresora Multifuncional Epson EcoTank L8180","price":{"amount":"1399999.00","currency":"ARS"},"variantId":9,"…":"…"}]}
+{"type":"text","delta":"La **L8180** imprime hasta A3+…"}
+{"type":"done"}
+```
+
+`400 Bad Request` invalid body. `404 Not Found` unknown conversation token (start a new one):
+
+```json
+{ "statusCode": 404, "message": "La conversación ya no está disponible. Empezá una nueva.", "error": "Not Found" }
+```
+
+`409 Conflict` the conversation is still answering the previous message. `422 Unprocessable Entity` the conversation
+reached its limit (40 messages or `ASSISTANT_CONVERSATION_TOKEN_LIMIT` tokens): start a new one. `429 Too Many
+Requests`. `503 Service Unavailable` no `OPENAI_API_KEY`, or the store's daily token limit
+(`ASSISTANT_DAILY_TOKEN_LIMIT`) was reached:
+
+```json
+{ "statusCode": 503, "message": "El asesor no está disponible en este momento. Probá de nuevo más tarde.", "error": "Service Unavailable" }
+```

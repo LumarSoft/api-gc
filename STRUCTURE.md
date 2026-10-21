@@ -32,6 +32,7 @@ api-gc/
 │   ├── shipments/                 # Carrier shipments of orders: admin booking/labels/cancel + provider webhook
 │   ├── mercado-pago/              # Online payment provider behind PAYMENT_GATEWAY (Mercado Pago Checkout Pro)
 │   ├── payments/                  # Paying orders online: checkout link, buyer's return refresh, Mercado Pago webhook
+│   ├── assistant/                 # AI sales assistant: catalog tools, conversations, model behind ASSISTANT_MODEL (openai/)
 │   ├── inventory/                 # StockService: stock levels + movement ledger (manual adjustment, TODO(tango))
 │   ├── pricing/                   # Price resolution + /admin/price-lists and /admin/exchange-rates
 │   ├── tags/                      # GET /tags (catalog filters) + /admin/tags
@@ -93,3 +94,4 @@ api-gc/
 | ShipmentsModule   | `src/shipments/`    | Order shipments: booking, documents, status webhook       |
 | MercadoPagoModule | `src/mercado-pago/` | Payment provider (Mercado Pago) behind `PAYMENT_GATEWAY`  |
 | PaymentsModule    | `src/payments/`     | Online payment of orders and the Mercado Pago webhook     |
+| AssistantModule   | `src/assistant/`    | AI sales assistant (OpenAI) over the catalog              |

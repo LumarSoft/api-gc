@@ -6,6 +6,7 @@ import { ActivityModule } from './activity/activity.module'
 import { AnalyticsModule } from './analytics/analytics.module'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
+import { AssistantModule } from './assistant/assistant.module'
 import { AuditLogsModule } from './audit-logs/audit-logs.module'
 import { AuthModule } from './auth/auth.module'
 import { BrandsModule } from './brands/brands.module'
@@ -51,6 +52,7 @@ import { ShipmentsModule } from './shipments/shipments.module'
     OrdersModule,
     ShipmentsModule,
     PaymentsModule,
+    AssistantModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],

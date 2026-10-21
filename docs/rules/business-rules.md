@@ -196,6 +196,26 @@ Domain rules that apply across modules. When a request contradicts one of these,
   status change: there is no abandoned-cart job or email yet).
 - No retention limit yet: events are append-only. Revisit (purge or aggregate old events) if the table grows large.
 
+## AI sales assistant
+
+- **Agreed 2026-10-20:** a sales assistant in the store's chat recommends products from the catalog and leads to the
+  cart. Model: OpenAI **GPT-6 Luna** (`OPENAI_MODEL`), with the store's API key in the environment.
+- It answers only about the store's products and how to buy (shipping, payment, orders, frequent customers). Anything
+  else (programming, general knowledge, homework…) is declined politely and the chat goes back to the products.
+- Products, prices, stock, specs and compatibility come only from the catalog at answer time, through the same
+  services as the store, so a frequent customer sees their prices in the chat too. Store facts (pickup, Rosario
+  delivery, carrier shipping, payment methods, reservation window) are read from the configuration. It never invents
+  the company's address, phone or opening hours: they are not loaded yet.
+- Recommendations are product cards with the price and an "Agregar al carrito" button: the customer adds them; the
+  assistant never changes the cart.
+- Conversations are stored (questions, answers, tokens, products shown) for stats and CRM later. A conversation is
+  continued only with the random token the browser received (its SHA-256 is stored). Questions it could not answer
+  are stored as `UnansweredQuestion` for staff to complete the data.
+- When the customer asks for a person or the assistant cannot help, it offers WhatsApp with the message written,
+  only when `ASSISTANT_WHATSAPP_NUMBER` is set (the conversation is marked `ESCALATED`).
+- Cost limits: 10 messages/min per IP, 40 messages or `ASSISTANT_CONVERSATION_TOKEN_LIMIT` tokens per conversation,
+  and `ASSISTANT_DAILY_TOKEN_LIMIT` tokens per Argentine day for the whole store (then it pauses until midnight).
+
 ## Favorites
 
 - Only signed-in customers save favorites (the `Favorite` row needs a user); guests are asked to sign in. Favorites are
