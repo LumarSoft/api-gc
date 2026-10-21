@@ -28,8 +28,14 @@ export const ASSISTANT_TOOLS: ToolDefinition[] = [
     parameters: {
       type: 'object',
       additionalProperties: false,
-      required: ['text', 'category', 'use', 'max_price', 'on_sale', 'sort'],
+      required: ['status', 'text', 'category', 'use', 'max_price', 'on_sale', 'sort'],
       properties: {
+        status: {
+          type: 'string',
+          description:
+            'Lo que estás haciendo, para mostrárselo al cliente mientras espera: una frase corta en gerundio, con lo que ' +
+            'busca y en sus palabras, por ejemplo "Buscando tintas para tu L3250" o "Comparando impresoras para fotos".',
+        },
         text: nullable('string', 'Modelo, código o palabras clave, por ejemplo "L3250", "T544" o "escáner dúplex".'),
         category: nullable('string', 'Slug de una categoría del mapa del catálogo (incluye sus subcategorías).'),
         use: nullable('string', 'Slug de un uso del mapa del catálogo.'),
@@ -51,8 +57,16 @@ export const ASSISTANT_TOOLS: ToolDefinition[] = [
     parameters: {
       type: 'object',
       additionalProperties: false,
-      required: ['slug'],
-      properties: { slug: { type: 'string', description: 'Slug del producto, tal como lo devolvió search_products.' } },
+      required: ['status', 'slug'],
+      properties: {
+        status: {
+          type: 'string',
+          description:
+            'Lo que estás haciendo, para el cliente: una frase corta en gerundio, por ejemplo ' +
+            '"Revisando qué tinta usa la L3250" o "Comparando la velocidad de las dos".',
+        },
+        slug: { type: 'string', description: 'Slug del producto, tal como lo devolvió search_products.' },
+      },
     },
   },
   {

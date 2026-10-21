@@ -19,7 +19,8 @@ import {
 /** GPT-6 Luna: OpenAI's small, inexpensive model for high-volume chat (chosen by the client on 2026-10-20). */
 export const DEFAULT_OPENAI_MODEL = 'gpt-6-luna'
 const REASONING_EFFORTS = ['none', 'minimal', 'low', 'medium', 'high'] as const
-const DEFAULT_REASONING_EFFORT = 'low'
+/** Measured on 2026-10-21: same wait as low (6–10 s an answer) and steadier recommendations, for little more cost. */
+const DEFAULT_REASONING_EFFORT = 'medium'
 /** Per model call. A turn makes a few calls, and the customer sees the text as it streams in. */
 const TIMEOUT_MS = 45_000
 
@@ -110,6 +111,9 @@ export class OpenAiAssistantModel implements AssistantModel {
             yield { type: 'text', delta: '\n\n' }
           }
           yield { type: 'text', delta: event.delta }
+        } else if (event.type === 'response.output_item.done' && event.item.type === 'function_call') {
+          // As soon as each call is decided, not when the whole step ends: the wait that follows is what to explain.
+          yield { type: 'tool', name: event.item.name, args: parseArguments(event.item.arguments) }
         } else if (event.type === 'response.completed' || event.type === 'response.incomplete') {
           // Incomplete = the output token cap was reached: keep what was written.
           finished = event.response

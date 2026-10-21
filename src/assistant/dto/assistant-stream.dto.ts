@@ -16,6 +16,8 @@ export type AssistantDisplay =
 export type AssistantStreamEvent =
   /** First line of a new conversation: the token to send with the next messages. */
   | { type: 'conversation'; token: string }
+  /** What the assistant is doing while the customer waits, e.g. "Buscando tintas para tu L3250…". Replaces the last one. */
+  | { type: 'status'; text: string }
   | { type: 'text'; delta: string }
   | AssistantDisplay
   | { type: 'error'; message: string }
