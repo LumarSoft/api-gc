@@ -160,6 +160,20 @@ export const HIT_WEIGHT = {
  */
 export const CATEGORY_BONUS = 2
 
+/**
+ * Whether one of `forms` starts a word of `text`, accents and case aside: "tinta" names "Tintas y consumibles", "ta"
+ * does not. For the category bonus, where a fragment inside a word would say nothing about the product.
+ */
+export function startsAWord(text: string, forms: string[]): boolean {
+  const folded = fold(text.toLowerCase())
+  return forms.some(form => {
+    const target = fold(form.toLowerCase())
+    for (let at = folded.indexOf(target); at !== -1; at = folded.indexOf(target, at + 1))
+      if (at === 0 || !/[\p{L}\p{N}]/u.test(folded[at - 1])) return true
+    return false
+  })
+}
+
 /** A product found for one searched word, and how strongly (`HIT_WEIGHT`, plus `CATEGORY_BONUS`). */
 export interface WordHit {
   id: number
