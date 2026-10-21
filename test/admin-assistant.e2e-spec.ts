@@ -299,6 +299,9 @@ describe('Admin assistant (local MySQL e2e)', () => {
       { day: `${pastYear}-03-03`, conversations: 0, customerMessages: 0, inputTokens: 0, outputTokens: 0 },
     ])
     expect(usage.totals).toEqual({ conversations: 2, customerMessages: 2, inputTokens: 300, outputTokens: 30 })
+    // The window itself starts and ends at Argentine midnight: 23:30 of the 1st counts, 00:30 of the 2nd does not.
+    const oneDay = await get<AssistantUsageDto>(`/admin/assistant/usage?from=${pastYear}-03-01&to=${pastYear}-03-01`)
+    expect(oneDay.totals).toEqual({ conversations: 1, customerMessages: 1, inputTokens: 100, outputTokens: 10 })
 
     const today = argentineDay(new Date())
     const recent = await get<AssistantUsageDto>('/admin/assistant/usage')
