@@ -3,10 +3,11 @@ import { ConfigService } from '@nestjs/config'
 import type { AuthenticatedUser } from '../common/types/authenticated-user'
 import { AssistantCatalogService } from './assistant-catalog.service'
 import { AssistantConversationsService } from './assistant-conversations.service'
-import type { ToolResult } from './assistant-model'
+import type { ToolDefinition, ToolResult } from './assistant-model'
 import type { AssistantDisplay } from './dto/assistant-stream.dto'
 import { whatsappLink, whatsappNumber } from './lib/assistant-limits'
 import {
+  assistantTools,
   contactArguments,
   productSlugArgument,
   questionArgument,
@@ -31,6 +32,15 @@ export class AssistantToolsService {
     config: ConfigService,
   ) {
     this.whatsapp = whatsappNumber(config.get<string>('ASSISTANT_WHATSAPP_NUMBER'))
+  }
+
+  /** A person can take over by WhatsApp: the assistant may offer it. */
+  get handoff(): boolean {
+    return this.whatsapp !== null
+  }
+
+  definitions(): ToolDefinition[] {
+    return assistantTools(this.handoff)
   }
 
   async run(name: string, args: unknown, context: ToolContext): Promise<ToolResult<AssistantDisplay>> {

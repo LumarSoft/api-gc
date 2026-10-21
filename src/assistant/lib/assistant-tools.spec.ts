@@ -1,5 +1,6 @@
 import {
   ASSISTANT_TOOLS,
+  assistantTools,
   contactArguments,
   MAX_SHOWN_PRODUCTS,
   productSlugArgument,
@@ -14,6 +15,11 @@ describe('assistant tools', () => {
       expect(parameters.additionalProperties).toBe(false)
       expect([...parameters.required].sort()).toEqual(Object.keys(parameters.properties).sort())
     }
+  })
+
+  it('offers contact_team only when a person can take over', () => {
+    expect(assistantTools(true).map(tool => tool.name)).toContain('contact_team')
+    expect(assistantTools(false).map(tool => tool.name)).not.toContain('contact_team')
   })
 
   it('reads search arguments defensively', () => {

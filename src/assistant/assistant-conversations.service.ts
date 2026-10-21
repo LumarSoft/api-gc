@@ -4,8 +4,8 @@ import type { AuthenticatedUser } from '../common/types/authenticated-user'
 import { generateSecureToken, hashToken } from '../common/utils/secure-token'
 import { ConversationStatus, MessageRole } from '../generated/prisma/enums'
 import { PrismaService } from '../prisma/prisma.service'
-import type { ChatMessage } from './assistant-model'
 import { HISTORY_MESSAGES } from './lib/assistant-limits'
+import type { StoredMessage } from './lib/assistant-history'
 
 export interface OpenConversation {
   id: number
@@ -95,32 +95,19 @@ export class AssistantConversationsService {
     ])
   }
 
-  /**
-   * The last messages, oldest first, as the model reads them. Answers that showed product cards say which ones, so
-   * "the first one" or "that printer" keep their meaning in the next turn.
-   */
-  async history(conversationId: number): Promise<ChatMessage[]> {
+  /** The last messages, oldest first, with the products each answer showed as cards. */
+  async history(conversationId: number): Promise<StoredMessage[]> {
     const messages = await this.prisma.assistantMessage.findMany({
       where: { conversationId, role: { in: [MessageRole.USER, MessageRole.ASSISTANT] } },
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: HISTORY_MESSAGES,
       select: { role: true, content: true, recommendedProducts: true },
     })
-    messages.reverse()
-    const shownIds = messages.flatMap(message => productIds(message.recommendedProducts))
-    const shown = shownIds.length
-      ? await this.prisma.product.findMany({ where: { id: { in: shownIds } }, select: { id: true, slug: true } })
-      : []
-    return messages
-      .map(message => {
-        if (message.role === MessageRole.USER) return { role: 'user' as const, text: message.content }
-        const slugs = productIds(message.recommendedProducts).flatMap(
-          id => shown.find(row => row.id === id)?.slug ?? [],
-        )
-        const cards = slugs.length ? `\n\n[Tarjetas mostradas: ${slugs.join(', ')}]` : ''
-        return { role: 'assistant' as const, text: `${message.content}${cards}`.trim() }
-      })
-      .filter(message => message.text)
+    return messages.reverse().map(message => ({
+      role: message.role === MessageRole.USER ? 'user' : 'assistant',
+      text: message.content,
+      productIds: productIds(message.recommendedProducts),
+    }))
   }
 
   async escalate(conversationId: number, reason: string): Promise<void> {

@@ -179,7 +179,8 @@ describe('Assistant (local MySQL e2e)', () => {
     expect(second.some(event => event.type === 'conversation')).toBe(false)
     const history = model.histories[model.histories.length - 1]
     expect(history).toHaveLength(3)
-    expect(history[1].text).toContain(`[Tarjetas mostradas: assistant-`)
+    expect(history[1].text).toContain('[Tarjetas mostradas, con precio y stock de ahora:')
+    expect(history[1].text).toMatch(/Barata asesorprueba\w+ \(slug assistant-[\w-]+\): \$\s?100, en stock/)
 
     await ask({ message: 'hola', conversation: 'x'.repeat(64) }, 404)
     await ask({ message: 'hola', conversation: 'short' }, 400)

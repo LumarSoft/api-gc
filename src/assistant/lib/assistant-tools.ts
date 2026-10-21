@@ -109,6 +109,11 @@ export const ASSISTANT_TOOLS: ToolDefinition[] = [
   },
 ]
 
+/** The tools for this store: `contact_team` only when a person can take over. */
+export function assistantTools(handoff: boolean): ToolDefinition[] {
+  return handoff ? ASSISTANT_TOOLS : ASSISTANT_TOOLS.filter(tool => tool.name !== 'contact_team')
+}
+
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 

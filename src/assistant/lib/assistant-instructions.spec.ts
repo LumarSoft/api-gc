@@ -14,6 +14,7 @@ const facts: StoreFacts = {
   carrierShipping: true,
   onlinePayment: false,
   reservationHours: 24,
+  handoff: false,
 }
 const turn = { frequentCustomer: false, signedIn: false, viewing: null, today: '2026-10-20' }
 
@@ -33,6 +34,13 @@ describe('assistant instructions', () => {
     const off = assistantInstructions({ ...facts, localDelivery: null, carrierShipping: false }, catalog, turn)
     expect(off).toContain('Entrega a domicilio en Rosario: todavía no está disponible.')
     expect(off).toContain('Envíos al resto del país: todavía no están disponibles')
+  })
+
+  it('offers a person only when there is a WhatsApp number', () => {
+    expect(assistantInstructions(facts, catalog, turn)).toContain('No lo ofrezcas ni digas que intentaste derivar')
+    expect(assistantInstructions({ ...facts, handoff: true }, catalog, turn)).toContain(
+      'por WhatsApp, con contact_team',
+    )
   })
 
   it('lists the categories with products and the uses', () => {

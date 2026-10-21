@@ -9,6 +9,7 @@ import { PrismaService } from '../prisma/prisma.service'
 import { RESERVATION_HOURS_KEY } from '../settings/lib/settings-rules'
 import { SHIPPING_CARRIER, type ShippingCarrier } from '../shipping/shipping-carrier'
 import { AssistantCatalogService } from './assistant-catalog.service'
+import { AssistantToolsService } from './assistant-tools.service'
 import { assistantInstructions, type CatalogMap, type StoreFacts } from './lib/assistant-instructions'
 import { priceLabel } from './lib/catalog-search-rules'
 
@@ -23,6 +24,7 @@ export class AssistantContextService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly catalog: AssistantCatalogService,
+    private readonly tools: AssistantToolsService,
     @Inject(SHIPPING_CARRIER) private readonly carrier: ShippingCarrier,
     @Inject(PAYMENT_GATEWAY) private readonly gateway: PaymentGateway,
   ) {}
@@ -85,6 +87,7 @@ export class AssistantContextService {
       carrierShipping: this.carrier.configured,
       onlinePayment: this.gateway.configured,
       reservationHours: reservationHours(reservation),
+      handoff: this.tools.handoff,
     }
   }
 

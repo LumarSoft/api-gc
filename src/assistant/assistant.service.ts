@@ -10,14 +10,15 @@ import { ConfigService } from '@nestjs/config'
 import type { AuthenticatedUser } from '../common/types/authenticated-user'
 import { argentineDay } from '../common/utils/report-period'
 import { hashToken } from '../common/utils/secure-token'
+import { AssistantCatalogService } from './assistant-catalog.service'
 import { AssistantContextService } from './assistant-context.service'
 import { AssistantConversationsService, type OpenConversation } from './assistant-conversations.service'
 import { ASSISTANT_MODEL, AssistantModelError, type AssistantModel } from './assistant-model'
 import { AssistantToolsService } from './assistant-tools.service'
 import type { AssistantStreamEvent } from './dto/assistant-stream.dto'
 import type { SendAssistantMessageDto } from './dto/send-assistant-message.dto'
+import { chatHistory } from './lib/assistant-history'
 import { assistantLimits, conversationLimitProblem, MAX_TURN_STEPS, type AssistantLimits } from './lib/assistant-limits'
-import { ASSISTANT_TOOLS } from './lib/assistant-tools'
 
 const UNAVAILABLE = 'El asesor no está disponible en este momento. Probá de nuevo más tarde.'
 const ANSWER_FAILED = 'No pude terminar la respuesta. Probá de nuevo en un momento.'
@@ -36,6 +37,7 @@ export class AssistantService {
   constructor(
     @Inject(ASSISTANT_MODEL) private readonly model: AssistantModel,
     private readonly conversations: AssistantConversationsService,
+    private readonly catalog: AssistantCatalogService,
     private readonly context: AssistantContextService,
     private readonly tools: AssistantToolsService,
     config: ConfigService,
@@ -73,14 +75,18 @@ export class AssistantService {
       // From here on the stream has started: every failure ends it with an error line, never a hung response.
       try {
         await this.conversations.recordQuestion(conversation.id, input.message)
-        const [history, instructions] = await Promise.all([
+        const [stored, instructions] = await Promise.all([
           this.conversations.history(conversation.id),
           this.context.instructions(user, input.productSlug),
         ])
+        const shown = await this.catalog.shownLines(
+          stored.flatMap(message => message.productIds),
+          user,
+        )
         const turn = this.model.runTurn({
           instructions,
-          history,
-          tools: ASSISTANT_TOOLS,
+          history: chatHistory(stored, shown),
+          tools: this.tools.definitions(),
           runTool: (name, args) => this.tools.run(name, args, { conversationId: conversation.id, user }),
           maxSteps: MAX_TURN_STEPS,
           maxOutputTokens: this.limits.maxOutputTokens,

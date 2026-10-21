@@ -73,6 +73,18 @@ export class AssistantCatalogService {
     return summaries.map(summary => ({ ...summary, variantId: variants.get(summary.id) ?? null }))
   }
 
+  /** One line per visible product among `ids` (name, slug, price, stock for this buyer), for the conversation history. */
+  async shownLines(ids: number[], user: AuthenticatedUser | undefined): Promise<Map<number, string>> {
+    if (!ids.length) return new Map()
+    const summaries = await this.products.findSummariesByIds([...new Set(ids)], user)
+    return new Map(
+      summaries.map(summary => {
+        const line = productLine(summary)
+        return [summary.id, `${line.name} (slug ${line.slug}): ${line.price}, ${line.availability}`]
+      }),
+    )
+  }
+
   /** Name of a visible product, to tell the model which page the customer is on. */
   async visibleName(slug: string): Promise<string | null> {
     const product = await this.prisma.product.findFirst({
