@@ -3178,7 +3178,8 @@ Mercado Pago, the kind of credentials (`TEST` for `TEST-…`, `APP_USR` for `APP
 }
 ```
 
-- `api.version` is the commit the API started from (`null` outside a git checkout); `api.disk` is the disk of
+- `api.version` is the commit the API started from: read from git when it starts, or else from `dist/build-info.json`,
+  which `npm run build` writes (`null` when neither is there); `api.disk` is the disk of
   `STORAGE_DIR` (`null` when it cannot be read).
 - `database.migrations` is `null` when the build has no `prisma/migrations` folder to compare with.
 - `jobs.orderExpiry.overdue` counts unpaid orders whose reservation ended more than 2 minutes ago: above 0, the task is
