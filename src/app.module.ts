@@ -22,6 +22,7 @@ import { OrdersModule } from './orders/orders.module'
 import { FavoritesModule } from './favorites/favorites.module'
 import { WholesaleApplicationsModule } from './wholesale-applications/wholesale-applications.module'
 import { DashboardModule } from './dashboard/dashboard.module'
+import { SystemModule } from './system/system.module'
 import { SettingsModule } from './settings/settings.module'
 import { PaymentsModule } from './payments/payments.module'
 import { ShipmentsModule } from './shipments/shipments.module'
@@ -46,6 +47,7 @@ import { ShipmentsModule } from './shipments/shipments.module'
     FavoritesModule,
     WholesaleApplicationsModule,
     DashboardModule,
+    SystemModule,
     AnalyticsModule,
     ActivityModule,
     SettingsModule,

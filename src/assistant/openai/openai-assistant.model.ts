@@ -39,6 +39,15 @@ const CHARS_PER_TOKEN = 3.5
 /** Same key for every conversation: they share the instructions and tools, the prefix OpenAI caches. */
 const PROMPT_CACHE_KEY = 'cg-store-assistant'
 
+/** Model and reasoning effort from the environment, with their defaults (also shown on the developers' "Sistema" page). */
+export function openAiSettings(read: (key: string) => string | undefined): { model: string; reasoningEffort: Effort } {
+  const effort = read('OPENAI_REASONING_EFFORT')?.trim()
+  return {
+    model: read('OPENAI_MODEL')?.trim() || DEFAULT_OPENAI_MODEL,
+    reasoningEffort: REASONING_EFFORTS.find(value => value === effort) ?? DEFAULT_REASONING_EFFORT,
+  }
+}
+
 /** `AssistantModel` on top of OpenAI's Responses API, with function tools and streamed text. */
 @Injectable()
 export class OpenAiAssistantModel implements AssistantModel {
@@ -50,9 +59,9 @@ export class OpenAiAssistantModel implements AssistantModel {
   constructor(config: ConfigService) {
     const apiKey = config.get<string>('OPENAI_API_KEY')?.trim() ?? ''
     this.client = apiKey ? new OpenAI({ apiKey, timeout: TIMEOUT_MS, maxRetries: 1 }) : null
-    this.name = config.get<string>('OPENAI_MODEL')?.trim() || DEFAULT_OPENAI_MODEL
-    const effort = config.get<string>('OPENAI_REASONING_EFFORT')?.trim()
-    this.reasoningEffort = REASONING_EFFORTS.find(value => value === effort) ?? DEFAULT_REASONING_EFFORT
+    const settings = openAiSettings(key => config.get<string>(key))
+    this.name = settings.model
+    this.reasoningEffort = settings.reasoningEffort
   }
 
   get configured(): boolean {

@@ -34,6 +34,7 @@ api-gc/
 │   ├── payments/                  # Paying orders online: checkout link, buyer's return refresh, Mercado Pago webhook
 │   ├── assistant/                 # AI sales assistant: catalog tools, conversations, model behind ASSISTANT_MODEL (openai/)
 │   │                              #   + /admin/assistant: conversations, unanswered questions, usage (admin-assistant-*)
+│   ├── system/                    # GET /admin/system (developers): API, database, integrations, tasks and store checks
 │   ├── inventory/                 # StockService: stock levels + movement ledger (manual adjustment, TODO(tango))
 │   ├── pricing/                   # Price resolution + /admin/price-lists and /admin/exchange-rates
 │   ├── tags/                      # GET /tags (catalog filters) + /admin/tags
@@ -96,3 +97,4 @@ api-gc/
 | MercadoPagoModule | `src/mercado-pago/` | Payment provider (Mercado Pago) behind `PAYMENT_GATEWAY`  |
 | PaymentsModule    | `src/payments/`     | Online payment of orders and the Mercado Pago webhook     |
 | AssistantModule   | `src/assistant/`    | AI sales assistant (OpenAI) over the catalog + its admin  |
+| SystemModule      | `src/system/`       | Developers' system page: health, integrations, tasks      |
