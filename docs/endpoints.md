@@ -3183,5 +3183,86 @@ Mercado Pago, the kind of credentials (`TEST` for `TEST-…`, `APP_USR` for `APP
 - `database.migrations` is `null` when the build has no `prisma/migrations` folder to compare with.
 - `jobs.orderExpiry.overdue` counts unpaid orders whose reservation ended more than 2 minutes ago: above 0, the task is
   not keeping up.
+- `logs` summarizes the errors and warnings kept in the last 24 hours (`GET /admin/system/logs`).
 
 `401 Unauthorized` without a session. `403 Forbidden` for customers and admins.
+
+### GET /admin/system/logs
+
+The errors and warnings the API logged in the last 30 days, newest first: what the code logs with `Logger.error` /
+`Logger.warn` (the class that logged it is the `source`) and every request that ended in a 5xx or an unexpected error
+(`source` `HTTP`, with its route pattern). The same entry repeated within a few seconds is stored once with its `count`.
+Older entries are deleted every 6 hours.
+
+**Auth required:** Yes (DEVELOPER). Query `page` (1–10000, default 1), `pageSize` (1–100, default 25), `level`
+(`ERROR`, `WARN`), `source` (exact, as listed in `sources`) and `q` (partial match on the message or the route, up to
+100 characters).
+
+**Responses**
+
+`200 OK`
+
+```json
+{
+  "items": [
+    {
+      "id": 42,
+      "level": "ERROR",
+      "source": "HTTP",
+      "route": "POST /cart/checkout/orders",
+      "message": "Connection lost",
+      "stack": "Error: Connection lost\n    at …",
+      "count": 3,
+      "createdAt": "2026-10-22T02:10:00.000Z",
+      "lastSeenAt": "2026-10-22T02:10:04.000Z"
+    }
+  ],
+  "page": 1,
+  "pageSize": 25,
+  "total": 1,
+  "totalPages": 1,
+  "sources": [
+    { "source": "HTTP", "count": 3 },
+    { "source": "OpenAiAssistantModel", "count": 5 }
+  ]
+}
+```
+
+`400 Bad Request` invalid query. `401`/`403` as above.
+
+### GET /admin/system/activity
+
+What staff changed in the admin (`AuditLog`), newest first, with who did it.
+
+**Auth required:** Yes (DEVELOPER). Query `page`, `pageSize` (as above), `userId` and `entityType` (exact, as listed in
+`entityTypes`).
+
+**Responses**
+
+`200 OK`
+
+```json
+{
+  "items": [
+    {
+      "id": 310,
+      "action": "product.update",
+      "entityType": "Product",
+      "entityId": 12,
+      "changes": { "name": { "from": "EcoTank L3250", "to": "Impresora EcoTank L3250" } },
+      "ipAddress": "181.0.0.1",
+      "createdAt": "2026-10-21T14:02:00.000Z",
+      "user": { "id": 6, "name": "Admin CG", "email": "admin@example.com" }
+    }
+  ],
+  "page": 1,
+  "pageSize": 25,
+  "total": 1,
+  "totalPages": 1,
+  "users": [{ "id": 6, "name": "Admin CG" }],
+  "entityTypes": ["Order", "Product", "Setting"]
+}
+```
+
+`changes` is `{ field: { from, to } }` as recorded, or `null` for actions without field changes (an upload, an
+archive). `user` is `null` when the account no longer exists. `400 Bad Request` invalid query. `401`/`403` as above.
