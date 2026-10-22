@@ -3,8 +3,9 @@ import { Reflector } from '@nestjs/core'
 import { UserRole } from '../../generated/prisma/enums'
 import { ROLES_KEY } from '../decorators/roles.decorator'
 import type { RequestWithUser } from '../types/authenticated-user'
+import { hasRole } from '../utils/roles'
 
-/** Must run after JwtAuthGuard: `@UseGuards(JwtAuthGuard, RolesGuard)`. */
+/** Must run after JwtAuthGuard: `@UseGuards(JwtAuthGuard, RolesGuard)`. Developers pass the admin checks (`hasRole`). */
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
@@ -17,7 +18,7 @@ export class RolesGuard implements CanActivate {
     if (!roles?.length) return true
 
     const { user } = context.switchToHttp().getRequest<RequestWithUser>()
-    if (!user || !roles.includes(user.role)) throw new ForbiddenException()
+    if (!user || !roles.some(role => hasRole(user.role, role))) throw new ForbiddenException()
     return true
   }
 }

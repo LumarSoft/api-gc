@@ -40,7 +40,7 @@ api-gc/
 │   ├── products/                  # Public catalog + /admin/products (admin-* services, reader, mapper, duplicator, bulk)
 │   ├── common/                    # Shared guards (JwtAuthGuard, RolesGuard), decorators, auth types, helpers
 │   ├── mail/                      # Transactional email (logged in development until a provider is set)
-│   ├── scripts/                   # create-admin.ts (`npm run admin:create`), seed-catalog.ts (`npm run db:seed`)
+│   ├── scripts/                   # create-admin.ts (`npm run admin:create`), set-user-role.ts (`npm run admin:role`), seed-catalog.ts (`npm run db:seed`)
 │   ├── generated/prisma/          # Generated Prisma client — git-ignored, never edit
 │   ├── prisma/                    # Global database module
 │   │   ├── migration-check.ts     # Startup: refuse to run with pending migrations

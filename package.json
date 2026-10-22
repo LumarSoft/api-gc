@@ -22,6 +22,7 @@
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
     "admin:create": "nest build && node dist/scripts/create-admin.js",
+    "admin:role": "nest build && node dist/scripts/set-user-role.js",
     "postinstall": "prisma generate",
     "prepare": "husky",
     "db:seed": "nest build && node dist/scripts/seed-catalog.js"

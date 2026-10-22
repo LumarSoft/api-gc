@@ -16,6 +16,22 @@ npm run doctor             # tells you if anything else is missing
 
 ---
 
+## 2026-10-22 — Developer role (migration)
+
+New role `DEVELOPER` for the team: everything an admin can do, plus the developer-only sections (today "Asesor IA",
+which admins no longer see). Apply the migration and make your own account a developer:
+
+```bash
+npx prisma migrate dev && npx prisma generate
+ADMIN_EMAIL=you@example.com ADMIN_ROLE=DEVELOPER npm run admin:role
+```
+
+New developer accounts: `ADMIN_ROLE=DEVELOPER` with `npm run admin:create`. Production: `npx prisma migrate deploy`
+before starting the new build, then `ADMIN_EMAIL=… ADMIN_ROLE=DEVELOPER node dist/scripts/set-user-role.js` for each
+team member.
+
+---
+
 ## 2026-10-21 — Product page of each assistant message (migration)
 
 Each customer message to the assistant now stores the product page it was written from (`AssistantMessage.productId`),

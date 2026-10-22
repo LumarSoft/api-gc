@@ -26,8 +26,9 @@ import type {
 
 /** What customers ask the sales assistant, the questions it could not answer and what it costs. Read-only chats. */
 @Controller('admin/assistant')
+// Developers only (agreed 2026-10-22): the store's staff do not see the assistant's conversations.
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN)
+@Roles(UserRole.DEVELOPER)
 export class AdminAssistantController {
   constructor(
     private readonly conversations: AdminAssistantConversationsService,
