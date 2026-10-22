@@ -20,20 +20,17 @@ export function pendingMigrationsMessage(pending: string[]): string {
   ].join('\n')
 }
 
+export const MIGRATIONS_DIRECTORY = join(process.cwd(), 'prisma', 'migrations')
+
 /**
- * Refuses to start the API when the database lacks migrations this code ships with, so a forgotten
- * `prisma migrate deploy` stops the deploy with a clear message instead of failing requests later. Skipped (with a
- * warning) when `prisma/migrations` is not next to the process, e.g. a build copied without the repository.
+ * The migrations this code ships with and the ones the database has not applied. Null when `prisma/migrations` is not
+ * next to the process (a build copied without the repository): there is nothing to compare with.
  */
-export async function assertMigrationsApplied(
+export async function migrationStatus(
   prisma: PrismaService,
-  directory = join(process.cwd(), 'prisma', 'migrations'),
-): Promise<void> {
-  const log = new Logger('Migrations')
-  if (!existsSync(directory)) {
-    log.warn(`Could not check pending migrations: ${directory} does not exist.`)
-    return
-  }
+  directory = MIGRATIONS_DIRECTORY,
+): Promise<{ total: number; pending: string[] } | null> {
+  if (!existsSync(directory)) return null
   const folders = readdirSync(directory, { withFileTypes: true })
     .filter(entry => entry.isDirectory() && existsSync(join(directory, entry.name, 'migration.sql')))
     .map(entry => entry.name)
@@ -45,7 +42,21 @@ export async function assertMigrationsApplied(
   } catch {
     // No migrations table yet: a brand-new database, every migration is pending.
   }
-  const pending = pendingMigrations(folders, applied)
-  if (pending.length > 0) throw new Error(pendingMigrationsMessage(pending))
-  log.log(`Database schema up to date (${folders.length} migrations)`)
+  return { total: folders.length, pending: pendingMigrations(folders, applied) }
+}
+
+/**
+ * Refuses to start the API when the database lacks migrations this code ships with, so a forgotten
+ * `prisma migrate deploy` stops the deploy with a clear message instead of failing requests later. Skipped (with a
+ * warning) when `prisma/migrations` is not next to the process, e.g. a build copied without the repository.
+ */
+export async function assertMigrationsApplied(prisma: PrismaService, directory = MIGRATIONS_DIRECTORY): Promise<void> {
+  const log = new Logger('Migrations')
+  const status = await migrationStatus(prisma, directory)
+  if (!status) {
+    log.warn(`Could not check pending migrations: ${directory} does not exist.`)
+    return
+  }
+  if (status.pending.length > 0) throw new Error(pendingMigrationsMessage(status.pending))
+  log.log(`Database schema up to date (${status.total} migrations)`)
 }

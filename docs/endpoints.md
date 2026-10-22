@@ -3097,3 +3097,91 @@ conversation that made it.
   "emptySearches": [{ "text": "plotter a1", "searches": 3, "conversations": 2, "lastConversationId": 57 }]
 }
 ```
+
+## System (developers)
+
+### GET /admin/system
+
+How the system is doing, for the developers' "Sistema" page: the API (deployed commit, uptime, memory, disk), the
+database (latency, pending migrations), each integration (what it is set up with and when it was last used), the
+reservation expiry task and store data worth a look. It never returns a secret: only whether each one is set and, for
+Mercado Pago, the kind of credentials (`TEST` for `TEST-…`, `APP_USR` for `APP_USR-…`).
+
+**Auth required:** Yes (DEVELOPER). Not cached (`Cache-Control: private, no-store`).
+
+**Responses**
+
+`200 OK`
+
+```json
+{
+  "checkedAt": "2026-10-22T03:38:33.487Z",
+  "environment": "production",
+  "api": {
+    "version": {
+      "commit": "2985b58",
+      "committedAt": "2026-10-21T21:22:15-03:00",
+      "subject": "Merge pull request #55 …"
+    },
+    "startedAt": "2026-10-22T00:31:02.000Z",
+    "uptimeSeconds": 11251,
+    "node": "v22.23.1",
+    "machine": {
+      "processBytes": 311345152,
+      "systemTotalBytes": 1023410176,
+      "systemFreeBytes": 116490240,
+      "load": [0.31, 0.22, 0.2],
+      "cpus": 1
+    },
+    "disk": { "path": "/root/api-gc/storage", "totalBytes": 26843545600, "freeBytes": 9663676416 }
+  },
+  "database": { "latencyMs": 1.8, "migrations": { "total": 10, "pending": [] } },
+  "integrations": {
+    "mercadoPago": {
+      "configured": true,
+      "credentials": "TEST",
+      "webhookSecret": true,
+      "notificationUrl": "https://api.gc.lumarsoft.com/payments/webhooks/mercado-pago",
+      "lastNotificationAt": "2026-10-10T15:24:53.162Z",
+      "failedNotifications": { "count": 0, "lastAt": null, "lastError": null }
+    },
+    "zipnova": {
+      "configured": true,
+      "webhookSecret": true,
+      "apiHost": "api.zipnova.com.ar",
+      "lastQuoteAt": null,
+      "lastShipmentAt": null
+    },
+    "openai": {
+      "configured": true,
+      "model": "gpt-6-luna",
+      "reasoningEffort": "medium",
+      "tokensToday": 229350,
+      "dailyTokenLimit": 5000000,
+      "whatsappNumber": false
+    },
+    "email": {
+      "provider": null,
+      "last30Days": { "failed": 3, "logged": 0, "sent": 0 },
+      "lastAt": "2026-10-20T12:00:00.000Z"
+    }
+  },
+  "jobs": {
+    "orderExpiry": { "lastRunAt": "2026-10-22T03:36:37.422Z", "failed": false, "expiredLast24h": 2, "overdue": 0 }
+  },
+  "store": {
+    "exchangeRate": { "rate": "1450.00", "effectiveFrom": "2026-10-03T18:00:49.375Z" },
+    "publishedWithoutImages": 0,
+    "publishedOutOfStock": 2,
+    "awaitingPayment": 1
+  }
+}
+```
+
+- `api.version` is the commit the API started from (`null` outside a git checkout); `api.disk` is the disk of
+  `STORAGE_DIR` (`null` when it cannot be read).
+- `database.migrations` is `null` when the build has no `prisma/migrations` folder to compare with.
+- `jobs.orderExpiry.overdue` counts unpaid orders whose reservation ended more than 2 minutes ago: above 0, the task is
+  not keeping up.
+
+`401 Unauthorized` without a session. `403 Forbidden` for customers and admins.
