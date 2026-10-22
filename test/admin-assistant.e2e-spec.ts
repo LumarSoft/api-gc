@@ -30,6 +30,8 @@ describe('Admin assistant (local MySQL e2e)', () => {
   const questionIds: number[] = []
   let productIds: number[] = []
   let categoryId: number
+  let developerCookie: string
+  /** The store's staff: the rest of the panel, not the assistant's conversations. */
   let adminCookie: string
   let customerCookie: string
   let customerEmail: string
@@ -41,11 +43,11 @@ describe('Admin assistant (local MySQL e2e)', () => {
   const get = <T>(path: string, status = 200): Promise<T> =>
     request(server())
       .get(path)
-      .set('Cookie', adminCookie)
+      .set('Cookie', developerCookie)
       .expect(status)
       .then(response => response.body as T)
   const changeStatus = (ids: number[], status: string): request.Test =>
-    request(server()).post('/admin/assistant/questions/status').set('Cookie', adminCookie).send({ ids, status })
+    request(server()).post('/admin/assistant/questions/status').set('Cookie', developerCookie).send({ ids, status })
 
   async function user(prefix: string, role: UserRole = UserRole.CUSTOMER): Promise<[number, string, string]> {
     const created = await prisma.user.create({
@@ -120,6 +122,7 @@ describe('Admin assistant (local MySQL e2e)', () => {
     prisma = app.get(PrismaService)
     let customerId: number
     ;[customerId, customerEmail, customerCookie] = await user('assistant-customer')
+    ;[, , developerCookie] = await user('assistant-developer', UserRole.DEVELOPER)
     ;[, , adminCookie] = await user('assistant-admin', UserRole.ADMIN)
 
     const suffix = randomUUID().slice(0, 8)
@@ -212,10 +215,13 @@ describe('Admin assistant (local MySQL e2e)', () => {
     if (app) await app.close()
   })
 
-  it('is only for admins', async () => {
+  it('is only for developers, who also pass the admin routes', async () => {
     await request(server()).get('/admin/assistant/conversations').expect(401)
-    await request(server()).get('/admin/assistant/conversations').set('Cookie', customerCookie).expect(403)
-    await request(server()).get('/admin/assistant/usage').set('Cookie', customerCookie).expect(403)
+    for (const cookie of [customerCookie, adminCookie]) {
+      await request(server()).get('/admin/assistant/conversations').set('Cookie', cookie).expect(403)
+      await request(server()).get('/admin/assistant/usage').set('Cookie', cookie).expect(403)
+    }
+    await request(server()).get('/admin/dashboard').set('Cookie', developerCookie).expect(200)
     await request(server())
       .post('/admin/assistant/questions/status')
       .set('Cookie', customerCookie)

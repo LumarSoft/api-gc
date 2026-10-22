@@ -18,8 +18,10 @@
 - Every route that requires authentication must declare its guard explicitly (`@UseGuards(JwtAuthGuard)`).
 - Never assume a route is protected — always declare the guard.
 - Public routes (catalog, login, register, webhooks) must remain unguarded intentionally.
-- Role checks are explicit: `ADMIN` by `User.role`; `WHOLESALE` (approved company only) by the derived buyer profile
-  (see `business-rules.md`); everything else is `RETAIL`. A user can only read and modify their own
+- Role checks are explicit: `ADMIN` and `DEVELOPER` by `User.role`; `WHOLESALE` (approved company only) by the derived
+  buyer profile (see `business-rules.md`); everything else is `RETAIL`. `DEVELOPER` (the team that builds the store)
+  passes every `ADMIN` check (`hasRole`, `src/common/utils/roles.ts`); developer-only routes declare
+  `@Roles(UserRole.DEVELOPER)`, today the assistant's admin (`/admin/assistant/*`). A user can only read and modify their own
   orders, addresses and account statement.
 
 ## Rate limits

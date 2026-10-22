@@ -500,8 +500,9 @@ Serves public files (product images, logos) from `STORAGE_DIR/public`. Cached fo
 
 ## Admin
 
-Every `/admin/*` route requires a session with role `ADMIN` (`401` without a session, `403` for customers). Admin
-users are created with `npm run admin:create`. Every change made through these routes is recorded in `AuditLog`
+Every `/admin/*` route requires a session with role `ADMIN` or `DEVELOPER` (`401` without a session, `403` for
+customers); `/admin/assistant/*` only `DEVELOPER`. Admin users are created with `npm run admin:create`
+(`ADMIN_ROLE=DEVELOPER` for a developer) and an existing account changes role with `npm run admin:role`. Every change made through these routes is recorded in `AuditLog`
 (who, what, when, from which IP).
 
 ### POST /admin/files/images
@@ -2786,7 +2787,7 @@ the product. Only products the conversation showed as cards count.
 What customers asked the assistant, for the admin "Asesor IA" page. Read-only: staff do not answer from the admin (a
 person takes over by WhatsApp). Most recent activity first.
 
-**Auth required:** Yes (ADMIN).
+**Auth required:** Yes (DEVELOPER).
 
 **Query**
 
@@ -2844,7 +2845,7 @@ more, or made a product search that found nothing.
 One conversation with every message, oldest first (a conversation takes at most 40 customer messages, so it is not
 paginated), and the questions it could not answer.
 
-**Auth required:** Yes (ADMIN).
+**Auth required:** Yes (DEVELOPER).
 
 **Responses**
 
@@ -2974,7 +2975,7 @@ Questions the assistant could not answer (it records them while answering), so s
 it belongs (product sheet, catalog, store settings) and mark them answered, or dismiss them. The assistant does not
 read these rows. Newest first.
 
-**Auth required:** Yes (ADMIN). Query `page` (1–10000, default 1), `pageSize` (1–100, default 25), `status` (`OPEN`,
+**Auth required:** Yes (DEVELOPER). Query `page` (1–10000, default 1), `pageSize` (1–100, default 25), `status` (`OPEN`,
 `ANSWERED`, `DISMISSED`) and `q` (max 100, trimmed: partial match on the question). `400` invalid query.
 
 `200 OK` — `{ items, page, pageSize, total, totalPages }`; each item is a question as in the conversation detail
@@ -2984,7 +2985,7 @@ above. `resolvedBy`/`resolvedAt` say who marked it answered or dismissed and whe
 
 How many questions are in each status, for the list views and the admin navigation badge.
 
-**Auth required:** Yes (ADMIN).
+**Auth required:** Yes (DEVELOPER).
 
 `200 OK`
 
@@ -2996,7 +2997,7 @@ How many questions are in each status, for the list views and the admin navigati
 
 Marks one question (row action) or a selection answered or dismissed, or opens them again.
 
-**Auth required:** Yes (ADMIN, audited per question as `assistant-question.answer` · `.dismiss` · `.reopen`).
+**Auth required:** Yes (DEVELOPER, audited per question as `assistant-question.answer` · `.dismiss` · `.reopen`).
 
 **Request body**
 
@@ -3030,7 +3031,7 @@ What the assistant consumes and how it does: conversations started, customer mes
 day (for the monthly allowance), its answers to look at, the products added to the cart from its cards and the
 searches that found nothing. Tokens count every answer, also those of conversations removed later.
 
-**Auth required:** Yes (ADMIN). Query `from`/`to` as in `GET /admin/analytics` (by default the last 30 days, today
+**Auth required:** Yes (DEVELOPER). Query `from`/`to` as in `GET /admin/analytics` (by default the last 30 days, today
 included). `400` for the same period errors.
 
 **Responses**

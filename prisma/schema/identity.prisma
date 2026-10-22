@@ -1,8 +1,11 @@
 // Identity: users, companies (wholesale customers), wholesale applications, addresses and auth tokens.
 
+/// DEVELOPER: the team that builds and runs the store. Everything an ADMIN can do, plus the developer-only sections
+/// (the AI assistant's conversations, missing data and metrics).
 enum UserRole {
   CUSTOMER
   ADMIN
+  DEVELOPER
 }
 
 /// AFIP tax status ("condición frente al IVA").

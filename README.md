@@ -157,20 +157,21 @@ that is already on `main`. More in [docs/rules/database.md](docs/rules/database.
 
 ## Scripts
 
-| Script                 | What it does                                                       |
-| ---------------------- | ------------------------------------------------------------------ |
-| `npm run dev`          | Start in watch mode                                                |
-| `npm run build`        | Compile to `dist/`                                                 |
-| `npm run start:prod`   | Run the compiled build                                             |
-| `npm run lint`         | ESLint (with auto-fix)                                             |
-| `npm run format`       | Prettier on `src/` and `test/`                                     |
-| `npm run test`         | Unit tests                                                         |
-| `npm run test:e2e`     | End-to-end tests on a separate `<db>_test` database (needs MySQL)  |
-| `npm run db:up`        | Start MySQL in Docker                                              |
-| `npm run db:down`      | Stop MySQL in Docker                                               |
-| `npx prisma studio`    | Browse and edit data in the browser                                |
-| `npm run admin:create` | Create/promote an admin (`ADMIN_EMAIL`, `ADMIN_PASSWORD` env vars) |
-| `npm run db:seed`      | Load the starter catalog (idempotent)                              |
+| Script                 | What it does                                                                                               |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `npm run dev`          | Start in watch mode                                                                                        |
+| `npm run build`        | Compile to `dist/`                                                                                         |
+| `npm run start:prod`   | Run the compiled build                                                                                     |
+| `npm run lint`         | ESLint (with auto-fix)                                                                                     |
+| `npm run format`       | Prettier on `src/` and `test/`                                                                             |
+| `npm run test`         | Unit tests                                                                                                 |
+| `npm run test:e2e`     | End-to-end tests on a separate `<db>_test` database (needs MySQL)                                          |
+| `npm run db:up`        | Start MySQL in Docker                                                                                      |
+| `npm run db:down`      | Stop MySQL in Docker                                                                                       |
+| `npx prisma studio`    | Browse and edit data in the browser                                                                        |
+| `npm run admin:create` | Create/promote an admin (`ADMIN_EMAIL`, `ADMIN_PASSWORD` env vars; `ADMIN_ROLE=DEVELOPER` for a developer) |
+| `npm run admin:role`   | Change an existing account's role (`ADMIN_EMAIL`, `ADMIN_ROLE`: `CUSTOMER`, `ADMIN` or `DEVELOPER`)        |
+| `npm run db:seed`      | Load the starter catalog (idempotent)                                                                      |
 
 ## Production build
 

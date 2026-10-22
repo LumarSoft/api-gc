@@ -230,6 +230,8 @@ Domain rules that apply across modules. When a request contradicts one of these,
   **Added 2026-10-21:** each visitor (IP, and account when signed in) may use a tenth of that daily limit and start
   20 conversations per hour, so one visitor or script cannot pause the assistant for everyone. An answer cut short
   (the customer left, OpenAI stopped responding) counts an estimate of its tokens, since OpenAI bills it anyway.
+- **Developers only (agreed 2026-10-22):** the "Asesor IA" section of the admin (conversations, missing data, metrics)
+  is for the team that builds the store (role `DEVELOPER`), not for the store's staff (`ADMIN`).
 - **Admin (agreed 2026-10-21):** staff read the conversations (filtered by status, text and the days they started),
   with the cards each answer showed, but do **not** answer from the admin: a person takes over by WhatsApp. Unanswered
   questions are marked answered once the missing data is loaded where it belongs (product sheet, catalog, settings), or

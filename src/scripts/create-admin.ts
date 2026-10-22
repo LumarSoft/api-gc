@@ -2,6 +2,8 @@
  * Creates (or promotes) an admin user. Credentials come from environment variables, never from a file in the repo:
  *
  *   ADMIN_EMAIL=ana@example.com ADMIN_PASSWORD='...' ADMIN_FIRST_NAME=Ana ADMIN_LAST_NAME=Pérez npm run admin:create
+ *
+ * `ADMIN_ROLE=DEVELOPER` creates a developer instead (the team: admin plus the developer-only sections).
  */
 import 'dotenv/config'
 import { Logger } from '@nestjs/common'
@@ -17,6 +19,7 @@ async function main(): Promise<void> {
   const password = process.env.ADMIN_PASSWORD
   const firstName = process.env.ADMIN_FIRST_NAME?.trim() || 'Admin'
   const lastName = process.env.ADMIN_LAST_NAME?.trim() || 'CG'
+  const role = staffRole(process.env.ADMIN_ROLE)
 
   if (!email || !password) throw new Error('ADMIN_EMAIL and ADMIN_PASSWORD are required')
   if (password.length < PASSWORD_MIN_LENGTH || !PASSWORD_PATTERN.test(password)) {
@@ -29,14 +32,21 @@ async function main(): Promise<void> {
     const passwordHash = await hash(password, 12)
     const user = await prisma.user.upsert({
       where: { email },
-      update: { role: UserRole.ADMIN, passwordHash, isActive: true, deletedAt: null },
-      create: { email, passwordHash, firstName, lastName, role: UserRole.ADMIN, emailVerifiedAt: new Date() },
+      update: { role, passwordHash, isActive: true, deletedAt: null },
+      create: { email, passwordHash, firstName, lastName, role, emailVerifiedAt: new Date() },
       select: { id: true, email: true },
     })
-    logger.log(`Admin ready: ${user.email} (id ${user.id})`)
+    logger.log(`${role === UserRole.DEVELOPER ? 'Developer' : 'Admin'} ready: ${user.email} (id ${user.id})`)
   } finally {
     await prisma.$disconnect()
   }
+}
+
+/** ADMIN unless `DEVELOPER` is asked for; anything else is a mistake worth stopping for. */
+function staffRole(value: string | undefined): UserRole {
+  const role = value?.trim().toUpperCase() || UserRole.ADMIN
+  if (role !== UserRole.ADMIN && role !== UserRole.DEVELOPER) throw new Error('ADMIN_ROLE must be ADMIN or DEVELOPER')
+  return role
 }
 
 main().catch((error: unknown) => {
