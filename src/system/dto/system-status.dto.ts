@@ -25,6 +25,12 @@ export interface SystemStatusDto {
     migrations: { total: number; pending: string[] } | null
   }
   integrations: SystemIntegrationsDto
+  /** Errors and warnings the API kept (`GET /admin/system/logs`). */
+  logs: {
+    /** Of the last 24 hours, repeats included. */
+    last24h: { errors: number; warnings: number }
+    lastError: { at: string; source: string; message: string } | null
+  }
   jobs: {
     orderExpiry: {
       /** Every minute; null if it never ran against this database. */

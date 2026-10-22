@@ -34,7 +34,7 @@ api-gc/
 │   ├── payments/                  # Paying orders online: checkout link, buyer's return refresh, Mercado Pago webhook
 │   ├── assistant/                 # AI sales assistant: catalog tools, conversations, model behind ASSISTANT_MODEL (openai/)
 │   │                              #   + /admin/assistant: conversations, unanswered questions, usage (admin-assistant-*)
-│   ├── system/                    # GET /admin/system (developers): API, database, integrations, tasks and store checks
+│   ├── system/                    # /admin/system (developers): status, errors kept by SystemLogger, admin activity
 │   ├── inventory/                 # StockService: stock levels + movement ledger (manual adjustment, TODO(tango))
 │   ├── pricing/                   # Price resolution + /admin/price-lists and /admin/exchange-rates
 │   ├── tags/                      # GET /tags (catalog filters) + /admin/tags

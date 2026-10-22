@@ -8,9 +8,12 @@ import { AppModule } from './app.module'
 import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter'
 import { assertMigrationsApplied } from './prisma/migration-check'
 import { PrismaService } from './prisma/prisma.service'
+import { SystemLogger } from './system/system-logger'
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule)
+  // Logs are held until the logger that also keeps errors and warnings for the "Sistema" page is ready.
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true })
+  app.useLogger(app.get(SystemLogger))
   // Before serving anything: a deploy that forgot `prisma migrate deploy` must not start (docs/upgrade-notes.md).
   await assertMigrationsApplied(app.get(PrismaService))
 

@@ -108,3 +108,30 @@ model AuditLog {
   @@index([userId])
   @@index([createdAt])
 }
+
+enum SystemLogLevel {
+  ERROR
+  WARN
+}
+
+/// Errors and warnings the API logged (code that failed, providers that did not answer, requests that ended in a 5xx),
+/// for the developers' "Sistema" page. Operational log: purged after 30 days, no deletedAt (see database.md).
+model SystemLog {
+  id         Int            @id @default(autoincrement())
+  level      SystemLogLevel
+  /// Who logged it: the class ("MercadoPagoClient", "OrderExpiryService"), or "HTTP" for a request that failed.
+  source     String         @db.VarChar(100)
+  /// The request that failed ("POST /cart/checkout/orders"), as its route pattern: never ids or query strings.
+  route      String?        @db.VarChar(191)
+  message    String         @db.Text
+  /// First lines of the stack trace, when there was one.
+  stack      String?        @db.Text
+  /// The same entry repeated within a few seconds is stored once and counted here.
+  count      Int            @default(1)
+  createdAt  DateTime       @default(now())
+  lastSeenAt DateTime       @default(now())
+
+  @@index([createdAt])
+  @@index([level, createdAt])
+  @@index([source, createdAt])
+}

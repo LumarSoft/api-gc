@@ -8,6 +8,7 @@ import { outOfStockWhere } from '../products/lib/admin-product-filters'
 import type { SystemStatusDto } from './dto/system-status.dto'
 import { codeVersion, diskUsage, machineUsage, type CodeVersion } from './lib/system-runtime'
 import { SystemIntegrationsService } from './system-integrations.service'
+import { SystemLogsService } from './system-logs.service'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 /** The expiry job runs every minute: an order this late means the job is not keeping up. */
@@ -25,6 +26,7 @@ export class AdminSystemService implements OnModuleInit {
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
     private readonly integrations: SystemIntegrationsService,
+    private readonly logs: SystemLogsService,
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -32,10 +34,11 @@ export class AdminSystemService implements OnModuleInit {
   }
 
   async status(now = new Date()): Promise<SystemStatusDto> {
-    const [database, disk, integrations, jobs, store] = await Promise.all([
+    const [database, disk, integrations, logs, jobs, store] = await Promise.all([
       this.database(),
       diskUsage(resolve(this.config.get<string>('STORAGE_DIR') ?? 'storage')),
       this.integrations.status(now),
+      this.logs.summary(now),
       this.jobs(now),
       this.store(),
     ])
@@ -52,6 +55,7 @@ export class AdminSystemService implements OnModuleInit {
       },
       database,
       integrations,
+      logs,
       jobs,
       store,
     }

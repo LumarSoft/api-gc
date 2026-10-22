@@ -16,6 +16,19 @@ npm run doctor             # tells you if anything else is missing
 
 ---
 
+## 2026-10-22 — Errors kept for the "Sistema" page (migration)
+
+The API now keeps its errors and warnings (and every request that ends in a 5xx) in `SystemLog` for 30 days, shown to
+developers in the admin's "Sistema" page; `main.ts` uses `SystemLogger`, which prints as before. Apply the migration:
+
+```bash
+npx prisma migrate dev && npx prisma generate
+```
+
+Production: `npx prisma migrate deploy` before starting the new build.
+
+---
+
 ## 2026-10-22 — Developer role (migration)
 
 New role `DEVELOPER` for the team: everything an admin can do, plus the developer-only sections (today "Asesor IA",

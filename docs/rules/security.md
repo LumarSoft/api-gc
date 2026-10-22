@@ -55,7 +55,8 @@
 
 ## Logging
 
-- Never log passwords, tokens, or any sensitive user data.
+- Never log passwords, tokens, or any sensitive user data. Errors and warnings are also kept in the database for 30 days
+  (`SystemLog`, shown to developers), so the same rule applies to every `Logger.error` / `Logger.warn` message.
 - Never use `console.log` in production code — use Nest's `Logger`. ESLint enforces `no-console`.
 
 ## General
